@@ -16,6 +16,7 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <quarkus.version>1.11.0.CR1</quarkus.version>
+    <hibernate-types.version>2.10.2</hibernate-types.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -42,6 +43,15 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-orm-rest-data-panache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-h2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vladmihalcea</groupId>
+      <artifactId>hibernate-types-52</artifactId>
+      <version>${hibernate-types.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

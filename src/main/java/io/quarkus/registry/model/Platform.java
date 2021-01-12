@@ -3,6 +3,7 @@ package io.quarkus.registry.model;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -12,7 +13,8 @@ public class Platform extends BaseEntity {
     public String artifactId;
 
     public JsonNode metadata;
-    public List<ExtensionRelease> extensions;
+
+    @OneToMany
     public List<PlatformRelease> releases;
 
 }
