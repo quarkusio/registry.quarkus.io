@@ -15,9 +15,8 @@
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <quarkus.version>999-SNAPSHOT</quarkus.version>
+    <quarkus.version>1.11.0.CR1</quarkus.version>
     <revision>999-SNAPSHOT</revision>
-    <neo4j.ogm.version>3.2.19</neo4j.ogm.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -31,29 +30,18 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-ogm-core</artifactId>
-      <version>${neo4j.ogm.version}</version>
-    </dependency>
-    <dependency> <!-- If you're using the Bolt driver -->
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-ogm-bolt-driver</artifactId>
-      <version>${neo4j.ogm.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-devtools-common</artifactId>
-      <version>${quarkus.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.quarkus</groupId>-->
+<!--      <artifactId>quarkus-devtools-common</artifactId>-->
+<!--      <version>${quarkus.version}</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-neo4j</artifactId>
+      <artifactId>quarkus-hibernate-orm-rest-data-panache</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

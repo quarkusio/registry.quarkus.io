@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="0.0" y="93.0">io.quarkus.registry.model.Category</node>
+    <node x="287.375" y="106.0">io.quarkus.registry.model.CoreRelease</node>
+    <node x="73.68362369337973" y="638.1672473867595">io.quarkus.registry.model.Extension</node>
+    <node x="400.8018518518519" y="0.0">io.quarkus.registry.model.BaseEntity</node>
+    <node x="376.37499999999994" y="230.0">io.quarkus.registry.model.PlatformRelease</node>
+    <node x="353.87499999999994" y="419.0">io.quarkus.registry.model.Platform</node>
+    <node x="109.375" y="230.0">io.quarkus.registry.model.ExtensionRelease</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="io.quarkus.registry.model.Platform" target="io.quarkus.registry.model.ExtensionRelease">
+      <point x="-109.5" y="-82.5" />
+      <point x="390.37499999999994" y="394.0" />
+      <point x="315.20833333333326" y="394.0" />
+      <point x="82.33333333333329" y="69.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Platform" target="io.quarkus.registry.model.PlatformRelease">
+      <point x="-36.5" y="-82.5" />
+      <point x="463.37499999999994" y="394.0" />
+      <point x="438.12499999999994" y="394.0" />
+      <point x="-61.75" y="69.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.CoreRelease" target="io.quarkus.registry.model.BaseEntity">
+      <point x="0.0" y="-30.5" />
+      <point x="366.375" y="73.0" />
+      <point x="462.4685185185186" y="73.0" />
+      <point x="-12.333333333333314" y="16.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.PlatformRelease" target="io.quarkus.registry.model.Platform">
+      <point x="61.75" y="69.5" />
+      <point x="561.625" y="394.0" />
+      <point x="536.375" y="394.0" />
+      <point x="36.5" y="-82.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Extension" target="io.quarkus.registry.model.BaseEntity">
+      <point x="109.19999999999999" y="-121.5" />
+      <point x="317.29999999999995" y="614.0" />
+      <point x="663.25" y="614.0" />
+      <point x="663.25" y="53.0" />
+      <point x="536.4685185185185" y="53.0" />
+      <point x="61.6666666666667" y="16.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.ExtensionRelease" target="io.quarkus.registry.model.CoreRelease">
+      <point x="61.75000000000003" y="-69.5" />
+      <point x="294.625" y="205.0" />
+      <point x="326.875" y="205.0" />
+      <point x="-39.5" y="30.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Extension" target="io.quarkus.registry.model.Category">
+      <point x="-109.19999999999999" y="-121.5" />
+      <point x="98.89999999999998" y="614.0" />
+      <point x="86.5" y="614.0" />
+      <point x="0.0" y="43.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.ExtensionRelease" target="io.quarkus.registry.model.BaseEntity">
+      <point x="-61.74999999999997" y="-69.5" />
+      <point x="171.12500000000003" y="205.0" />
+      <point x="210.96481481481484" y="205.0" />
+      <point x="210.96481481481484" y="63.0" />
+      <point x="437.8018518518519" y="63.0" />
+      <point x="-37.0" y="16.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Category" target="io.quarkus.registry.model.BaseEntity">
+      <point x="0.0" y="-43.5" />
+      <point x="86.5" y="53.0" />
+      <point x="413.1351851851852" y="53.0" />
+      <point x="-61.666666666666686" y="16.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.PlatformRelease" target="io.quarkus.registry.model.CoreRelease">
+      <point x="-61.74999999999994" y="-69.5" />
+      <point x="438.125" y="205.0" />
+      <point x="405.875" y="205.0" />
+      <point x="39.5" y="30.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Extension" target="io.quarkus.registry.model.Platform">
+      <point x="54.60000000000002" y="-121.5" />
+      <point x="262.7" y="604.0" />
+      <point x="499.87499999999994" y="604.0" />
+      <point x="0.0" y="82.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.PlatformRelease" target="io.quarkus.registry.model.BaseEntity">
+      <point x="61.75000000000006" y="-69.5" />
+      <point x="561.625" y="205.0" />
+      <point x="527.9648148148149" y="205.0" />
+      <point x="527.9648148148149" y="73.0" />
+      <point x="487.1351851851852" y="73.0" />
+      <point x="12.333333333333314" y="16.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Extension" target="io.quarkus.registry.model.ExtensionRelease">
+      <point x="-54.60000000000002" y="-121.5" />
+      <point x="153.49999999999994" y="614.0" />
+      <point x="189.29814814814813" y="614.0" />
+      <point x="189.29814814814813" y="394.0" />
+      <point x="150.54166666666666" y="394.0" />
+      <point x="-82.33333333333334" y="69.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.ExtensionRelease" target="io.quarkus.registry.model.Extension">
+      <point x="-2.8421709430404007E-14" y="69.5" />
+      <point x="232.87499999999997" y="394.0" />
+      <point x="205.71018518518514" y="394.0" />
+      <point x="205.71018518518514" y="614.0" />
+      <point x="208.09999999999997" y="614.0" />
+      <point x="0.0" y="-121.5" />
+    </edge>
+    <edge source="io.quarkus.registry.model.Platform" target="io.quarkus.registry.model.BaseEntity">
+      <point x="109.5" y="-82.5" />
+      <point x="609.375" y="394.0" />
+      <point x="652.25" y="394.0" />
+      <point x="652.25" y="63.0" />
+      <point x="511.8018518518519" y="63.0" />
+      <point x="37.0" y="16.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.959866220735786" x="332.0" y="438.5" />
+  <SelectedNodes>
+    <node>io.quarkus.registry.model.Extension</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
