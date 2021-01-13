@@ -2,6 +2,7 @@ package io.quarkus.registry.model;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -17,6 +18,7 @@ public class Platform extends BaseEntity {
     @Id
     public String artifactId;
 
+    @Column(columnDefinition = "json")
     public JsonNode metadata;
 
     @OneToMany

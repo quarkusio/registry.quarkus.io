@@ -10,6 +10,7 @@ import javax.persistence.Id;
 public class CoreRelease extends BaseEntity {
     @Id
     public String version;
+    
     public boolean preRelease;
 
 }
