@@ -5,6 +5,9 @@ import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+/**
+ * Categories an extension belongs to
+ */
 @Entity
 public class Category extends BaseEntity {
     @Id
