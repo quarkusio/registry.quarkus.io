@@ -2,6 +2,7 @@ package io.quarkus.registry.model;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,6 +35,21 @@ public class PlatformRelease extends BaseEntity {
 
     public static class PlatformKey implements Serializable {
         public Platform platform;
+
+        @Override public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof PlatformKey)) {
+                return false;
+            }
+            PlatformKey that = (PlatformKey) o;
+            return Objects.equals(platform, that.platform) && Objects.equals(version, that.version);
+        }
+
+        @Override public int hashCode() {
+            return Objects.hash(platform, version);
+        }
 
         public String version;
     }

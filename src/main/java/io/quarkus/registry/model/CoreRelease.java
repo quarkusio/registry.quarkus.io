@@ -1,6 +1,7 @@
 package io.quarkus.registry.model;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -25,6 +26,23 @@ public class CoreRelease extends BaseEntity {
 
     @ManyToMany
     public List<ExtensionRelease> compatibleExtensions;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CoreRelease)) {
+            return false;
+        }
+        CoreRelease that = (CoreRelease) o;
+        return Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(version);
+    }
 
     public boolean isPreRelease() {
         return !version.endsWith("Final");
