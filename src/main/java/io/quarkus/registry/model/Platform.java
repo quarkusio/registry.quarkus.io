@@ -23,5 +23,4 @@ public class Platform extends BaseEntity {
 
     @OneToMany
     public List<PlatformRelease> releases;
-
 }
