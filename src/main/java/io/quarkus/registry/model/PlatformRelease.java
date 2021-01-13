@@ -3,13 +3,18 @@ package io.quarkus.registry.model;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
 public class PlatformRelease extends BaseEntity {
+    @Id
+    @GeneratedValue
+    public Long id;
 
     @ManyToOne
     public Platform platform;
@@ -19,8 +24,8 @@ public class PlatformRelease extends BaseEntity {
     @ManyToOne
     public CoreRelease quarkusVersion;
 
-    @OneToMany
-    public List<PlatformExtension> extensions;
+    @ManyToMany
+    public List<ExtensionRelease> extensions;
 
     public JsonNode metadata;
 }
