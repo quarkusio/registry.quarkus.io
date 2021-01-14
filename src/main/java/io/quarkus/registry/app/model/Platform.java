@@ -5,11 +5,14 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
+@Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
 public class Platform extends BaseEntity {
     public String groupId;
     public String artifactId;

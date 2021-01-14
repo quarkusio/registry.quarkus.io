@@ -3,11 +3,14 @@ package io.quarkus.registry.app.model;
 import java.util.Objects;
 
 import javax.persistence.Entity;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 /**
  * Categories an extension belongs to
  */
 @Entity
+@Table(indexes = { @Index(columnList = "name", unique = true) })
 public class Category extends BaseEntity {
     public String name;
     public String description;

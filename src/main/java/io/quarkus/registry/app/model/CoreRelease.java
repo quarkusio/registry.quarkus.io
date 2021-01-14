@@ -6,10 +6,12 @@ import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 
@@ -18,6 +20,7 @@ import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
+@Table(indexes = { @Index(columnList = "version", unique = true) })
 public class CoreRelease extends BaseEntity {
 
     public String version;
