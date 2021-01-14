@@ -1,16 +1,14 @@
-package io.quarkus.registry.model;
+package io.quarkus.registry.app.model;
 
 import java.util.Objects;
 
 import javax.persistence.Entity;
-import javax.persistence.Id;
 
 /**
  * Categories an extension belongs to
  */
 @Entity
 public class Category extends BaseEntity {
-    @Id
     public String name;
     public String description;
 

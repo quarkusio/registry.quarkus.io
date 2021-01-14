@@ -1,4 +1,4 @@
-package io.quarkus.registry.model;
+package io.quarkus.registry.app.model;
 
 import java.io.Serializable;
 import java.util.List;
@@ -6,22 +6,17 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
-@IdClass(PlatformRelease.PlatformKey.class)
 public class PlatformRelease extends BaseEntity {
 
-    @Id
     @ManyToOne
     public Platform platform;
 
-    @Id
     public String version;
 
     @ManyToOne
@@ -53,5 +48,4 @@ public class PlatformRelease extends BaseEntity {
 
         public String version;
     }
-
 }

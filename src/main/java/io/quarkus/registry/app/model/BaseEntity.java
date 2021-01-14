@@ -1,4 +1,4 @@
-package io.quarkus.registry.model;
+package io.quarkus.registry.app.model;
 
 import java.util.Date;
 
@@ -9,7 +9,7 @@ import javax.persistence.Version;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
@@ -22,7 +22,7 @@ import org.hibernate.annotations.TypeDef;
         typeClass = JsonNodeStringType.class,
         defaultForType = JsonNode.class)
 @MappedSuperclass
-public abstract class BaseEntity extends PanacheEntityBase {
+public abstract class BaseEntity extends PanacheEntity {
 
     @Version
     @ColumnDefault("0")

@@ -15,7 +15,7 @@
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <quarkus.version>1.11.0.CR1</quarkus.version>
+    <quarkus.version>1.11.0.Final</quarkus.version>
     <hibernate-types.version>2.10.2</hibernate-types.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
@@ -31,11 +31,11 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-<!--    <dependency>-->
-<!--      <groupId>io.quarkus</groupId>-->
-<!--      <artifactId>quarkus-devtools-common</artifactId>-->
-<!--      <version>${quarkus.version}</version>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-platform-descriptor-resolver-json</artifactId>
+      <version>${quarkus.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-jackson</artifactId>
@@ -47,6 +47,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jdbc-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jgit</artifactId>
     </dependency>
     <dependency>
       <groupId>com.vladmihalcea</groupId>

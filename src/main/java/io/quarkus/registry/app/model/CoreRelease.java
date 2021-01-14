@@ -1,4 +1,4 @@
-package io.quarkus.registry.model;
+package io.quarkus.registry.app.model;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +20,6 @@ import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
 public class CoreRelease extends BaseEntity {
 
-    @Id
     public String version;
 
     @ManyToOne

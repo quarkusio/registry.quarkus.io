@@ -1,4 +1,4 @@
-package io.quarkus.registry.endpoints;
+package io.quarkus.registry.app.endpoints;
 
 import javax.ws.rs.Path;
 
