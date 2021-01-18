@@ -32,9 +32,9 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-platform-descriptor-resolver-json</artifactId>
-      <version>${quarkus.version}</version>
+      <groupId>io.quarkiverse.mavenresolver</groupId>
+      <artifactId>quarkiverse-maven-resolver</artifactId>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -42,15 +42,15 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-hibernate-orm-panache</artifactId>
+      <artifactId>quarkus-resteasy-mutiny</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-postgresql</artifactId>
+      <artifactId>quarkus-hibernate-reactive-panache</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jgit</artifactId>
+      <artifactId>quarkus-reactive-pg-client</artifactId>
     </dependency>
     <dependency>
       <groupId>com.vladmihalcea</groupId>
