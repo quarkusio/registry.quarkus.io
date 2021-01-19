@@ -2,28 +2,28 @@ package io.quarkus.registry.app.model;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.StreamSupport;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
+import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
+import io.quarkus.hibernate.reactive.panache.runtime.JpaOperations;
 import io.smallrye.mutiny.Multi;
-import io.vertx.mutiny.pgclient.PgPool;
+import org.hibernate.reactive.mutiny.Mutiny;
 
 /**
  * Quarkus core releases
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
-@Table(indexes = { @Index(columnList = "version", unique = true) })
+//@Table(indexes = { @Index(columnList = "version", unique = true) })
 public class CoreRelease extends BaseEntity {
 
+    @Id
     @Column(nullable = false)
     public String version;
 
@@ -63,12 +63,11 @@ public class CoreRelease extends BaseEntity {
         return !version.endsWith("Final");
     }
 
-    public static Multi<String> findAllVersions(PgPool client) {
-        return client.query("SELECT version FROM core_release ORDER BY created_at DESC").execute()
-                // Create a Multi from the set of rows:
-                .onItem()
-                .transformToMulti(set -> Multi.createFrom().items(() -> StreamSupport.stream(set.spliterator(), false)))
-                // For each row return the first column
-                .onItem().transform(row -> row.get(String.class, 0));
+    public static Multi<String> findAllVersions() {
+        try (Mutiny.Session session = JpaOperations.getSession()) {
+            return session
+                    .createNamedQuery("CoreRelease.findAllVersions", String.class)
+                    .getResults();
+        }
     }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -14,6 +16,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Entity
 @Table(indexes = { @Index(columnList = "platform_id,version", unique = true) })
 public class PlatformRelease extends BaseEntity {
+
+    @Id
+    @GeneratedValue
+    public Long id;
 
     @ManyToOne
     public Platform platform;

@@ -5,7 +5,10 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -13,7 +16,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
 @Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
+@NamedQuery(name = "Platform.findByGroupIdAndArtifactId", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2")
 public class Platform extends BaseEntity {
+
+    @Id
+    @GeneratedValue
+    public Long id;
+
     public String groupId;
     public String artifactId;
 

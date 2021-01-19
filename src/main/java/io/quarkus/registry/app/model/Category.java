@@ -3,6 +3,8 @@ package io.quarkus.registry.app.model;
 import java.util.Objects;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
@@ -12,6 +14,10 @@ import javax.persistence.Table;
 @Entity
 @Table(indexes = { @Index(columnList = "name", unique = true) })
 public class Category extends BaseEntity {
+    @Id
+    @GeneratedValue
+    public Long id;
+
     public String name;
     public String description;
 
