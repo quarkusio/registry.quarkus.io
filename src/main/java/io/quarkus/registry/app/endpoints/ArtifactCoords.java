@@ -10,6 +10,6 @@ public class ArtifactCoords {
     public String groupId;
 
     @NotNull
-    @FormParam("groupId")
+    @FormParam("artifactId")
     public String artifactId;
 }
