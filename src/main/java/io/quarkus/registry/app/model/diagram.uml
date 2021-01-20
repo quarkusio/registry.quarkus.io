@@ -5,15 +5,17 @@
   <nodes>
     <node x="318.0" y="0.0">io.quarkus.registry.app.model.ExtensionRelease</node>
     <node x="0.0" y="0.0">io.quarkus.registry.app.model.Extension</node>
-    <node x="0.0" y="262.0">io.quarkus.registry.app.model.PlatformRelease</node>
-    <node x="416.0" y="472.0">io.quarkus.registry.app.model.Platform</node>
-    <node x="0.0" y="472.0">io.quarkus.registry.app.model.CoreRelease</node>
-    <node x="0.0" y="656.0">io.quarkus.registry.app.model.Category</node>
+    <node x="0.0" y="288.0">io.quarkus.registry.app.model.PlatformRelease</node>
+    <node x="337.0" y="288.0">io.quarkus.registry.app.model.Platform</node>
+    <node x="0.0" y="524.0">io.quarkus.registry.app.model.CoreRelease</node>
+    <node x="416.0" y="524.0">io.quarkus.registry.app.model.Category</node>
   </nodes>
   <notes />
   <edges />
-  <settings layout="Hierarchic Group" zoom="1.0" x="534.0" y="190.5" />
-  <SelectedNodes />
+  <settings layout="Hierarchic Group" zoom="1.0" x="534.0" y="191.0" />
+  <SelectedNodes>
+    <node>io.quarkus.registry.app.model.ExtensionRelease</node>
+  </SelectedNodes>
   <Categories>
     <Category>Fields</Category>
   </Categories>

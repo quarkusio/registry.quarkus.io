@@ -35,8 +35,8 @@ public class ExtensionRelease extends BaseEntity {
     @ManyToMany
     public List<PlatformRelease> platforms;
 
-    @Column(columnDefinition = "json")
-    public JsonNode metadata;
+//    @Column(columnDefinition = "json")
+//    public JsonNode metadata;
 
     @Override
     public boolean equals(Object o) {

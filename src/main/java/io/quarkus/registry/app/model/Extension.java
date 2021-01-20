@@ -3,6 +3,7 @@ package io.quarkus.registry.app.model;
 import java.util.List;
 import java.util.Objects;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.smallrye.mutiny.Uni;
 
 @Entity
 @Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
@@ -37,7 +39,7 @@ public class Extension extends BaseEntity {
     @Column(columnDefinition = "json")
     public JsonNode metadata;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.PERSIST)
     public List<ExtensionRelease> releases;
 
     @Override
@@ -55,6 +57,10 @@ public class Extension extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(groupId, artifactId);
+    }
+
+    public static Uni<Extension> findByGroupIdAndArtifactId(String groupId, String artifactId) {
+        return Extension.find("#Extension.findByGroupIdAndArtifactId", groupId, artifactId).singleResult();
     }
 
 }

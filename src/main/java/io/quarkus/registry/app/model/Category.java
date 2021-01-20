@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
+import io.smallrye.mutiny.Uni;
+
 /**
  * Categories an extension belongs to
  */
@@ -38,4 +40,7 @@ public class Category extends BaseEntity {
         return Objects.hash(name);
     }
 
+    public static Uni<Category> findByName(String name) {
+        return Category.find("name = ?1", name).singleResult();
+    }
 }

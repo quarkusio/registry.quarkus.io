@@ -26,10 +26,13 @@ public class RegistryEndpoint {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Uni<Response> addPlatform(@Valid @BeanParam ArtifactCoords coords) {
         return Platform
-                .find("#Platform.findByGroupIdAndArtifactId", coords.groupId, coords.artifactId)
-                .singleResult()
+                .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
                 .onItem().transform(e -> Response.status(Response.Status.CONFLICT).build())
-                .onFailure(NoResultException.class).recoverWithItem(() -> Response.noContent().build());
+                .onFailure(NoResultException.class)
+                .recoverWithUni(() ->
+                        registryService.includeLatestPlatform(coords.groupId, coords.artifactId)
+                                .onItem()
+                                .transform(e -> Response.ok(e).build()));
 
     }
 
@@ -38,12 +41,11 @@ public class RegistryEndpoint {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Uni<Response> addExtension(@Valid @BeanParam ArtifactCoords coords) {
         return Extension
-                .find("#Extension.findByGroupIdAndArtifactId", coords.groupId, coords.artifactId)
-                .singleResult()
+                .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
                 .onItem().transform(e -> Response.status(Response.Status.CONFLICT).build())
                 .onFailure(NoResultException.class)
                 .recoverWithUni(() ->
-                        registryService.includeExtension(coords.groupId, coords.artifactId)
+                        registryService.includeLatestExtension(coords.groupId, coords.artifactId)
                                 .onItem()
                                 .transform(e -> Response.ok(e).build()));
     }
