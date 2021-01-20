@@ -1,5 +1,6 @@
 package io.quarkus.registry.app.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -37,36 +38,56 @@ public class RegistryService {
 
         Uni<?> result = platform.persistAndFlush();
         for (io.quarkus.dependencies.Category cat : descriptor.getCategories()) {
-            // Insert Category if doesn't exist
-            result = result.chain(() -> Category.findByName(cat.getName())
-                    .onFailure().recoverWithUni(() -> {
-                        Category category = new Category();
-                        category.name = cat.getName();
-                        category.description = cat.getDescription();
-                        return category.persistAndFlush().onItem().castTo(Category.class);
-                    }));
+            result = result.chain(() -> createCategory(cat));
         }
         // Insert extensions
-//        for (io.quarkus.dependencies.Extension ext : descriptor.getExtensions()) {
-//            result = result.chain(() -> Extension.findByGroupIdAndArtifactId(ext.getGroupId(), ext.getArtifactId())
-//                    .onFailure(NoResultException.class)
-//                    .recoverWithUni(() -> {
-//                        final Extension extension = new Extension();
-//                        extension.groupId = groupId;
-//                        extension.artifactId = artifactId;
-//                        extension.name = ext.getName();
-//                        extension.description = ext.getDescription();
-//
-//                        ExtensionRelease extensionRelease = new ExtensionRelease();
-//                        extensionRelease.extension = extension;
-//                        extensionRelease.version = ext.getVersion();
-//                        extensionRelease.platforms = Collections.singletonList(platformRelease);
-//                        extension.releases = Collections.singletonList(extensionRelease);
-//
-//                        return extension.persistAndFlush().onItem().castTo(Extension.class);
-//                    }));
-//        }
+        for (io.quarkus.dependencies.Extension ext : descriptor.getExtensions()) {
+            result = result.chain(() -> createExtension(ext, platformRelease));
+        }
         return result.onItem().castTo(Platform.class);
+    }
+
+    private Uni<Category> createCategory(io.quarkus.dependencies.Category cat) {
+        // Insert Category if doesn't exist
+        return Category.findByName(cat.getName())
+                .onFailure().recoverWithUni(() -> {
+                    Category category = new Category();
+                    category.name = cat.getName();
+                    category.description = cat.getDescription();
+                    return category.persistAndFlush().onItem().castTo(Category.class);
+                });
+    }
+
+    private Uni<Extension> createExtension(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
+        return Extension.findByGroupIdAndArtifactId(ext.getGroupId(), ext.getArtifactId())
+                .onFailure(NoResultException.class)
+                .recoverWithUni(() -> {
+                    final Extension newExtension = new Extension();
+                    newExtension.groupId = ext.getGroupId();
+                    newExtension.artifactId = ext.getArtifactId();
+                    newExtension.name = ext.getName();
+                    newExtension.description = ext.getDescription();
+                    return newExtension.persistAndFlush().onItem().castTo(Extension.class);
+                }).onItem().transformToUni(extension ->
+                        ExtensionRelease.findByExtensionAndVersion(extension, ext.getVersion())
+                                .onFailure(NoResultException.class)
+                                .recoverWithUni(() -> {
+                                    ExtensionRelease extensionRelease = new ExtensionRelease();
+                                    extensionRelease.extension = extension;
+                                    extensionRelease.version = ext.getVersion();
+                                    extensionRelease.platforms.add(platformRelease);
+                                    return extensionRelease.persistAndFlush().onItem().castTo(ExtensionRelease.class);
+                                })
+                                .onItem()
+                                .transform(extensionRelease -> {
+                                    // Add release to extension
+                                    if (extension.releases == null) {
+                                        extension.releases = new ArrayList<>();
+                                    }
+                                    extension.releases.add(extensionRelease);
+                                    return extension.persistAndFlush().onItem().castTo(Extension.class);
+                                }).onItem().castTo(Extension.class)
+                );
     }
 
     public Uni<Extension> includeLatestExtension(String groupId, String artifactId) {

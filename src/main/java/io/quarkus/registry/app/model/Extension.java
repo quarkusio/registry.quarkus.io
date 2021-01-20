@@ -1,5 +1,6 @@
 package io.quarkus.registry.app.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,7 +41,7 @@ public class Extension extends BaseEntity {
     public JsonNode metadata;
 
     @OneToMany(cascade = CascadeType.PERSIST)
-    public List<ExtensionRelease> releases;
+    public List<ExtensionRelease> releases = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

@@ -1,5 +1,6 @@
 package io.quarkus.registry.app.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,6 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.smallrye.mutiny.Uni;
 
 @Entity
 @Table(indexes = { @Index(columnList = "extension_id,version", unique = true) })
@@ -33,10 +35,10 @@ public class ExtensionRelease extends BaseEntity {
     public List<CoreRelease> compatibleReleases;
 
     @ManyToMany
-    public List<PlatformRelease> platforms;
+    public List<PlatformRelease> platforms = new ArrayList<>();
 
-//    @Column(columnDefinition = "json")
-//    public JsonNode metadata;
+    @Column(columnDefinition = "json")
+    public JsonNode metadata;
 
     @Override
     public boolean equals(Object o) {
@@ -53,5 +55,9 @@ public class ExtensionRelease extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(version, extension);
+    }
+
+    public static Uni<ExtensionRelease> findByExtensionAndVersion(Extension extension, String version) {
+        return ExtensionRelease.find("extension = ?1 and version =?2", extension, version).singleResult();
     }
 }
