@@ -61,7 +61,7 @@ public class Extension extends BaseEntity {
     }
 
     public static Uni<Extension> findByGroupIdAndArtifactId(String groupId, String artifactId) {
-        return Extension.find("#Extension.findByGroupIdAndArtifactId", groupId, artifactId).singleResult();
+        return Extension.find("#Extension.findByGroupIdAndArtifactId", groupId, artifactId).firstResult();
     }
 
 }

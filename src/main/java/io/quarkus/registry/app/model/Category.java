@@ -41,6 +41,6 @@ public class Category extends BaseEntity {
     }
 
     public static Uni<Category> findByName(String name) {
-        return Category.find("name = ?1", name).singleResult();
+        return Category.find("name = ?1", name).firstResult();
     }
 }

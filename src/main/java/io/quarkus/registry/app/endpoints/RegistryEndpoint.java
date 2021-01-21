@@ -24,7 +24,7 @@ public class RegistryEndpoint {
     @POST
     @Path("/platform")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Uni<Response> addPlatform(@Valid @BeanParam ArtifactCoords coords) {
+    public Uni<Response> addPlatform(@BeanParam ArtifactCoords coords) {
         return Platform
                 .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
                 .onItem().transform(e -> Response.status(Response.Status.CONFLICT).build())
@@ -39,7 +39,7 @@ public class RegistryEndpoint {
     @POST
     @Path("/extension")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Uni<Response> addExtension(@Valid @BeanParam ArtifactCoords coords) {
+    public Uni<Response> addExtension(@BeanParam ArtifactCoords coords) {
         return Extension
                 .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
                 .onItem().transform(e -> Response.status(Response.Status.CONFLICT).build())

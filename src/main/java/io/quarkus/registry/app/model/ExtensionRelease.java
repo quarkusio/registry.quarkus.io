@@ -58,6 +58,6 @@ public class ExtensionRelease extends BaseEntity {
     }
 
     public static Uni<ExtensionRelease> findByExtensionAndVersion(Extension extension, String version) {
-        return ExtensionRelease.find("extension = ?1 and version =?2", extension, version).singleResult();
+        return ExtensionRelease.find("extension = ?1 and version =?2", extension, version).firstResult();
     }
 }
