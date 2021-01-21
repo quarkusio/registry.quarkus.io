@@ -16,7 +16,7 @@ import io.smallrye.mutiny.Uni;
  * Categories an extension belongs to
  */
 @Entity
-@Table(indexes = { @Index(columnList = "name", unique = true) })
+@Table(indexes = { @Index(name="Category_NaturalId", columnList = "name", unique = true) })
 public class Category extends BaseEntity {
 
     public String name;

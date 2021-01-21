@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 
 @Entity
-@Table(indexes = { @Index(columnList = "extension_id,version", unique = true) })
+@Table(indexes = { @Index(name="ExtensionRelease_NaturalId",columnList = "extension_id,version", unique = true) })
 public class ExtensionRelease extends BaseEntity {
 
     public String version;

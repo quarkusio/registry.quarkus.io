@@ -15,7 +15,7 @@ import javax.persistence.Table;
 import io.smallrye.mutiny.Uni;
 
 @Entity
-@Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
+@Table(indexes = { @Index(name="Extension_NaturalId", columnList = "groupId,artifactId", unique = true) })
 @NamedQuery(name = "Extension.findByGroupIdAndArtifactId", query = "select e from Extension e where e.groupId = ?1 and e.artifactId = ?2")
 public class Extension extends BaseEntity {
 

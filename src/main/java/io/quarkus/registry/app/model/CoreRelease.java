@@ -21,7 +21,7 @@ import org.hibernate.reactive.mutiny.Mutiny;
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
-@Table(indexes = { @Index(columnList = "version", unique = true) })
+@Table(indexes = { @Index(name="CoreRelease_NaturalId", columnList = "version", unique = true) })
 public class CoreRelease extends BaseEntity {
 
     @Column(nullable = false)

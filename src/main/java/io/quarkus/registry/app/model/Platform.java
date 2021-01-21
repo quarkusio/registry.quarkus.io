@@ -15,7 +15,7 @@ import javax.persistence.Table;
 import io.smallrye.mutiny.Uni;
 
 @Entity
-@Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
+@Table(indexes = { @Index(name="Platform_NaturalId", columnList = "groupId,artifactId", unique = true) })
 @NamedQueries({
         @NamedQuery(name = "Platform.findByGroupIdAndArtifactId", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2")
 })

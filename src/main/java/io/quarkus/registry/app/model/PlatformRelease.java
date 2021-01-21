@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
-@Table(indexes = { @Index(columnList = "platform_id,version", unique = true) })
+@Table(indexes = { @Index(name="PlatformRelease_NaturalId", columnList = "platform_id,version", unique = true) })
 public class PlatformRelease extends BaseEntity {
 
     @ManyToOne
