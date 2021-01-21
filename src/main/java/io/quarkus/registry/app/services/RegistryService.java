@@ -1,8 +1,6 @@
 package io.quarkus.registry.app.services;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -13,9 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
-import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
-import io.quarkus.registry.app.model.PlatformRelease;
 import io.smallrye.mutiny.Uni;
 
 @ApplicationScoped
@@ -31,19 +27,14 @@ public class RegistryService {
         this.objectMapper = objectMapper;
     }
 
-    public Uni<Platform> includeLatestPlatform(String groupId, String artifactId) {
-        String latestVersion = resolver.resolveLatestVersion(groupId, artifactId);
+    public Uni<Platform> includePlatform(String groupId, String artifactId, String version) {
         QuarkusPlatformDescriptor descriptor = resolver
-                .resolvePlatformDescriptor(groupId, artifactId, latestVersion);
+                .resolvePlatformDescriptor(groupId, artifactId, version);
         final Platform platform = new Platform();
 
         platform.groupId = groupId;
         platform.artifactId = artifactId;
-
-        PlatformRelease platformRelease = new PlatformRelease();
-        platformRelease.version = latestVersion;
-        platformRelease.platform = platform;
-        platform.releases = Collections.singletonList(platformRelease);
+        platform.version = version;
 
         Uni<?> result = platform.persistAndFlush();
         for (io.quarkus.dependencies.Category cat : descriptor.getCategories()) {
@@ -51,7 +42,7 @@ public class RegistryService {
         }
         // Insert extensions
         for (io.quarkus.dependencies.Extension ext : descriptor.getExtensions()) {
-            result = result.chain(() -> createExtension(ext, platformRelease));
+            result = result.chain(() -> createExtension(ext, platform));
         }
         return result.onItem().transform(x -> platform);
     }
@@ -68,56 +59,37 @@ public class RegistryService {
                 });
     }
 
-    private Uni<Extension> createExtension(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
-        Supplier<Uni<? extends Extension>> createNewExtension = () -> {
-            Extension newExtension = new Extension();
-            newExtension.groupId = ext.getGroupId();
-            newExtension.artifactId = ext.getArtifactId();
-            newExtension.name = ext.getName();
-            newExtension.description = ext.getDescription();
-            return newExtension.persistAndFlush()
-                    .onItem().transform(x -> newExtension);
-        };
-        return Extension.findByGroupIdAndArtifactId(ext.getGroupId(), ext.getArtifactId())
-                .onItem().ifNull().switchTo(createNewExtension)
-                .onItem().transformToUni(extension ->
-                        ExtensionRelease.findByExtensionAndVersion(extension, ext.getVersion())
-                                .onItem().ifNull()
-                                .switchTo(() -> {
-                                    ExtensionRelease extensionRelease = new ExtensionRelease();
-                                    extensionRelease.extension = extension;
-                                    extensionRelease.version = ext.getVersion();
-                                    extensionRelease.metadata = toJsonNode(ext.getMetadata());
-                                    extensionRelease.platforms.add(platformRelease);
-                                    return extensionRelease.persistAndFlush()
-                                            .onItem().transform(x -> extensionRelease);
-                                })
-                                .onItem()
-                                .transform(extensionRelease -> {
-                                    // Add release to extension
-                                    extension.releases.add(extensionRelease);
-                                    return extension.persistAndFlush();
-                                }).onItem().transform(x -> extension)
-                );
+    private Uni<Extension> createExtension(io.quarkus.dependencies.Extension ext, Platform platform) {
+        return Extension.findByGAV(ext.getGroupId(), ext.getArtifactId(), ext.getVersion())
+                .onItem().ifNull().switchTo(() -> {
+                    Extension newExtension = new Extension();
+                    newExtension.groupId = ext.getGroupId();
+                    newExtension.artifactId = ext.getArtifactId();
+                    newExtension.version = ext.getVersion();
+                    newExtension.name = ext.getName();
+                    newExtension.description = ext.getDescription();
+                    newExtension.metadata = toJsonNode(ext.getMetadata());
+                    newExtension.platforms.add(platform);
+                    return newExtension.persistAndFlush()
+                            .onItem().transform(x -> newExtension);
+                });
     }
 
-    public Uni<Extension> includeLatestExtension(String groupId, String artifactId) {
-        String latestVersion = resolver.resolveLatestVersion(groupId, artifactId);
-        JsonNode jsonNode = resolver.readExtensionYaml(groupId, artifactId, latestVersion);
+    public Uni<Extension> includeExtension(String groupId, String artifactId, String version) {
+        JsonNode jsonNode = resolver.readExtensionYaml(groupId, artifactId, version);
+        return Extension.findByGAV(groupId, artifactId, version)
+                .onItem().ifNull().switchTo(() -> {
+                    Extension newExtension = new Extension();
+                    newExtension.groupId = groupId;
+                    newExtension.artifactId = artifactId;
+                    newExtension.version = version;
+                    newExtension.name = jsonNode.get("name").asText();
+                    newExtension.description = jsonNode.get("description").asText();
+                    newExtension.metadata = jsonNode.get("metadata");
 
-        final Extension extension = new Extension();
-        extension.groupId = groupId;
-        extension.artifactId = artifactId;
-        extension.name = jsonNode.get("name").asText();
-        extension.description = jsonNode.get("description").asText();
-
-        ExtensionRelease extensionRelease = new ExtensionRelease();
-        extensionRelease.extension = extension;
-        extensionRelease.version = latestVersion;
-        extensionRelease.metadata = jsonNode.get("metadata");
-        extension.releases = Collections.singletonList(extensionRelease);
-
-        return extension.persistAndFlush().onItem().transform(x -> extension);
+                    return newExtension.persistAndFlush()
+                            .onItem().transform(x -> newExtension);
+                });
     }
 
     private JsonNode toJsonNode(Map<String, Object> metadata) {

@@ -34,7 +34,7 @@ public class CoreRelease extends BaseEntity {
     public List<CoreRelease> minorReleases;
 
     @ManyToMany
-    public List<ExtensionRelease> compatibleExtensions;
+    public List<Extension> compatibleExtensions;
 
     @Override
     public boolean equals(Object o) {

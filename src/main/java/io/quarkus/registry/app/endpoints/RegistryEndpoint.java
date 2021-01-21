@@ -10,11 +10,15 @@ import javax.ws.rs.core.Response;
 
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.services.ArtifactResolverService;
 import io.quarkus.registry.app.services.RegistryService;
 import io.smallrye.mutiny.Uni;
 
 @Path("/registry")
 public class RegistryEndpoint {
+
+    @Inject
+    ArtifactResolverService artifactResolverService;
 
     @Inject
     RegistryService registryService;
@@ -23,10 +27,15 @@ public class RegistryEndpoint {
     @Path("/platform")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Uni<Response> addPlatform(@BeanParam ArtifactCoords coords) {
-        return Platform
-                .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
+        final String version;
+        if (coords.version == null) {
+            version = artifactResolverService.resolveLatestVersion(coords.groupId, coords.artifactId);
+        } else {
+            version = coords.version;
+        }
+        return Platform.findByGAV(coords.groupId, coords.artifactId, version)
                 .onItem().ifNull().switchTo(() -> registryService
-                        .includeLatestPlatform(coords.groupId, coords.artifactId))
+                        .includePlatform(coords.groupId, coords.artifactId, version))
                 .onItem().transform(e -> Response.ok(e).build());
     }
 
@@ -34,9 +43,16 @@ public class RegistryEndpoint {
     @Path("/extension")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Uni<Response> addExtension(@BeanParam ArtifactCoords coords) {
+        final String version;
+        if (coords.version == null) {
+            version = artifactResolverService.resolveLatestVersion(coords.groupId, coords.artifactId);
+        } else {
+            version = coords.version;
+        }
         return Extension
-                .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
-                .onItem().ifNull().switchTo(() -> registryService.includeLatestExtension(coords.groupId, coords.artifactId))
+                .findByGAV(coords.groupId, coords.artifactId, version)
+                .onItem().ifNull()
+                .switchTo(() -> registryService.includeExtension(coords.groupId, coords.artifactId, version))
                 .onItem().transform(e -> Response.ok(e).build());
     }
 }

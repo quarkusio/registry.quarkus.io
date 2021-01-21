@@ -1,31 +1,46 @@
 package io.quarkus.registry.app.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 
 @Entity
-@Table(indexes = { @Index(name="Platform_NaturalId", columnList = "groupId,artifactId", unique = true) })
+@Table(indexes = { @Index(name = "Platform_NaturalId", columnList = "groupId,artifactId,version", unique = true) })
 @NamedQueries({
-        @NamedQuery(name = "Platform.findByGroupIdAndArtifactId", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2")
+        @NamedQuery(name = "Platform.findByGAV", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2 and p.version= ?3")
 })
 public class Platform extends BaseEntity {
 
+    @Column(nullable = false)
     public String groupId;
+
+    @Column(nullable = false)
     public String artifactId;
 
-    @OneToMany(cascade = CascadeType.PERSIST)
-    public List<PlatformRelease> releases = new ArrayList<>();
+    @Column(nullable = false)
+    public String version;
+
+    @ManyToOne
+    public CoreRelease quarkusVersion;
+
+    @ManyToMany
+    @JsonIgnore
+    public List<Extension> extensions;
+
+    @Column(columnDefinition = "json")
+    public JsonNode metadata;
 
     @Override
     public boolean equals(Object o) {
@@ -36,15 +51,17 @@ public class Platform extends BaseEntity {
             return false;
         }
         Platform platform = (Platform) o;
-        return Objects.equals(groupId, platform.groupId) && Objects.equals(artifactId, platform.artifactId);
+        return Objects.equals(groupId, platform.groupId) &&
+                Objects.equals(artifactId, platform.artifactId) &&
+                Objects.equals(version, platform.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupId, artifactId);
+        return Objects.hash(groupId, artifactId, version);
     }
 
-    public static Uni<Platform> findByGroupIdAndArtifactId(String groupId, String artifactId) {
-        return Platform.find("#Platform.findByGroupIdAndArtifactId", groupId, artifactId).firstResult();
+    public static Uni<Platform> findByGAV(String groupId, String artifactId, String version) {
+        return Platform.find("#Platform.findByGAV", groupId, artifactId, version).firstResult();
     }
 }
