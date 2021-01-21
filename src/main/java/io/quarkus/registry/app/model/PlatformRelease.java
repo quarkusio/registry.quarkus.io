@@ -11,6 +11,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
@@ -22,6 +23,7 @@ public class PlatformRelease extends BaseEntity {
     public Long id;
 
     @ManyToOne
+    @JsonIgnore
     public Platform platform;
 
     public String version;
@@ -30,6 +32,7 @@ public class PlatformRelease extends BaseEntity {
     public CoreRelease quarkusVersion;
 
     @ManyToMany
+    @JsonIgnore
     public List<ExtensionRelease> extensions;
 
     @Column(columnDefinition = "json")

@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.services;
 
 import java.util.Collections;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -42,7 +43,7 @@ public class RegistryService {
         for (io.quarkus.dependencies.Extension ext : descriptor.getExtensions()) {
             result = result.chain(() -> createExtension(ext, platformRelease));
         }
-        return result.onItem().castTo(Platform.class);
+        return result.onItem().transform(x->platform);
     }
 
     private Uni<Category> createCategory(io.quarkus.dependencies.Category cat) {
@@ -52,21 +53,23 @@ public class RegistryService {
                     Category category = new Category();
                     category.name = cat.getName();
                     category.description = cat.getDescription();
-                    return category.persistAndFlush().onItem().castTo(Category.class);
+                    return category.persistAndFlush().onItem().transform(x -> category);
                 });
     }
 
     private Uni<Extension> createExtension(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
+        Supplier<Uni<? extends Extension>> createNewExtension = () -> {
+            final Extension newExtension = new Extension();
+            newExtension.groupId = ext.getGroupId();
+            newExtension.artifactId = ext.getArtifactId();
+            newExtension.name = ext.getName();
+            newExtension.description = ext.getDescription();
+            return newExtension.persistAndFlush()
+                    .onItem().transform(x -> newExtension);
+        };
         return Extension.findByGroupIdAndArtifactId(ext.getGroupId(), ext.getArtifactId())
-                .onItem().ifNull()
-                .switchTo(() -> {
-                    Extension newExtension = new Extension();
-                    newExtension.groupId = ext.getGroupId();
-                    newExtension.artifactId = ext.getArtifactId();
-                    newExtension.name = ext.getName();
-                    newExtension.description = ext.getDescription();
-                    return newExtension.persistAndFlush().onItem().castTo(Extension.class);
-                }).onItem().call(extension ->
+                .onItem().ifNull().switchTo(createNewExtension)
+                .onItem().transformToUni(extension ->
                         ExtensionRelease.findByExtensionAndVersion(extension, ext.getVersion())
                                 .onItem().ifNull()
                                 .switchTo(() -> {
@@ -74,14 +77,15 @@ public class RegistryService {
                                     extensionRelease.extension = extension;
                                     extensionRelease.version = ext.getVersion();
                                     extensionRelease.platforms.add(platformRelease);
-                                    return extensionRelease.persistAndFlush().onItem().castTo(ExtensionRelease.class);
+                                    return extensionRelease.persistAndFlush()
+                                            .onItem().transform(x -> extensionRelease);
                                 })
-                                .onItem().ifNotNull()
-                                .call(extensionRelease -> {
+                                .onItem()
+                                .transform(extensionRelease -> {
                                     // Add release to extension
                                     extension.releases.add(extensionRelease);
                                     return extension.persistAndFlush();
-                                })
+                                }).onItem().transform(x -> extension)
                 );
     }
 
@@ -101,6 +105,6 @@ public class RegistryService {
         extensionRelease.version = latestVersion;
         extension.releases = Collections.singletonList(extensionRelease);
 
-        return extension.persistAndFlush().onItem().castTo(Extension.class);
+        return extension.persistAndFlush().onItem().transform(x -> extension);
     }
 }
