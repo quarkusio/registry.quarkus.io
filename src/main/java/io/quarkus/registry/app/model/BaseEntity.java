@@ -9,7 +9,7 @@ import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
-import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
+import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.TypeDef;
 
@@ -20,7 +20,7 @@ import org.hibernate.annotations.TypeDef;
         typeClass = JsonNodeStringType.class,
         defaultForType = JsonNode.class)
 @MappedSuperclass
-public abstract class BaseEntity extends PanacheEntityBase {
+public abstract class BaseEntity extends PanacheEntity {
 
     //    @Version
     //    @ColumnDefault("0")

@@ -6,8 +6,6 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -19,9 +17,6 @@ import io.smallrye.mutiny.Uni;
 @Entity
 @Table(indexes = { @Index(columnList = "extension_id,version", unique = true) })
 public class ExtensionRelease extends BaseEntity {
-    @Id
-    @GeneratedValue
-    public Long id;
 
     public String version;
 

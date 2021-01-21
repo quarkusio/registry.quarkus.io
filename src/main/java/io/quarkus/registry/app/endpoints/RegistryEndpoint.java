@@ -1,8 +1,6 @@
 package io.quarkus.registry.app.endpoints;
 
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.validation.Valid;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -27,13 +25,9 @@ public class RegistryEndpoint {
     public Uni<Response> addPlatform(@BeanParam ArtifactCoords coords) {
         return Platform
                 .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
-                .onItem().transform(e -> Response.status(Response.Status.CONFLICT).build())
-                .onFailure(NoResultException.class)
-                .recoverWithUni(() ->
-                        registryService.includeLatestPlatform(coords.groupId, coords.artifactId)
-                                .onItem()
-                                .transform(e -> Response.ok(e).build()));
-
+                .onItem().ifNull().switchTo(() -> registryService
+                        .includeLatestPlatform(coords.groupId, coords.artifactId))
+                .onItem().transform(e -> Response.ok(e).build());
     }
 
     @POST
@@ -42,11 +36,7 @@ public class RegistryEndpoint {
     public Uni<Response> addExtension(@BeanParam ArtifactCoords coords) {
         return Extension
                 .findByGroupIdAndArtifactId(coords.groupId, coords.artifactId)
-                .onItem().transform(e -> Response.status(Response.Status.CONFLICT).build())
-                .onFailure(NoResultException.class)
-                .recoverWithUni(() ->
-                        registryService.includeLatestExtension(coords.groupId, coords.artifactId)
-                                .onItem()
-                                .transform(e -> Response.ok(e).build()));
+                .onItem().ifNull().switchTo(() -> registryService.includeLatestExtension(coords.groupId, coords.artifactId))
+                .onItem().transform(e -> Response.ok(e).build());
     }
 }

@@ -5,11 +5,12 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import io.quarkus.hibernate.reactive.panache.runtime.JpaOperations;
 import io.smallrye.mutiny.Multi;
@@ -20,10 +21,9 @@ import org.hibernate.reactive.mutiny.Mutiny;
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
-//@Table(indexes = { @Index(columnList = "version", unique = true) })
+@Table(indexes = { @Index(columnList = "version", unique = true) })
 public class CoreRelease extends BaseEntity {
 
-    @Id
     @Column(nullable = false)
     public String version;
 

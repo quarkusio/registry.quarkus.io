@@ -7,8 +7,6 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -20,9 +18,6 @@ import io.smallrye.mutiny.Uni;
 @Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
 @NamedQuery(name = "Extension.findByGroupIdAndArtifactId", query = "select e from Extension e where e.groupId = ?1 and e.artifactId = ?2")
 public class Extension extends BaseEntity {
-    @Id
-    @GeneratedValue
-    public Long id;
 
     public String groupId;
     public String artifactId;

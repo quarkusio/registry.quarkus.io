@@ -14,4 +14,8 @@ public class ArtifactCoords {
     @NotNull
     @FormParam("artifactId")
     public String artifactId;
+
+    @FormParam("version")
+    public String version;
+
 }

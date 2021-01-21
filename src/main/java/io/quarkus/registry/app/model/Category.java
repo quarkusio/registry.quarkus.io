@@ -18,9 +18,6 @@ import io.smallrye.mutiny.Uni;
 @Entity
 @Table(indexes = { @Index(columnList = "name", unique = true) })
 public class Category extends BaseEntity {
-    @Id
-    @GeneratedValue
-    public Long id;
 
     public String name;
     public String description;

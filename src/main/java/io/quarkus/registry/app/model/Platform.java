@@ -1,13 +1,13 @@
 package io.quarkus.registry.app.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -16,21 +16,16 @@ import io.smallrye.mutiny.Uni;
 
 @Entity
 @Table(indexes = { @Index(columnList = "groupId,artifactId", unique = true) })
-@NamedQuery(name = "Platform.findByGroupIdAndArtifactId", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2")
+@NamedQueries({
+        @NamedQuery(name = "Platform.findByGroupIdAndArtifactId", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2")
+})
 public class Platform extends BaseEntity {
-
-    @Id
-    @GeneratedValue
-    public Long id;
 
     public String groupId;
     public String artifactId;
 
     @OneToMany(cascade = CascadeType.PERSIST)
-    public List<PlatformRelease> releases;
-
-    //    @Column(columnDefinition = "json")
-    //    public JsonNode metadata;
+    public List<PlatformRelease> releases = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
@@ -50,6 +45,6 @@ public class Platform extends BaseEntity {
     }
 
     public static Uni<Platform> findByGroupIdAndArtifactId(String groupId, String artifactId) {
-        return Platform.find("#Platform.findByGroupIdAndArtifactId", groupId, artifactId).singleResult();
+        return Platform.find("#Platform.findByGroupIdAndArtifactId", groupId, artifactId).firstResult();
     }
 }
