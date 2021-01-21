@@ -10,12 +10,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 
 @Entity
@@ -33,12 +31,6 @@ public class Extension extends BaseEntity {
     public String name;
 
     public String description;
-
-    @ManyToOne
-    public Category category;
-
-    @Column(columnDefinition = "json")
-    public JsonNode metadata;
 
     @OneToMany(cascade = CascadeType.PERSIST)
     public List<ExtensionRelease> releases = new ArrayList<>();

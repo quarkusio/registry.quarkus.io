@@ -2,12 +2,14 @@ package io.quarkus.registry.app.model;
 
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 
 /**
@@ -22,6 +24,9 @@ public class Category extends BaseEntity {
 
     public String name;
     public String description;
+
+    @Column(columnDefinition = "json")
+    public JsonNode metadata;
 
     @Override
     public boolean equals(Object o) {

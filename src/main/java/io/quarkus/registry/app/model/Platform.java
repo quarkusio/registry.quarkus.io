@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -13,7 +12,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.smallrye.mutiny.Uni;
 
 @Entity
@@ -31,8 +29,8 @@ public class Platform extends BaseEntity {
     @OneToMany(cascade = CascadeType.PERSIST)
     public List<PlatformRelease> releases;
 
-    @Column(columnDefinition = "json")
-    public JsonNode metadata;
+    //    @Column(columnDefinition = "json")
+    //    public JsonNode metadata;
 
     @Override
     public boolean equals(Object o) {

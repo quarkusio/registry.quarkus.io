@@ -1,12 +1,15 @@
 package io.quarkus.registry.app.services;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
@@ -18,8 +21,15 @@ import io.smallrye.mutiny.Uni;
 @ApplicationScoped
 public class RegistryService {
 
+    private final ArtifactResolverService resolver;
+
+    private final ObjectMapper objectMapper;
+
     @Inject
-    ArtifactResolverService resolver;
+    public RegistryService(ArtifactResolverService resolver, ObjectMapper objectMapper) {
+        this.resolver = resolver;
+        this.objectMapper = objectMapper;
+    }
 
     public Uni<Platform> includeLatestPlatform(String groupId, String artifactId) {
         String latestVersion = resolver.resolveLatestVersion(groupId, artifactId);
@@ -43,7 +53,7 @@ public class RegistryService {
         for (io.quarkus.dependencies.Extension ext : descriptor.getExtensions()) {
             result = result.chain(() -> createExtension(ext, platformRelease));
         }
-        return result.onItem().transform(x->platform);
+        return result.onItem().transform(x -> platform);
     }
 
     private Uni<Category> createCategory(io.quarkus.dependencies.Category cat) {
@@ -53,13 +63,14 @@ public class RegistryService {
                     Category category = new Category();
                     category.name = cat.getName();
                     category.description = cat.getDescription();
+                    category.metadata = toJsonNode(cat.getMetadata());
                     return category.persistAndFlush().onItem().transform(x -> category);
                 });
     }
 
     private Uni<Extension> createExtension(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
         Supplier<Uni<? extends Extension>> createNewExtension = () -> {
-            final Extension newExtension = new Extension();
+            Extension newExtension = new Extension();
             newExtension.groupId = ext.getGroupId();
             newExtension.artifactId = ext.getArtifactId();
             newExtension.name = ext.getName();
@@ -76,6 +87,7 @@ public class RegistryService {
                                     ExtensionRelease extensionRelease = new ExtensionRelease();
                                     extensionRelease.extension = extension;
                                     extensionRelease.version = ext.getVersion();
+                                    extensionRelease.metadata = toJsonNode(ext.getMetadata());
                                     extensionRelease.platforms.add(platformRelease);
                                     return extensionRelease.persistAndFlush()
                                             .onItem().transform(x -> extensionRelease);
@@ -98,13 +110,24 @@ public class RegistryService {
         extension.artifactId = artifactId;
         extension.name = jsonNode.get("name").asText();
         extension.description = jsonNode.get("description").asText();
-        extension.metadata = jsonNode.get("metadata");
 
         ExtensionRelease extensionRelease = new ExtensionRelease();
         extensionRelease.extension = extension;
         extensionRelease.version = latestVersion;
+        extensionRelease.metadata = jsonNode.get("metadata");
         extension.releases = Collections.singletonList(extensionRelease);
 
         return extension.persistAndFlush().onItem().transform(x -> extension);
+    }
+
+    private JsonNode toJsonNode(Map<String, Object> metadata) {
+        if (metadata == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readTree(objectMapper.writeValueAsString(metadata));
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 }
