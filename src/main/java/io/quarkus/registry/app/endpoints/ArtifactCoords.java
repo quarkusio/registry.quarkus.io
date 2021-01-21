@@ -1,8 +1,10 @@
 package io.quarkus.registry.app.endpoints;
 
+import javax.enterprise.inject.Vetoed;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.FormParam;
 
+@Vetoed
 public class ArtifactCoords {
 
     @NotNull
