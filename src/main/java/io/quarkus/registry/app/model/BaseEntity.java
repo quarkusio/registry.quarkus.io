@@ -8,8 +8,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.vladmihalcea.hibernate.type.json.JsonNodeStringType;
 import io.quarkus.hibernate.reactive.panache.PanacheEntity;
+import io.quarkus.registry.app.hibernate.JsonbType;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.TypeDef;
 
@@ -17,7 +17,7 @@ import org.hibernate.annotations.TypeDef;
  * The base class for all entities
  */
 @TypeDef(name = "jsonb-node",
-        typeClass = JsonNodeStringType.class,
+        typeClass = JsonbType.class,
         defaultForType = JsonNode.class)
 @MappedSuperclass
 public abstract class BaseEntity extends PanacheEntity {
