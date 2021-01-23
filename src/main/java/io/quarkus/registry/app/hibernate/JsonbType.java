@@ -51,7 +51,8 @@ public class JsonbType implements UserType {
         }
     }
 
-    @Override public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
+    @Override
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
             throws HibernateException, SQLException {
         if (value == null) {
             st.setNull(index, Types.OTHER);
@@ -67,12 +68,17 @@ public class JsonbType implements UserType {
 
     @Override
     public Object deepCopy(Object value) throws HibernateException {
-        return value;
+        ObjectMapper mapper = getMapper();
+        try {
+            return mapper.readTree(mapper.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            throw new HibernateException("Cannot deep copy", e);
+        }
     }
 
     @Override
     public boolean isMutable() {
-        return false;
+        return true;
     }
 
     @Override
