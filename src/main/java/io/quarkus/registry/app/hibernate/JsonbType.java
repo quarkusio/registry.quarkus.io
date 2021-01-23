@@ -78,7 +78,7 @@ public class JsonbType implements UserType {
 
     @Override
     public boolean isMutable() {
-        return true;
+        return false;
     }
 
     @Override
