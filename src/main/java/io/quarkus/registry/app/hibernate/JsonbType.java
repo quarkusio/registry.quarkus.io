@@ -58,6 +58,11 @@ public class JsonbType implements UserType {
             st.setNull(index, Types.OTHER);
             return;
         }
+        JsonNode node = (JsonNode) value;
+        if (node.isNull()) {
+            st.setNull(index, Types.OTHER);
+            return;
+        }
         try {
             String strVal = getMapper().writeValueAsString(value);
             st.setObject(index, strVal, Types.OTHER);
