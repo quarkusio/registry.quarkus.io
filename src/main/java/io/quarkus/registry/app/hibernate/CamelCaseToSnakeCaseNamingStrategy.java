@@ -19,9 +19,6 @@ public class CamelCaseToSnakeCaseNamingStrategy extends PhysicalNamingStrategySt
 
     public static final String SNAKE_CASE_PATTERN = "$1\\_$2";
 
-    /**
-     * Initialization constructor taking the default {@link Configuration} object.
-     */
     public CamelCaseToSnakeCaseNamingStrategy() {
     }
 
