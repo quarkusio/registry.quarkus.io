@@ -8,7 +8,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.quarkus.hibernate.reactive.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.registry.app.hibernate.JsonbType;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.TypeDef;

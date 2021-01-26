@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.model;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,7 +44,7 @@ public class Category extends BaseEntity {
         return Objects.hash(name);
     }
 
-    public static Uni<Category> findByName(String name) {
-        return Category.find("name = ?1", name).firstResult();
+    public static Optional<Category> findByName(String name) {
+        return Category.find("name = ?1", name).firstResultOptional();
     }
 }

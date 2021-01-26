@@ -12,16 +12,14 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import io.quarkus.hibernate.reactive.panache.runtime.JpaOperations;
-import io.smallrye.mutiny.Multi;
-import org.hibernate.reactive.mutiny.Mutiny;
+import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 
 /**
  * Quarkus core releases
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
-@Table(indexes = { @Index(name="CoreRelease_NaturalId", columnList = "version", unique = true) })
+@Table(indexes = { @Index(name = "CoreRelease_NaturalId", columnList = "version", unique = true) })
 public class CoreRelease extends BaseEntity {
 
     @Column(nullable = false)
@@ -63,11 +61,9 @@ public class CoreRelease extends BaseEntity {
         return !version.endsWith("Final");
     }
 
-    public static Multi<String> findAllVersions() {
-        try (Mutiny.Session session = JpaOperations.getSession()) {
-            return session
-                    .createNamedQuery("CoreRelease.findAllVersions", String.class)
-                    .getResults();
-        }
+    public static List<String> findAllVersions() {
+        return JpaOperations.getEntityManager()
+                .createNamedQuery("CoreRelease.findAllVersions", String.class)
+                .getResultList();
     }
 }

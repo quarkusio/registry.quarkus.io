@@ -1,20 +1,21 @@
 package io.quarkus.registry.app.endpoints;
 
+import java.util.Optional;
+
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.services.ArtifactResolverService;
 import io.quarkus.registry.app.services.RegistryService;
-import io.smallrye.mutiny.Uni;
+import io.quarkus.vertx.web.Param;
+import io.quarkus.vertx.web.Route;
+import io.smallrye.common.annotation.Blocking;
+import io.vertx.core.http.HttpMethod;
 
-@Path("/registry")
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@ApplicationScoped
 public class RegistryEndpoint {
 
     @Inject
@@ -23,36 +24,28 @@ public class RegistryEndpoint {
     @Inject
     RegistryService registryService;
 
-    @POST
-    @Path("/platform")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Uni<Response> addPlatform(@BeanParam ArtifactCoords coords) {
-        final String version;
-        if (coords.version == null) {
-            version = artifactResolverService.resolveLatestVersion(coords.groupId, coords.artifactId);
-        } else {
-            version = coords.version;
-        }
-        return Platform.findByGAV(coords.groupId, coords.artifactId, version)
-                .onItem().ifNull().switchTo(() -> registryService
-                        .includePlatform(coords.groupId, coords.artifactId, version))
-                .onItem().transform(e -> Response.ok(e).build());
+    @Route(path = "/api/registry/platform", methods = HttpMethod.POST)
+    @Blocking
+    public Platform addPlatform(
+            @Param String groupId,
+            @Param String artifactId,
+            @Param Optional<String> version) {
+        final String resolvedVersion = version
+                .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
+        return Platform.findByGAV(groupId, artifactId, resolvedVersion)
+                .orElseGet(() -> registryService
+                        .includePlatform(groupId, artifactId, resolvedVersion));
     }
 
-    @POST
-    @Path("/extension")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Uni<Response> addExtension(@BeanParam ArtifactCoords coords) {
-        final String version;
-        if (coords.version == null) {
-            version = artifactResolverService.resolveLatestVersion(coords.groupId, coords.artifactId);
-        } else {
-            version = coords.version;
-        }
-        return Extension
-                .findByGAV(coords.groupId, coords.artifactId, version)
-                .onItem().ifNull()
-                .switchTo(() -> registryService.includeExtension(coords.groupId, coords.artifactId, version))
-                .onItem().transform(e -> Response.ok(e).build());
+    @Route(path = "/api/registry/extension", methods = HttpMethod.POST)
+    @Blocking
+    public Extension addExtension(
+            @Param String groupId,
+            @Param String artifactId,
+            @Param Optional<String> version) {
+        final String resolvedVersion = version
+                .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
+        return Extension.findByGAV(groupId, artifactId, resolvedVersion)
+                .orElseGet(() -> registryService.includeExtension(groupId, artifactId, resolvedVersion));
     }
 }

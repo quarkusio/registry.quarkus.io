@@ -3,6 +3,7 @@ package io.quarkus.registry.app.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -71,8 +72,8 @@ public class Extension extends BaseEntity {
         return Objects.hash(groupId, artifactId, version);
     }
 
-    public static Uni<Extension> findByGAV(String groupId, String artifactId, String version) {
-        return Extension.find("#Extension.findByGAV", groupId, artifactId, version).firstResult();
+    public static Optional<Extension> findByGAV(String groupId, String artifactId, String version) {
+        return Extension.find("#Extension.findByGAV", groupId, artifactId, version).firstResultOptional();
     }
 
 }

@@ -2,6 +2,7 @@ package io.quarkus.registry.app.model;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +15,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.smallrye.mutiny.Uni;
 
 @Entity
 @Table(indexes = { @Index(name = "Platform_NaturalId", columnList = "groupId,artifactId,version", unique = true) })
@@ -61,7 +61,7 @@ public class Platform extends BaseEntity {
         return Objects.hash(groupId, artifactId, version);
     }
 
-    public static Uni<Platform> findByGAV(String groupId, String artifactId, String version) {
-        return Platform.find("#Platform.findByGAV", groupId, artifactId, version).firstResult();
+    public static Optional<Platform> findByGAV(String groupId, String artifactId, String version) {
+        return Platform.find("#Platform.findByGAV", groupId, artifactId, version).firstResultOptional();
     }
 }
