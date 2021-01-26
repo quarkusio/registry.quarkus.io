@@ -4,18 +4,21 @@ import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.services.ArtifactResolverService;
 import io.quarkus.registry.app.services.RegistryService;
-import io.quarkus.vertx.web.Param;
-import io.quarkus.vertx.web.Route;
-import io.smallrye.common.annotation.Blocking;
-import io.vertx.core.http.HttpMethod;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ApplicationScoped
+@Path("/api/registry")
+
 public class RegistryEndpoint {
 
     @Inject
@@ -24,12 +27,13 @@ public class RegistryEndpoint {
     @Inject
     RegistryService registryService;
 
-    @Route(path = "/api/registry/platform", methods = HttpMethod.POST)
-    @Blocking
+    @POST
+    @Path("/platform")
+    @Produces(MediaType.APPLICATION_JSON)
     public Platform addPlatform(
-            @Param String groupId,
-            @Param String artifactId,
-            @Param Optional<String> version) {
+            @FormParam("groupId") String groupId,
+            @FormParam("artifactId") String artifactId,
+            @FormParam("version") Optional<String> version) {
         final String resolvedVersion = version
                 .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
         return Platform.findByGAV(groupId, artifactId, resolvedVersion)
@@ -37,12 +41,13 @@ public class RegistryEndpoint {
                         .includePlatform(groupId, artifactId, resolvedVersion));
     }
 
-    @Route(path = "/api/registry/extension", methods = HttpMethod.POST)
-    @Blocking
+    @POST
+    @Path("/extension")
+    @Produces(MediaType.APPLICATION_JSON)
     public Extension addExtension(
-            @Param String groupId,
-            @Param String artifactId,
-            @Param Optional<String> version) {
+            @FormParam("groupId") String groupId,
+            @FormParam("artifactId") String artifactId,
+            @FormParam("version") Optional<String> version) {
         final String resolvedVersion = version
                 .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
         return Extension.findByGAV(groupId, artifactId, resolvedVersion)
