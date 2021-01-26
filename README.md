@@ -42,3 +42,13 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 You can then execute your native executable with: `./target/code-with-quarkus-1.0.0-SNAPSHOT-runner`
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.html.
+
+
+
+#TODO:
+
+- NO: Use GitHub as the main input for data and have the app clone the repository
+
+## Endpoints: 
+- List of platforms (marked with the recommended platform)
+- Descriptor of the chosen platform (extensions belonging to platform)
