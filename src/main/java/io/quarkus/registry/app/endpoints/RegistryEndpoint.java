@@ -10,8 +10,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.quarkus.registry.app.dto.PlatformDTO;
 import io.quarkus.registry.app.model.Extension;
+import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.services.ArtifactResolverService;
 import io.quarkus.registry.app.services.RegistryService;
 
@@ -30,27 +33,32 @@ public class RegistryEndpoint {
     @POST
     @Path("/platform")
     @Produces(MediaType.APPLICATION_JSON)
-    public Platform addPlatform(
+    public PlatformDTO addPlatform(
             @FormParam("groupId") String groupId,
             @FormParam("artifactId") String artifactId,
             @FormParam("version") Optional<String> version) {
         final String resolvedVersion = version
                 .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
-        return Platform.findByGAV(groupId, artifactId, resolvedVersion)
+        PlatformRelease platformRelease = PlatformRelease.findByGAV(groupId, artifactId, resolvedVersion)
                 .orElseGet(() -> registryService
                         .includePlatform(groupId, artifactId, resolvedVersion));
+        PlatformDTO dto = new PlatformDTO();
+        dto.groupId = groupId;
+        dto.artifactId = artifactId;
+        dto.version = resolvedVersion;
+        return dto;
     }
 
     @POST
     @Path("/extension")
     @Produces(MediaType.APPLICATION_JSON)
-    public Extension addExtension(
+    public ExtensionRelease addExtension(
             @FormParam("groupId") String groupId,
             @FormParam("artifactId") String artifactId,
             @FormParam("version") Optional<String> version) {
         final String resolvedVersion = version
                 .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
-        return Extension.findByGAV(groupId, artifactId, resolvedVersion)
-                .orElseGet(() -> registryService.includeExtension(groupId, artifactId, resolvedVersion));
+        return ExtensionRelease.findByGAV(groupId, artifactId, resolvedVersion)
+                .orElseGet(() -> registryService.includeExtensionRelease(groupId, artifactId, resolvedVersion));
     }
 }

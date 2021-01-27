@@ -10,19 +10,16 @@ import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.smallrye.mutiny.Uni;
-
 @Entity
-@Table(indexes = { @Index(name = "Extension_NaturalId", columnList = "groupId,artifactId, version", unique = true) })
+@Table(indexes = { @Index(name = "Extension_NaturalId", columnList = "groupId,artifactId", unique = true) })
 @NamedQueries({
-        @NamedQuery(name = "Extension.findByGAV",
-                query = "select e from Extension e where e.groupId = ?1 and e.artifactId = ?2 and e.version = ?3")
+        @NamedQuery(name = "Extension.findByGA",
+                query = "select e from Extension e where e.groupId = ?1 and e.artifactId = ?2")
 })
 public class Extension extends BaseEntity {
 
@@ -33,25 +30,13 @@ public class Extension extends BaseEntity {
     public String artifactId;
 
     @Column(nullable = false)
-    public String version;
-
-    @Column(nullable = false)
     public String name;
 
-    @Lob
+    @Column(length = 4096)
     public String description;
 
-    @ManyToOne
-    public CoreRelease builtWith;
-
-    @ManyToMany
-    public List<CoreRelease> compatibleReleases;
-
-    @ManyToMany
-    public List<Platform> platforms = new ArrayList<>();
-
-    @Column(columnDefinition = "json")
-    public JsonNode metadata;
+    @OneToMany(mappedBy = "extension")
+    public List<ExtensionRelease> releases;
 
     @Override
     public boolean equals(Object o) {
@@ -63,17 +48,16 @@ public class Extension extends BaseEntity {
         }
         Extension extension = (Extension) o;
         return Objects.equals(groupId, extension.groupId) &&
-                Objects.equals(artifactId, extension.artifactId) &&
-                Objects.equals(version, extension.version);
+                Objects.equals(artifactId, extension.artifactId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupId, artifactId, version);
+        return Objects.hash(groupId, artifactId);
     }
 
-    public static Optional<Extension> findByGAV(String groupId, String artifactId, String version) {
-        return Extension.find("#Extension.findByGAV", groupId, artifactId, version).firstResultOptional();
+    public static Optional<Extension> findByGA(String groupId, String artifactId) {
+        return Extension.find("#Extension.findByGA", groupId, artifactId).firstResultOptional();
     }
 
 }

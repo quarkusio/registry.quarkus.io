@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
+import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformRelease;
 
 @ApplicationScoped
 public class RegistryService {
@@ -28,22 +30,42 @@ public class RegistryService {
     }
 
     @Transactional
-    public Platform includePlatform(String groupId, String artifactId, String version) {
+    public PlatformRelease includePlatform(String groupId, String artifactId, String version) {
         QuarkusPlatformDescriptor descriptor = resolver
                 .resolvePlatformDescriptor(groupId, artifactId, version);
-        final Platform platform = new Platform();
+        final Platform platform = Platform.findByGA(groupId, artifactId)
+                .orElseGet(() -> {
+                    Platform newPlatform = new Platform();
+                    newPlatform.groupId = groupId;
+                    newPlatform.artifactId = artifactId;
+                    newPlatform.persist();
+                    return newPlatform;
+                });
 
-        platform.groupId = groupId;
-        platform.artifactId = artifactId;
-        platform.version = version;
-
-        platform.persistAndFlush();
+        PlatformRelease platformRelease = PlatformRelease.findByGAV(groupId, artifactId, version)
+                .orElseGet(() -> {
+                    PlatformRelease newPlatformRelease = new PlatformRelease();
+                    platform.releases.add(newPlatformRelease);
+                    newPlatformRelease.platform = platform;
+                    newPlatformRelease.version = version;
+                    newPlatformRelease.metadata = toJsonNode(descriptor.getMetadata());
+                    newPlatformRelease.persist();
+                    return newPlatformRelease;
+                });
 
         descriptor.getCategories().forEach(this::createCategory);
 
         // Insert extensions
-        descriptor.getExtensions().forEach(ext -> createExtension(ext, platform));
-        return platform;
+        descriptor.getExtensions().forEach(ext -> createExtensionRelease(ext, platformRelease));
+        return platformRelease;
+    }
+
+    @Transactional
+    public ExtensionRelease includeExtensionRelease(String groupId, String artifactId, String version) {
+        JsonNode jsonNode = resolver.readExtensionYaml(groupId, artifactId, version);
+
+        return createExtensionRelease(groupId, artifactId, version, jsonNode.get("name").asText(),
+                jsonNode.get("description").asText(), jsonNode.get("metadata"), null);
     }
 
     private Category createCategory(io.quarkus.dependencies.Category cat) {
@@ -59,36 +81,36 @@ public class RegistryService {
                 });
     }
 
-    private Extension createExtension(io.quarkus.dependencies.Extension ext, Platform platform) {
-        return Extension.findByGAV(ext.getGroupId(), ext.getArtifactId(), ext.getVersion())
-                .orElseGet(() -> {
-                    Extension newExtension = new Extension();
-                    newExtension.groupId = ext.getGroupId();
-                    newExtension.artifactId = ext.getArtifactId();
-                    newExtension.version = ext.getVersion();
-                    newExtension.name = ext.getName();
-                    newExtension.description = ext.getDescription();
-                    newExtension.metadata = toJsonNode(ext.getMetadata());
-                    newExtension.platforms.add(platform);
-                    newExtension.persistAndFlush();
-                    return newExtension;
-                });
+    private ExtensionRelease createExtensionRelease(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
+        return createExtensionRelease(ext.getGroupId(), ext.getArtifactId(), ext.getVersion(), ext.getName(),
+                ext.getDescription(), toJsonNode(ext.getMetadata()), platformRelease);
     }
 
-    @Transactional
-    public Extension includeExtension(String groupId, String artifactId, String version) {
-        JsonNode jsonNode = resolver.readExtensionYaml(groupId, artifactId, version);
-        return Extension.findByGAV(groupId, artifactId, version)
+    private ExtensionRelease createExtensionRelease(String groupId, String artifactId, String version,
+            String name, String description, JsonNode metadata, PlatformRelease platformRelease) {
+        final Extension extension = Extension.findByGA(groupId, artifactId)
                 .orElseGet(() -> {
                     Extension newExtension = new Extension();
                     newExtension.groupId = groupId;
                     newExtension.artifactId = artifactId;
-                    newExtension.version = version;
-                    newExtension.name = jsonNode.get("name").asText();
-                    newExtension.description = jsonNode.get("description").asText();
-                    newExtension.metadata = jsonNode.get("metadata");
-                    newExtension.persistAndFlush();
+                    newExtension.name = name;
+                    newExtension.description = description;
+
+                    newExtension.persist();
                     return newExtension;
+                });
+        return ExtensionRelease.findByGAV(groupId, artifactId, version)
+                .orElseGet(() -> {
+                    ExtensionRelease newExtensionRelease = new ExtensionRelease();
+                    newExtensionRelease.version = version;
+                    newExtensionRelease.metadata = metadata;
+                    newExtensionRelease.extension = extension;
+                    // Many-to-many
+                    newExtensionRelease.platforms.add(platformRelease);
+                    platformRelease.extensions.add(newExtensionRelease);
+
+                    newExtensionRelease.persist();
+                    return newExtensionRelease;
                 });
     }
 

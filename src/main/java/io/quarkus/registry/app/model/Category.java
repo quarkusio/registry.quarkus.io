@@ -10,7 +10,6 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.smallrye.mutiny.Uni;
 
 /**
  * Categories an extension belongs to
