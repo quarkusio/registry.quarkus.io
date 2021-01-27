@@ -11,14 +11,14 @@ public class PostgreSQLResource implements QuarkusTestResourceLifecycleManager {
     static PostgreSQLContainer<?> db =
             new PostgreSQLContainer<>("postgres:13")
                     .withDatabaseName("postgres")
-                    .withUsername("admin")
+                    .withUsername("postgres")
                     .withPassword("admin");
 
     @Override
     public Map<String, String> start() {
         db.start();
         return Collections.singletonMap(
-                "quarkus.datasource.url", db.getJdbcUrl()
+                "quarkus.datasource.jdbc.url", db.getJdbcUrl()
         );
     }
 
