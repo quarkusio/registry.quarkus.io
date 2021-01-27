@@ -6,12 +6,14 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 
 @QuarkusTest
+@Disabled
 class RegistryServiceTest {
 
     @Test

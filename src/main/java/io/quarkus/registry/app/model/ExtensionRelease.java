@@ -30,9 +30,6 @@ public class ExtensionRelease extends BaseEntity {
     @Column(columnDefinition = "json")
     public JsonNode metadata;
 
-    @ManyToOne
-    public CoreRelease builtWith;
-
     @ManyToMany
     public List<CoreRelease> compatibleReleases;
 

@@ -19,8 +19,14 @@ import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
-@Table(indexes = { @Index(name = "CoreRelease_NaturalId", columnList = "version", unique = true) })
+@Table(indexes = { @Index(name = "CoreRelease_NaturalId", columnList = "groupId,artifactId,version", unique = true) })
 public class CoreRelease extends BaseEntity {
+
+    @Column(nullable = false)
+    public String groupId;
+
+    @Column(nullable = false)
+    public String artifactId;
 
     @Column(nullable = false)
     public String version;

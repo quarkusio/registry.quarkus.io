@@ -2,13 +2,12 @@ package io.quarkus.registry.app.events;
 
 import java.util.Objects;
 
-public class ExtensionCreateEvent implements BaseEvent {
-
+public class CoreReleaseCreateEvent implements BaseEvent {
     private final String groupId;
     private final String artifactId;
     private final String version;
 
-    public ExtensionCreateEvent(String groupId, String artifactId, String version) {
+    public CoreReleaseCreateEvent(String groupId, String artifactId, String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -34,10 +33,10 @@ public class ExtensionCreateEvent implements BaseEvent {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ExtensionCreateEvent)) {
+        if (!(o instanceof CoreReleaseCreateEvent)) {
             return false;
         }
-        ExtensionCreateEvent that = (ExtensionCreateEvent) o;
+        CoreReleaseCreateEvent that = (CoreReleaseCreateEvent) o;
         return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId)
                 && Objects.equals(version, that.version);
     }
@@ -49,10 +48,11 @@ public class ExtensionCreateEvent implements BaseEvent {
 
     @Override
     public String toString() {
-        return "ExtensionCreateEvent{" +
+        return "CoreReleaseCreateEvent{" +
                 "groupId='" + groupId + '\'' +
                 ", artifactId='" + artifactId + '\'' +
                 ", version='" + version + '\'' +
                 '}';
     }
+
 }

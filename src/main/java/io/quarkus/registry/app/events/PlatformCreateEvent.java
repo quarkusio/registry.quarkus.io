@@ -14,14 +14,17 @@ public class PlatformCreateEvent implements BaseEvent {
         this.version = version;
     }
 
+    @Override
     public String getGroupId() {
         return groupId;
     }
 
+    @Override
     public String getArtifactId() {
         return artifactId;
     }
 
+    @Override
     public String getVersion() {
         return version;
     }
