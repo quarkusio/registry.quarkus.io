@@ -16,7 +16,6 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <quarkus.version>1.11.0.Final</quarkus.version>
-    <hibernate-types.version>2.10.2</hibernate-types.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -33,8 +32,8 @@
   <dependencies>
     <dependency>
       <groupId>io.quarkiverse.mavenresolver</groupId>
-      <artifactId>quarkiverse-maven-resolver</artifactId>
-      <version>0.0.1</version>
+      <artifactId>quarkus-maven-resolver</artifactId>
+      <version>0.0.2</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

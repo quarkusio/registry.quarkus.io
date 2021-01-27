@@ -3,6 +3,7 @@ package io.quarkus.registry.app.services;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -10,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
+import io.quarkus.registry.app.events.ExtensionCreateEvent;
+import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -30,7 +33,10 @@ public class RegistryService {
     }
 
     @Transactional
-    public PlatformRelease includePlatform(String groupId, String artifactId, String version) {
+    public void onPlatformCreate(@ObservesAsync PlatformCreateEvent event) {
+        String groupId = event.getGroupId();
+        String artifactId = event.getArtifactId();
+        String version = event.getVersion();
         QuarkusPlatformDescriptor descriptor = resolver
                 .resolvePlatformDescriptor(groupId, artifactId, version);
         final Platform platform = Platform.findByGA(groupId, artifactId)
@@ -57,14 +63,17 @@ public class RegistryService {
 
         // Insert extensions
         descriptor.getExtensions().forEach(ext -> createExtensionRelease(ext, platformRelease));
-        return platformRelease;
     }
 
     @Transactional
-    public ExtensionRelease includeExtensionRelease(String groupId, String artifactId, String version) {
+    public void onExtensionCreate(@ObservesAsync ExtensionCreateEvent event) {
+        String groupId = event.getGroupId();
+        String artifactId = event.getArtifactId();
+        String version = event.getVersion();
+
         JsonNode jsonNode = resolver.readExtensionYaml(groupId, artifactId, version);
 
-        return createExtensionRelease(groupId, artifactId, version, jsonNode.get("name").asText(),
+        createExtensionRelease(groupId, artifactId, version, jsonNode.get("name").asText(),
                 jsonNode.get("description").asText(), jsonNode.get("metadata"), null);
     }
 
@@ -106,9 +115,10 @@ public class RegistryService {
                     newExtensionRelease.metadata = metadata;
                     newExtensionRelease.extension = extension;
                     // Many-to-many
-                    newExtensionRelease.platforms.add(platformRelease);
-                    platformRelease.extensions.add(newExtensionRelease);
-
+                    if (platformRelease != null) {
+                        newExtensionRelease.platforms.add(platformRelease);
+                        platformRelease.extensions.add(newExtensionRelease);
+                    }
                     newExtensionRelease.persist();
                     return newExtensionRelease;
                 });
