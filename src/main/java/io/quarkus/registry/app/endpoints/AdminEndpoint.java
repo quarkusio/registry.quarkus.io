@@ -22,9 +22,8 @@ import io.quarkus.registry.app.services.ArtifactResolverService;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ApplicationScoped
-@Path("/api/registry")
-
-public class RegistryEndpoint {
+@Path("/admin/registry")
+public class AdminEndpoint {
 
     @Inject
     ArtifactResolverService artifactResolverService;
