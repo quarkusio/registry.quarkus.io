@@ -6,6 +6,10 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 ## Running the application in dev mode
 
+You need a PostgreSQL DB running. If you don't have one, use docker or podman:
+
+    podman run -e POSTGRESQL_ADMIN_PASSWORD=admin --net=host registry.redhat.io/rhscl/postgresql-12-rhel7 
+
 You can run your application in dev mode that enables live coding using:
 ```shell script
 ./mvnw compile quarkus:dev
