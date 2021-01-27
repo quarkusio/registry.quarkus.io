@@ -20,7 +20,7 @@ You can run your application in dev mode that enables live coding using:
 
 Once the application is running, you can trigger the index for a specific platform by running 
       
-    http --form POST localhost:8080/api/registry/platform groupId=io.quarkus artifactId=quarkus-bom version=1.10.0.Final
+    http --form POST localhost:8080/admin/registry/platform groupId=io.quarkus artifactId=quarkus-bom version=1.10.0.Final
 
 
 
