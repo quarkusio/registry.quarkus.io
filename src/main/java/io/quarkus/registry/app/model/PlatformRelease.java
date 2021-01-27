@@ -12,6 +12,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,8 +33,8 @@ public class PlatformRelease extends BaseEntity {
     @ManyToOne
     public CoreRelease quarkusVersion;
 
-    @ManyToMany
-    public List<ExtensionRelease> extensions = new ArrayList<>();
+    @OneToMany(mappedBy = "platformRelease")
+    public List<PlatformExtension> extensions = new ArrayList<>();
 
     @Column(columnDefinition = "json")
     public JsonNode metadata;

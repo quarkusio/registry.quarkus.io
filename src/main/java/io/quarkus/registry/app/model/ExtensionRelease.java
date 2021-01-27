@@ -11,6 +11,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -33,8 +34,8 @@ public class ExtensionRelease extends BaseEntity {
     @ManyToMany
     public List<CoreRelease> compatibleReleases;
 
-    @ManyToMany
-    public List<PlatformRelease> platforms = new ArrayList<>();
+    @OneToMany(mappedBy = "extensionRelease")
+    public List<PlatformExtension> platforms = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
