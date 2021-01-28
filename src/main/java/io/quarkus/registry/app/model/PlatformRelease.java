@@ -30,8 +30,7 @@ public class PlatformRelease extends BaseEntity {
     @Column(columnDefinition = "json")
     public JsonNode metadata;
 
-    @ManyToOne
-    public CoreRelease quarkusVersion;
+    public String quarkusVersion;
 
     @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> extensions = new ArrayList<>();

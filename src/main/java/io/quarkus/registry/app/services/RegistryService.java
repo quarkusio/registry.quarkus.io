@@ -59,16 +59,7 @@ public class RegistryService {
                         newPlatformRelease.platform = platform;
                         newPlatformRelease.version = version;
                         newPlatformRelease.metadata = jsonNodes.toJsonNode(descriptor.getMetadata());
-                        newPlatformRelease.quarkusVersion = CoreRelease
-                                .findByGAV("io.quarkus", "quarkus-core", descriptor.getQuarkusVersion())
-                                .orElseGet(() -> {
-                                    CoreRelease newCoreRelease = new CoreRelease();
-                                    newCoreRelease.groupId = "io.quarkus";
-                                    newCoreRelease.artifactId = "quarkus-core";
-                                    newCoreRelease.version = descriptor.getQuarkusVersion();
-                                    newCoreRelease.persist();
-                                    return newCoreRelease;
-                                });
+                        newPlatformRelease.quarkusVersion = descriptor.getQuarkusVersion();
                         newPlatformRelease.persist();
                         return newPlatformRelease;
                     });

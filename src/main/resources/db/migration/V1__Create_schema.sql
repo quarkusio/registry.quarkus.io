@@ -73,12 +73,10 @@ create table platform_release
     created_at timestamp default CURRENT_TIMESTAMP,
     metadata json,
     version varchar(255) not null,
+    quarkus_version varchar(255),
     platform_id bigint
         constraint fkt84uvvm37q3fujjswuig0l5ji
             references platform,
-    quarkus_version_id bigint
-        constraint fkku6iwcywvsy7xkpyasutk9xoh
-            references core_release,
     constraint uk_j614spsyw56w2o3ebf5ynm14
         unique (platform_id, version)
 );
