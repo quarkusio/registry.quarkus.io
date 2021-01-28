@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
@@ -30,9 +29,6 @@ public class ExtensionRelease extends BaseEntity {
 
     @Column(columnDefinition = "json")
     public JsonNode metadata;
-
-    @ManyToMany
-    public List<CoreRelease> compatibleReleases;
 
     @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> platforms = new ArrayList<>();
