@@ -24,7 +24,7 @@ public class PlatformReleaseCategory extends BaseEntity {
 
     public String name;
 
-    @Lob
+    @Column(length = 4096)
     public String description;
 
     @Column(columnDefinition = "json")

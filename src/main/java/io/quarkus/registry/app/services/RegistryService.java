@@ -1,15 +1,13 @@
 package io.quarkus.registry.app.services;
 
-import java.util.Map;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
@@ -20,6 +18,7 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.util.JsonNodes;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class RegistryService {
@@ -27,6 +26,8 @@ public class RegistryService {
     private final ArtifactResolverService resolver;
 
     private final JsonNodes jsonNodes;
+
+    private static final Logger logger = Logger.getLogger(RegistryService.class);
 
     @Inject
     public RegistryService(ArtifactResolverService resolver, JsonNodes jsonNodes) {
@@ -36,35 +37,40 @@ public class RegistryService {
 
     @Transactional
     public void onPlatformCreate(@ObservesAsync PlatformCreateEvent event) {
-        String groupId = event.getGroupId();
-        String artifactId = event.getArtifactId();
-        String version = event.getVersion();
-        QuarkusPlatformDescriptor descriptor = resolver
-                .resolvePlatformDescriptor(groupId, artifactId, version);
-        final Platform platform = Platform.findByGA(groupId, artifactId)
-                .orElseGet(() -> {
-                    Platform newPlatform = new Platform();
-                    newPlatform.groupId = groupId;
-                    newPlatform.artifactId = artifactId;
-                    newPlatform.persist();
-                    return newPlatform;
-                });
+        try {
+            String groupId = event.getGroupId();
+            String artifactId = event.getArtifactId();
+            String version = event.getVersion();
+            QuarkusPlatformDescriptor descriptor = resolver
+                    .resolvePlatformDescriptor(groupId, artifactId, version);
+            final Platform platform = Platform.findByGA(groupId, artifactId)
+                    .orElseGet(() -> {
+                        Platform newPlatform = new Platform();
+                        newPlatform.groupId = groupId;
+                        newPlatform.artifactId = artifactId;
+                        newPlatform.persist();
+                        return newPlatform;
+                    });
 
-        PlatformRelease platformRelease = PlatformRelease.findByGAV(groupId, artifactId, version)
-                .orElseGet(() -> {
-                    PlatformRelease newPlatformRelease = new PlatformRelease();
-                    platform.releases.add(newPlatformRelease);
-                    newPlatformRelease.platform = platform;
-                    newPlatformRelease.version = version;
-                    newPlatformRelease.metadata = jsonNodes.toJsonNode(descriptor.getMetadata());
-                    newPlatformRelease.persist();
-                    return newPlatformRelease;
-                });
+            PlatformRelease platformRelease = PlatformRelease.findByGAV(groupId, artifactId, version)
+                    .orElseGet(() -> {
+                        PlatformRelease newPlatformRelease = new PlatformRelease();
+                        platform.releases.add(newPlatformRelease);
+                        newPlatformRelease.platform = platform;
+                        newPlatformRelease.version = version;
+                        newPlatformRelease.metadata = jsonNodes.toJsonNode(descriptor.getMetadata());
+                        newPlatformRelease.persist();
+                        return newPlatformRelease;
+                    });
 
-        descriptor.getCategories().forEach(this::createCategory);
+            descriptor.getCategories().forEach(category -> createCategory(category, platformRelease));
 
-        // Insert extensions
-        descriptor.getExtensions().forEach(ext -> createExtensionRelease(ext, platformRelease));
+            // Insert extensions
+            descriptor.getExtensions().forEach(ext -> createExtensionRelease(ext, platformRelease));
+        } catch (Exception e) {
+            logger.error("Error while inserting platform", e);
+            throw e;
+        }
     }
 
     @Transactional
@@ -79,9 +85,13 @@ public class RegistryService {
                 jsonNode.get("description").asText(), jsonNode.get("metadata"), null);
     }
 
-    private Category createCategory(io.quarkus.dependencies.Category cat) {
+    private Category createCategory(io.quarkus.dependencies.Category cat,
+            PlatformRelease platformRelease) {
         // Insert Category if doesn't exist
-        return Category.findByName(cat.getName())
+        Optional<Category> byName = Category.findByName(cat.getName());
+        if (byName.isPresent()) {
+        }
+        return byName
                 .orElseGet(() -> {
                     Category category = new Category();
                     category.name = cat.getName();

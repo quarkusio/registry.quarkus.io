@@ -1,0 +1,15 @@
+INSERT INTO category (id, name, description) VALUES (1,'Core', 'Essential Quarkus components. Provided automatically');
+INSERT INTO category (id, name, description) VALUES (2,'Web', 'Everything you need for REST endpoints, HTTP and web formats like JSON');
+INSERT INTO category (id, name, description) VALUES (3,'Data', 'Accessing and managing your data (RDBMS, NoSQL, caching, transaction management, etc)');
+INSERT INTO category (id, name, description) VALUES (4,'Messaging', 'Send and receives message to various messaging systems (AMQP, Kafka etc)');
+INSERT INTO category (id, name, description) VALUES (5,'Reactive', 'Non blocking stack and connectors');
+INSERT INTO category (id, name, description) VALUES (6,'Cloud', 'Useful for Cloud Native deployments platforms like Kubernetes and cloud providers');
+INSERT INTO category (id, name, description) VALUES (7,'Observability', 'Metrics, tracing, etc');
+INSERT INTO category (id, name, description) VALUES (8,'Security', 'Everything you need to secure your application');
+INSERT INTO category (id, name, description) VALUES (9,'Integration', 'Connectors to read to write from a skew of systems (file, S#, Twitter, etc)');
+INSERT INTO category (id, name, description) VALUES (10,'gRPC', 'gRPC integration');
+INSERT INTO category (id, name, description) VALUES (11,'Business Automation', 'Rules engine, BPM, etc');
+INSERT INTO category (id, name, description) VALUES (12,'Serialization', 'Serializing and deserializing various formats');
+INSERT INTO category (id, name, description) VALUES (13,'Miscellaneous', 'Mixed bag of good stuff');
+INSERT INTO category (id, name, description) VALUES (14,'Compatibility', 'Support for alternative programming models on Quarkus');
+INSERT INTO category (id, name, description) VALUES (15,'Alternative languages', 'Support for other JVM based languages');

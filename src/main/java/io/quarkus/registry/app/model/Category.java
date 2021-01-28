@@ -5,9 +5,10 @@ import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Lob;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 /**
@@ -20,7 +21,7 @@ public class Category extends BaseEntity {
     @Column(nullable = false)
     public String name;
 
-    @Lob
+    @Column(length = 4096)
     public String description;
 
     @Column(columnDefinition = "json")
@@ -44,6 +45,9 @@ public class Category extends BaseEntity {
     }
 
     public static Optional<Category> findByName(String name) {
-        return Category.find("name = ?1", name).firstResultOptional();
+        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(Category.class)
+                .using("name", name)
+                .loadOptional();
     }
 }

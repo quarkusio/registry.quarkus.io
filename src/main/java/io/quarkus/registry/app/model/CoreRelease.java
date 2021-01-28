@@ -37,7 +37,7 @@ public class CoreRelease extends BaseEntity {
 
     @OneToMany(mappedBy = "majorRelease")
     public List<CoreRelease> minorReleases;
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

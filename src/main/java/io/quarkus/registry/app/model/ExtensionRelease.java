@@ -10,18 +10,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@NamedQueries({
-        @NamedQuery(name = "ExtensionRelease.findByGAV",
-                query = "select e from ExtensionRelease e where e.extension.groupId = ?1 and e.extension.artifactId = ?2 and e.version = ?3")
-})
 public class ExtensionRelease extends BaseEntity {
 
     @NaturalId
@@ -60,7 +56,15 @@ public class ExtensionRelease extends BaseEntity {
     }
 
     public static Optional<ExtensionRelease> findByGAV(String groupId, String artifactId, String version) {
-        return ExtensionRelease.find("#ExtensionRelease.findByGAV", groupId, artifactId, version).firstResultOptional();
+        Optional<Extension> extension = Extension.findByGA(groupId, artifactId);
+        if (!extension.isPresent()) {
+            return Optional.empty();
+        }
+        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(ExtensionRelease.class)
+                .using("extension", extension.get())
+                .using("version", version)
+                .loadOptional();
     }
 
 }

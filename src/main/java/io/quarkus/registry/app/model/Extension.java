@@ -6,19 +6,13 @@ import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
+import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@NamedQueries({
-        @NamedQuery(name = "Extension.findByGA",
-                query = "select e from Extension e where e.groupId = ?1 and e.artifactId = ?2")
-})
 public class Extension extends BaseEntity {
 
     @NaturalId
@@ -57,7 +51,11 @@ public class Extension extends BaseEntity {
     }
 
     public static Optional<Extension> findByGA(String groupId, String artifactId) {
-        return Extension.find("#Extension.findByGA", groupId, artifactId).firstResultOptional();
+        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(Extension.class)
+                .using("groupId", groupId)
+                .using("artifactId", artifactId)
+                .loadOptional();
     }
 
 }

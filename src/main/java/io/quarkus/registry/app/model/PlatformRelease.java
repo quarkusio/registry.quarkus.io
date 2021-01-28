@@ -8,20 +8,15 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@NamedQueries({
-        @NamedQuery(name = "PlatformRelease.findByGAV", query = "select p from PlatformRelease p where p.platform.groupId = ?1 and p.platform.artifactId = ?2 and p.version= ?3")
-})
 public class PlatformRelease extends BaseEntity {
 
     @NaturalId
@@ -41,7 +36,7 @@ public class PlatformRelease extends BaseEntity {
     @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> extensions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+    @OneToMany(mappedBy = "platformRelease", cascade = CascadeType.ALL)
     public List<PlatformReleaseCategory> categories = new ArrayList<>();
 
     @Override
@@ -63,6 +58,14 @@ public class PlatformRelease extends BaseEntity {
     }
 
     public static Optional<PlatformRelease> findByGAV(String groupId, String artifactId, String version) {
-        return PlatformRelease.find("#PlatformRelease.findByGAV", groupId, artifactId, version).firstResultOptional();
+        Optional<Platform> p = Platform.findByGA(groupId, artifactId);
+        if (!p.isPresent()) {
+            return Optional.empty();
+        }
+        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(PlatformRelease.class)
+                .using("platform", p.get())
+                .using("version", version)
+                .loadOptional();
     }
 }
