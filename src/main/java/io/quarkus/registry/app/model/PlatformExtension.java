@@ -10,12 +10,12 @@ import org.hibernate.annotations.NaturalId;
 @Entity
 public class PlatformExtension extends BaseEntity {
 
-    @ManyToOne(optional = false)
     @NaturalId
+    @ManyToOne(optional = false)
     public PlatformRelease platformRelease;
 
-    @ManyToOne(optional = false)
     @NaturalId
+    @ManyToOne(optional = false)
     public ExtensionRelease extensionRelease;
 
     @Column(columnDefinition = "json")
