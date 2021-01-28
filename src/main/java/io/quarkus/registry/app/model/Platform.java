@@ -13,16 +13,19 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.NaturalId;
+
 @Entity
-@Table(indexes = { @Index(name = "Platform_NaturalId", columnList = "groupId,artifactId", unique = true) })
 @NamedQueries({
         @NamedQuery(name = "Platform.findByGA", query = "select p from Platform p where p.groupId = ?1 and p.artifactId = ?2")
 })
 public class Platform extends BaseEntity {
 
+    @NaturalId
     @Column(nullable = false)
     public String groupId;
 
+    @NaturalId
     @Column(nullable = false)
     public String artifactId;
 

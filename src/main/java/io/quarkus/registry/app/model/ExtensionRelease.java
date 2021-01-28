@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
@@ -14,6 +15,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.hibernate.annotations.NaturalId;
 
 @Entity
 @NamedQueries({
@@ -22,9 +24,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 })
 public class ExtensionRelease extends BaseEntity {
 
-    @ManyToOne
+    @NaturalId
+    @ManyToOne(optional = false)
     public Extension extension;
 
+    @NaturalId
     @Column(nullable = false)
     public String version;
 
@@ -34,7 +38,7 @@ public class ExtensionRelease extends BaseEntity {
     @ManyToMany
     public List<CoreRelease> compatibleReleases;
 
-    @OneToMany(mappedBy = "extensionRelease")
+    @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> platforms = new ArrayList<>();
 
     @Override

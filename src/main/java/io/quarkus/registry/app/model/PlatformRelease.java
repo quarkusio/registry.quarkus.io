@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -16,28 +16,33 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.hibernate.annotations.NaturalId;
 
 @Entity
-@Table(indexes = { @Index(name = "PlatformRelease_NaturalId", columnList = "platform_id,version", unique = true) })
 @NamedQueries({
         @NamedQuery(name = "PlatformRelease.findByGAV", query = "select p from PlatformRelease p where p.platform.groupId = ?1 and p.platform.artifactId = ?2 and p.version= ?3")
 })
 public class PlatformRelease extends BaseEntity {
 
+    @NaturalId
     @ManyToOne
     public Platform platform;
 
+    @NaturalId
     @Column(nullable = false)
     public String version;
+
+    @Column(columnDefinition = "json")
+    public JsonNode metadata;
 
     @ManyToOne
     public CoreRelease quarkusVersion;
 
-    @OneToMany(mappedBy = "platformRelease")
+    @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> extensions = new ArrayList<>();
 
-    @Column(columnDefinition = "json")
-    public JsonNode metadata;
+    @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+    public List<PlatformReleaseCategory> categories = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

@@ -5,19 +5,19 @@ import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
 import javax.persistence.Lob;
-import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.hibernate.annotations.NaturalId;
 
 /**
  * Categories an extension belongs to
  */
 @Entity
-@Table(indexes = { @Index(name = "Category_NaturalId", columnList = "name", unique = true) })
 public class Category extends BaseEntity {
 
+    @NaturalId
+    @Column(nullable = false)
     public String name;
 
     @Lob

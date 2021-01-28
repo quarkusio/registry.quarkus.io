@@ -5,29 +5,30 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import org.hibernate.annotations.NaturalId;
 
 /**
  * Quarkus core releases
  */
 @Entity
 @NamedQuery(name = "CoreRelease.findAllVersions", query = "SELECT r.version FROM CoreRelease r ORDER BY r.createdAt DESC")
-@Table(indexes = { @Index(name = "CoreRelease_NaturalId", columnList = "groupId,artifactId,version", unique = true) })
 public class CoreRelease extends BaseEntity {
 
+    @NaturalId
     @Column(nullable = false)
     public String groupId;
 
+    @NaturalId
     @Column(nullable = false)
     public String artifactId;
 
+    @NaturalId
     @Column(nullable = false)
     public String version;
 

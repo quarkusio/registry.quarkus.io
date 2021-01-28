@@ -17,19 +17,21 @@ import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.util.JsonNodes;
 
 @ApplicationScoped
 public class RegistryService {
 
     private final ArtifactResolverService resolver;
 
-    private final ObjectMapper objectMapper;
+    private final JsonNodes jsonNodes;
 
     @Inject
-    public RegistryService(ArtifactResolverService resolver, ObjectMapper objectMapper) {
+    public RegistryService(ArtifactResolverService resolver, JsonNodes jsonNodes) {
         this.resolver = resolver;
-        this.objectMapper = objectMapper;
+        this.jsonNodes = jsonNodes;
     }
 
     @Transactional
@@ -54,7 +56,7 @@ public class RegistryService {
                     platform.releases.add(newPlatformRelease);
                     newPlatformRelease.platform = platform;
                     newPlatformRelease.version = version;
-                    newPlatformRelease.metadata = toJsonNode(descriptor.getMetadata());
+                    newPlatformRelease.metadata = jsonNodes.toJsonNode(descriptor.getMetadata());
                     newPlatformRelease.persist();
                     return newPlatformRelease;
                 });
@@ -84,7 +86,7 @@ public class RegistryService {
                     Category category = new Category();
                     category.name = cat.getName();
                     category.description = cat.getDescription();
-                    category.metadata = toJsonNode(cat.getMetadata());
+                    category.metadata = jsonNodes.toJsonNode(cat.getMetadata());
                     category.persistAndFlush();
                     return category;
                 });
@@ -92,7 +94,7 @@ public class RegistryService {
 
     private ExtensionRelease createExtensionRelease(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
         return createExtensionRelease(ext.getGroupId(), ext.getArtifactId(), ext.getVersion(), ext.getName(),
-                ext.getDescription(), toJsonNode(ext.getMetadata()), platformRelease);
+                ext.getDescription(), jsonNodes.toJsonNode(ext.getMetadata()), platformRelease);
     }
 
     private ExtensionRelease createExtensionRelease(String groupId, String artifactId, String version,
@@ -112,26 +114,21 @@ public class RegistryService {
                 .orElseGet(() -> {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
                     newExtensionRelease.version = version;
-                    newExtensionRelease.metadata = metadata;
                     newExtensionRelease.extension = extension;
+
                     // Many-to-many
                     if (platformRelease != null) {
-                        newExtensionRelease.platforms.add(platformRelease);
-                        platformRelease.extensions.add(newExtensionRelease);
+                        PlatformExtension platformExtension = new PlatformExtension();
+                        platformExtension.extensionRelease = newExtensionRelease;
+                        platformExtension.platformRelease = platformRelease;
+                        platformExtension.metadata = metadata;
+
+                        platformRelease.extensions.add(platformExtension);
+                        newExtensionRelease.platforms.add(platformExtension);
                     }
                     newExtensionRelease.persist();
                     return newExtensionRelease;
                 });
     }
 
-    private JsonNode toJsonNode(Map<String, Object> metadata) {
-        if (metadata == null) {
-            return null;
-        }
-        try {
-            return objectMapper.readTree(objectMapper.writeValueAsString(metadata));
-        } catch (JsonProcessingException e) {
-            return null;
-        }
-    }
 }

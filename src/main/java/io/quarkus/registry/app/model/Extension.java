@@ -1,6 +1,5 @@
 package io.quarkus.registry.app.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -8,24 +7,25 @@ import java.util.Optional;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
-import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.NaturalId;
+
 @Entity
-@Table(indexes = { @Index(name = "Extension_NaturalId", columnList = "groupId,artifactId", unique = true) })
 @NamedQueries({
         @NamedQuery(name = "Extension.findByGA",
                 query = "select e from Extension e where e.groupId = ?1 and e.artifactId = ?2")
 })
 public class Extension extends BaseEntity {
 
+    @NaturalId
     @Column(nullable = false)
     public String groupId;
 
+    @NaturalId
     @Column(nullable = false)
     public String artifactId;
 
