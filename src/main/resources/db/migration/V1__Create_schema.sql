@@ -20,9 +20,6 @@ create table core_release
     artifact_id varchar(255) not null,
     group_id varchar(255) not null,
     version varchar(255) not null,
-    major_release_id bigint
-        constraint fkfvc598sdrg8j6qqnanpwgjicw
-            references core_release,
     constraint uk_krg9rqlarowbuqj34s6hiox3o
         unique (artifact_id, group_id, version)
 );

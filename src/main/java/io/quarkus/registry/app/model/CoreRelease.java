@@ -2,14 +2,14 @@ package io.quarkus.registry.app.model;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 /**
@@ -30,12 +30,6 @@ public class CoreRelease extends BaseEntity {
     @NaturalId
     @Column(nullable = false)
     public String version;
-
-    @ManyToOne
-    public CoreRelease majorRelease;
-
-    @OneToMany(mappedBy = "majorRelease")
-    public List<CoreRelease> minorReleases;
 
     @Override
     public boolean equals(Object o) {
@@ -68,5 +62,14 @@ public class CoreRelease extends BaseEntity {
         return JpaOperations.getEntityManager()
                 .createNamedQuery("CoreRelease.findAllVersions", String.class)
                 .getResultList();
+    }
+
+    public static Optional<CoreRelease> findByGAV(String groupId, String artifactId, String quarkusVersion) {
+        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(CoreRelease.class)
+                .using("groupId", groupId)
+                .using("artifactId", artifactId)
+                .using("version", quarkusVersion)
+                .loadOptional();
     }
 }

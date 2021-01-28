@@ -1,7 +1,5 @@
 package io.quarkus.registry.app.services;
 
-import java.util.Optional;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
@@ -12,11 +10,13 @@ import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Category;
+import io.quarkus.registry.app.model.CoreRelease;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.util.JsonNodes;
 import org.jboss.logging.Logger;
 
@@ -59,6 +59,16 @@ public class RegistryService {
                         newPlatformRelease.platform = platform;
                         newPlatformRelease.version = version;
                         newPlatformRelease.metadata = jsonNodes.toJsonNode(descriptor.getMetadata());
+                        newPlatformRelease.quarkusVersion = CoreRelease
+                                .findByGAV("io.quarkus", "quarkus-core", descriptor.getQuarkusVersion())
+                                .orElseGet(() -> {
+                                    CoreRelease newCoreRelease = new CoreRelease();
+                                    newCoreRelease.groupId = "io.quarkus";
+                                    newCoreRelease.artifactId = "quarkus-core";
+                                    newCoreRelease.version = descriptor.getQuarkusVersion();
+                                    newCoreRelease.persist();
+                                    return newCoreRelease;
+                                });
                         newPlatformRelease.persist();
                         return newPlatformRelease;
                     });
@@ -85,21 +95,24 @@ public class RegistryService {
                 jsonNode.get("description").asText(), jsonNode.get("metadata"), null);
     }
 
-    private Category createCategory(io.quarkus.dependencies.Category cat,
+    private PlatformReleaseCategory createCategory(io.quarkus.dependencies.Category cat,
             PlatformRelease platformRelease) {
         // Insert Category if doesn't exist
-        Optional<Category> byName = Category.findByName(cat.getName());
-        if (byName.isPresent()) {
-        }
-        return byName
-                .orElseGet(() -> {
-                    Category category = new Category();
-                    category.name = cat.getName();
-                    category.description = cat.getDescription();
-                    category.metadata = jsonNodes.toJsonNode(cat.getMetadata());
-                    category.persistAndFlush();
-                    return category;
-                });
+        Category category =
+                Category.findByName(cat.getName())
+                        .orElseGet(() -> {
+                            Category newCategory = new Category();
+                            newCategory.name = cat.getName();
+                            newCategory.description = cat.getDescription();
+                            newCategory.persistAndFlush();
+                            return newCategory;
+                        });
+        PlatformReleaseCategory entity = new PlatformReleaseCategory();
+        entity.category = category;
+        entity.platformRelease = platformRelease;
+        entity.metadata = jsonNodes.toJsonNode(cat.getMetadata());
+        entity.persist();
+        return entity;
     }
 
     private ExtensionRelease createExtensionRelease(io.quarkus.dependencies.Extension ext, PlatformRelease platformRelease) {
