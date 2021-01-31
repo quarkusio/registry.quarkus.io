@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,28 +32,20 @@ public final class JsonNodes {
         }
     }
 
-    public static JsonNode merge(JsonNode mainNode, JsonNode updateNode) {
-        if (mainNode == null) {
-            return updateNode;
-        } else if (updateNode == null) {
-            return mainNode;
-        }
-        JsonNode resultNode = mainNode.deepCopy();
-        for (Iterator<String> fieldNames = updateNode.fieldNames(); fieldNames.hasNext(); ) {
-            String fieldName = fieldNames.next();
-            JsonNode jsonNode = mainNode.get(fieldName);
-            // if field exists and is an embedded object
-            if (jsonNode != null && jsonNode.isObject()) {
-                merge(jsonNode, updateNode.get(fieldName));
+    public JsonNode merge(ObjectNode extObject, JsonNode extOverride) {
+        ObjectNode mergedObject = extObject.deepCopy();
+        Iterator<Map.Entry<String, JsonNode>> fieldsIterator = extOverride.fields();
+        while (fieldsIterator.hasNext()) {
+            Map.Entry<String, JsonNode> e = fieldsIterator.next();
+            JsonNode jsonNode = extObject.get(e.getKey());
+            if (e.getValue().isObject()
+                    && extObject.has(e.getKey())
+                    && jsonNode.isObject()) {
+                mergedObject.set(e.getKey(), merge((ObjectNode) jsonNode, e.getValue()));
             } else {
-                if (mainNode instanceof ObjectNode) {
-                    // Overwrite field
-                    JsonNode value = updateNode.get(fieldName);
-                    ((ObjectNode) resultNode).set(fieldName, value);
-                }
+                mergedObject.set(e.getKey(), e.getValue());
             }
         }
-        return resultNode;
+        return mergedObject;
     }
-
 }
