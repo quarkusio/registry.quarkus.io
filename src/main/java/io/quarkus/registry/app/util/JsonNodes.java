@@ -33,6 +33,11 @@ public final class JsonNodes {
     }
 
     public JsonNode merge(ObjectNode extObject, JsonNode extOverride) {
+        if (extObject == null) {
+            return null;
+        } else if (extOverride == null) {
+            return extObject;
+        }
         ObjectNode mergedObject = extObject.deepCopy();
         Iterator<Map.Entry<String, JsonNode>> fieldsIterator = extOverride.fields();
         while (fieldsIterator.hasNext()) {
