@@ -7,7 +7,7 @@ create table category
     description varchar(4096),
     metadata json,
     name varchar(255) not null
-        constraint uk_tfaydch44g7w53336v8nkr2fm
+        constraint category_nkey
             unique
 );
 
@@ -20,7 +20,7 @@ create table core_release
     artifact_id varchar(255) not null,
     group_id varchar(255) not null,
     version varchar(255) not null,
-    constraint uk_krg9rqlarowbuqj34s6hiox3o
+    constraint core_release_nkey
         unique (artifact_id, group_id, version)
 );
 
@@ -34,7 +34,7 @@ create table extension
     description varchar(4096),
     group_id varchar(255) not null,
     name varchar(255) not null,
-    constraint uk_6yeu1nba4s3cj7qwx2xeo52tq
+    constraint extension_nkey
         unique (artifact_id, group_id)
 );
 
@@ -49,7 +49,7 @@ create table extension_release
     extension_id bigint not null
         constraint fka1ko47ipb9gxqh6jhwy704b7
             references extension,
-    constraint uk_2xrr8at461jxt1t1ha4jqb75s
+    constraint extension_release_nkey
         unique (extension_id, version)
 );
 
@@ -61,7 +61,7 @@ create table platform
     created_at timestamp default CURRENT_TIMESTAMP,
     artifact_id varchar(255) not null,
     group_id varchar(255) not null,
-    constraint uk_fmdju0hrj6v0l87n9i4btk9ji
+    constraint platform_nkey
         unique (artifact_id, group_id)
 );
 
@@ -75,9 +75,9 @@ create table platform_release
     version varchar(255) not null,
     quarkus_version varchar(255),
     platform_id bigint
-        constraint fkt84uvvm37q3fujjswuig0l5ji
+        constraint platform_fkey
             references platform,
-    constraint uk_j614spsyw56w2o3ebf5ynm14
+    constraint platform_release_nkey
         unique (platform_id, version)
 );
 
@@ -89,12 +89,12 @@ create table platform_extension
     created_at timestamp default CURRENT_TIMESTAMP,
     metadata json,
     extension_release_id bigint not null
-        constraint fkecbedi4m381p3rvx8sj0va0cq
+        constraint platform_extension_release_fkey
             references extension_release,
     platform_release_id bigint not null
-        constraint fkkyjlb9eg2x3t7bwusyb0ueatm
+        constraint platform_platform_release_fkey
             references platform_release,
-    constraint uk_32m64tx5214yd569pyaxvhjc7
+    constraint platform_extension_nkey
         unique (extension_release_id, platform_release_id)
 );
 
@@ -108,11 +108,11 @@ create table platform_release_category
     metadata json,
     name varchar(255),
     category_id bigint not null
-        constraint fk2385yh01h07ugfeqqqhlgqgb
+        constraint platform_release_category_category_fkey
             references category,
     platform_release_id bigint not null
-        constraint fkd20pdi1xwvk9kiwju11hs9903
+        constraint platform_release_category_fkey
             references platform_release,
-    constraint uk_3cs293h0rwjxy86ukuekp8c6k
+    constraint platform_release_category_nkey
         unique (category_id, platform_release_id)
 );
