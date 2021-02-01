@@ -36,10 +36,9 @@ public class MavenEndpoint {
     @GET
     @Path("/{groupId:.+}/{artifactId}/maven-metadata.xml")
     @Produces(MediaType.APPLICATION_XML)
-    public Response getMavenMetadata(@PathParam("groupId") String groupIdPath, @PathParam("artifactId") String artifactId)
-            throws IOException {
+    public Response getMavenMetadata(@PathParam("groupId") String groupIdPath, @PathParam("artifactId") String artifactId) {
         String groupId = groupIdPath.replace('/', '.');
-        Metadata m = Platform.findByGA(groupId, artifactId).map(platform -> {
+        return Platform.findByGA(groupId, artifactId).map(platform -> {
             Metadata metadata = new Metadata();
             metadata.setGroupId(groupId);
             metadata.setArtifactId(artifactId);
@@ -48,15 +47,14 @@ public class MavenEndpoint {
             for (PlatformRelease release : platform.releases) {
                 versioning.addVersion(release.version);
             }
-            return metadata;
-        }).orElse(null);
-
-        if (m == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        StringWriter sw = new StringWriter();
-        new MetadataXpp3Writer().write(sw, m);
-        return Response.ok(sw.toString()).build();
+            StringWriter sw = new StringWriter();
+            try {
+                new MetadataXpp3Writer().write(sw, metadata);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return Response.ok(sw.toString()).build();
+        }).orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @GET
