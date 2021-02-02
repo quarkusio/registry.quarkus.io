@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
@@ -52,8 +53,8 @@ public class MavenEndpoint {
     }
 
     private static Artifact parseArtifact(List<PathSegment> pathSegmentList) {
-        if (pathSegmentList.isEmpty()) {
-            throw new IllegalArgumentException("Coordinates are missing");
+        if (pathSegmentList.size() < 3) {
+            throw new WebApplicationException("Coordinates are missing", Response.Status.BAD_REQUEST);
         }
 
         final String fileName = pathSegmentList.get(pathSegmentList.size() - 1).getPath();
