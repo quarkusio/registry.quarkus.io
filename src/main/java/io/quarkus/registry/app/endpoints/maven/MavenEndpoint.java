@@ -100,8 +100,9 @@ public class MavenEndpoint {
             }
             groupId = builder.toString();
         } else {
-            throw new IllegalArgumentException(
-                    "Artifact file name " + fileName + " does not start with the artifactId " + artifactId);
+            throw new WebApplicationException(
+                    "Artifact file name " + fileName + " does not start with the artifactId " + artifactId,
+                    Response.Status.BAD_REQUEST);
         }
 
         return new DefaultArtifact(groupId, artifactId, version, null, type, classifier, null);
