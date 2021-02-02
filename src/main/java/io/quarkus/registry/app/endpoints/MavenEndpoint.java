@@ -83,8 +83,6 @@ public class MavenEndpoint {
     private Optional<Metadata> getMavenMetadata(Artifact artifact) {
         String groupId = artifact.getGroupId();
         String artifactId = artifact.getArtifactId();
-        System.out.println("groupId: " + groupId);
-        System.out.println("artif: " + artifactId);
         return Platform.findByGA(groupId, artifactId).map(platform -> {
             Metadata metadata = new Metadata();
             metadata.setGroupId(groupId);
