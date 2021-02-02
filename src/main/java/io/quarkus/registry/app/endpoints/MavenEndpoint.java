@@ -6,8 +6,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -42,9 +40,6 @@ public class MavenEndpoint {
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
-    @Inject
-    Event<Artifact> artifactEvent;
-
     @GET
     @Path("/{path:.+}")
     public Response handleArtifactRequest(
@@ -68,7 +63,7 @@ public class MavenEndpoint {
             } else {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
-        } else if ("maven-metadata.xml".equals(type)) {
+        } else if (MAVEN_METADATA_XML.equals(type)) {
             return getMavenMetadata(artifact)
                     .map(metadata -> {
                         StringWriter sw = new StringWriter();
