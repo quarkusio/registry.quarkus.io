@@ -17,7 +17,7 @@ import org.apache.maven.model.RepositoryPolicy;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
 @ApplicationScoped
-public class PomHandler implements ArtifactRequestHandler {
+public class PomContentProvider implements ArtifactContentProvider {
 
     private static final MavenXpp3Writer POM_WRITER = new MavenXpp3Writer();
 
@@ -27,7 +27,7 @@ public class PomHandler implements ArtifactRequestHandler {
     }
 
     @Override
-    public String handle(Artifact artifact, UriInfo uriInfo) throws Exception {
+    public String provide(Artifact artifact, UriInfo uriInfo) throws Exception {
         Optional<PlatformRelease> platformRelease = PlatformRelease
                 .findByGAV(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
         if (platformRelease.isPresent()) {

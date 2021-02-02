@@ -26,7 +26,7 @@ public class MavenEndpoint {
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
     @Inject
-    Instance<ArtifactRequestHandler> handlers;
+    Instance<ArtifactContentProvider> providers;
 
     @GET
     @Path("/{path:.+}")
@@ -35,10 +35,10 @@ public class MavenEndpoint {
             @Context UriInfo uriInfo) throws IOException {
 
         Artifact artifact = parseArtifact(pathSegments);
-        for (ArtifactRequestHandler handler : handlers) {
-            if (handler.supports(artifact, uriInfo)) {
+        for (ArtifactContentProvider contentProvider : providers) {
+            if (contentProvider.supports(artifact, uriInfo)) {
                 try {
-                    String content = handler.handle(artifact, uriInfo);
+                    String content = contentProvider.provide(artifact, uriInfo);
                     if (content != null) {
                         return Response.ok(content).build();
                     }
@@ -58,8 +58,8 @@ public class MavenEndpoint {
 
         final String fileName = pathSegmentList.get(pathSegmentList.size() - 1).getPath();
         final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
+        String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
         final String groupId;
-        String artifactId = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
 
         final String classifier;
         final String type;

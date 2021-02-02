@@ -14,7 +14,7 @@ import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 
 @ApplicationScoped
-public class MavenMetadataHandler implements ArtifactRequestHandler {
+public class MetadataContentProvider implements ArtifactContentProvider {
 
     private static final MetadataXpp3Writer METADATA_WRITER = new MetadataXpp3Writer();
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
@@ -25,7 +25,7 @@ public class MavenMetadataHandler implements ArtifactRequestHandler {
     }
 
     @Override
-    public String handle(Artifact artifact, UriInfo uriInfo) throws IOException {
+    public String provide(Artifact artifact, UriInfo uriInfo) throws IOException {
         String groupId = artifact.getGroupId();
         String artifactId = artifact.getArtifactId();
         Metadata metadata = Platform.findByGA(groupId, artifactId)
