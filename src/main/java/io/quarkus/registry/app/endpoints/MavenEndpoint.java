@@ -83,6 +83,8 @@ public class MavenEndpoint {
     private Optional<Metadata> getMavenMetadata(Artifact artifact) {
         String groupId = artifact.getGroupId();
         String artifactId = artifact.getArtifactId();
+        System.out.println("groupId: " + groupId);
+        System.out.println("artif: " + artifactId);
         return Platform.findByGA(groupId, artifactId).map(platform -> {
             Metadata metadata = new Metadata();
             metadata.setGroupId(groupId);
@@ -127,13 +129,21 @@ public class MavenEndpoint {
 
         final String fileName = pathSegmentList.get(pathSegmentList.size() - 1).getPath();
         final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
-        final String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
+        final String groupId;
+        String artifactId = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
 
         final String classifier;
         final String type;
         if (fileName.startsWith(MAVEN_METADATA_XML)) {
             type = fileName;
             classifier = "";
+            final StringBuilder builder = new StringBuilder();
+            builder.append(pathSegmentList.get(0).getPath());
+            for (int i = 1; i < pathSegmentList.size() - 2; ++i) {
+                builder.append('.').append(pathSegmentList.get(i));
+            }
+            groupId = builder.toString();
+            artifactId = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
         } else if (fileName.startsWith(artifactId)) {
             final boolean snapshot = version.endsWith(SNAPSHOT_SUFFIX);
             // if it's a snapshot version, in some cases the file name will contain the actual -SNAPSHOT suffix,
@@ -152,18 +162,19 @@ public class MavenEndpoint {
             classifier = artifactId.length() + 1 < versionStart
                     ? fileName.substring(artifactId.length() + 1, versionStart - 1)
                     : "";
+
+            final StringBuilder builder = new StringBuilder();
+            builder.append(pathSegmentList.get(0).getPath());
+            for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
+                builder.append('.').append(pathSegmentList.get(i));
+            }
+            groupId = builder.toString();
         } else {
             throw new IllegalArgumentException(
                     "Artifact file name " + fileName + " does not start with the artifactId " + artifactId);
         }
 
-        final StringBuilder groupId = new StringBuilder();
-        groupId.append(pathSegmentList.get(0).getPath());
-        for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
-            groupId.append('.').append(pathSegmentList.get(i));
-        }
-
-        return new DefaultArtifact(groupId.toString(), artifactId, version, null, type, classifier, null);
+        return new DefaultArtifact(groupId, artifactId, version, null, type, classifier, null);
     }
 
 }
