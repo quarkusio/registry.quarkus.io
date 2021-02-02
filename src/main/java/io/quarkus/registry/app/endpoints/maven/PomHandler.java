@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.Optional;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.registry.app.model.PlatformRelease;
@@ -15,6 +16,7 @@ import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
+@ApplicationScoped
 public class PomHandler implements ArtifactRequestHandler {
 
     private static final MavenXpp3Writer POM_WRITER = new MavenXpp3Writer();
