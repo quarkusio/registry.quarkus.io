@@ -32,7 +32,7 @@ public class AdminEndpoint {
     Event<BaseEvent> emitter;
 
     @POST
-    @Path("/platform")
+    @Path("platform")
     @Produces(MediaType.APPLICATION_JSON)
     public Response addPlatform(
             @FormParam("groupId") String groupId,
@@ -54,7 +54,7 @@ public class AdminEndpoint {
     }
 
     @POST
-    @Path("/extension")
+    @Path("extension")
     @Produces(MediaType.APPLICATION_JSON)
     public Response addExtension(
             @FormParam("groupId") String groupId,

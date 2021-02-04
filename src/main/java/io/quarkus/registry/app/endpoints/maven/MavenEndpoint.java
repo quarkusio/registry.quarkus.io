@@ -30,7 +30,7 @@ public class MavenEndpoint {
     Instance<ArtifactContentProvider> providers;
 
     @GET
-    @Path("/{path:.+}")
+    @Path("{path:.+}")
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
             @Context UriInfo uriInfo) throws IOException {

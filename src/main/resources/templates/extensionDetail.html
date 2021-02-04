@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Extensions</title>
+</head>
+<body>
+<h1>{extension.name}</h1>
+<p>{extension.description}</p>
+  <ul>
+    {#for release in extension.releases}
+    <li>{release.version}</li>
+    {/for}
+  </ul>
+  <a href="/"><- Back to index</a>
+</body>
+</html>

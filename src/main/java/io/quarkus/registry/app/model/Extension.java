@@ -7,6 +7,7 @@ import java.util.Optional;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import org.hibernate.Session;
@@ -30,6 +31,7 @@ public class Extension extends BaseEntity {
     public String description;
 
     @OneToMany(mappedBy = "extension")
+    @OrderBy("version")
     public List<ExtensionRelease> releases;
 
     @Override
