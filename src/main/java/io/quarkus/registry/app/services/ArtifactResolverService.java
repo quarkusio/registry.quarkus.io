@@ -12,13 +12,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.fabric8.maven.Maven;
 import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
 import io.quarkus.bootstrap.resolver.maven.BootstrapMavenException;
 import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
 import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.platform.descriptor.resolver.json.QuarkusJsonPlatformDescriptorResolver;
 import io.smallrye.common.io.jar.JarFiles;
+import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeResult;
 
@@ -56,6 +59,23 @@ public class ArtifactResolverService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public Model resolveLatestModel(String groupId, String artifactId) {
+        String latestVersion = resolveLatestVersion(groupId, artifactId);
+        return resolveModel(groupId, artifactId, latestVersion);
+    }
+
+    public Model resolveModel(String groupId, String artifactId, String version) {
+        DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, "pom", version);
+        ArtifactResult result;
+        try {
+            result = resolver.resolve(artifact);
+        } catch (BootstrapMavenException e) {
+            String message = String.format("No descriptor could be found for %s:%s:%s", groupId, artifactId, version);
+            throw new IllegalStateException(message, e);
+        }
+        return Maven.readModel(result.getArtifact().getFile().toPath());
     }
 
     public String resolveLatestVersion(String groupId, String artifactId) {
