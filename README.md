@@ -32,3 +32,24 @@ Once the application is running, you can trigger the index for a specific platfo
 ## Endpoints: 
 - List of platforms (marked with the recommended platform)
 - Descriptor of the chosen platform (extensions belonging to platform)
+
+
+## GraphQL queries
+
+The following queries below are useful to gather data to feed the application's database. 
+You can go to https://graphql.github.com to perform these queries.
+
+### All extension repositories in the Quarkiverse org
+
+```graphql
+{
+    search(query: "topic:quarkus-extension org:quarkiverse", type: REPOSITORY, first: 100) {
+		repositoryCount
+        nodes {
+            ... on Repository {
+                name
+            }
+        }
+    }
+}
+```

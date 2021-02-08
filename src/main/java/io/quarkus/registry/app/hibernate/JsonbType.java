@@ -11,6 +11,7 @@ import javax.enterprise.inject.spi.CDI;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
@@ -42,7 +43,7 @@ public class JsonbType implements UserType {
             throws HibernateException, SQLException {
         final String cellContent = rs.getString(names[0]);
         if (cellContent == null) {
-            return null;
+            return NullNode.getInstance();
         }
         try {
             return getMapper().readTree(cellContent);

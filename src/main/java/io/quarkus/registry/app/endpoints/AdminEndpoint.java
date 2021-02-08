@@ -1,5 +1,6 @@
 package io.quarkus.registry.app.endpoints;
 
+import java.net.URI;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -50,7 +51,7 @@ public class AdminEndpoint {
         dto.groupId = groupId;
         dto.artifactId = artifactId;
         dto.version = resolvedVersion;
-        return Response.ok(dto).build();
+        return Response.status(Response.Status.CREATED).entity(dto).build();
     }
 
     @POST
