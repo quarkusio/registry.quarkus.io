@@ -30,8 +30,6 @@ public class PagesEndpoint {
     public TemplateInstance extensions(@PathParam String groupId, @PathParam String artifactId) {
         Extension extension = Extension.findByGA(groupId, artifactId)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        // Trigger fetch of extension.releases
-        extension.releases.size();
         return Templates.extensionDetail(extension);
     }
 }
