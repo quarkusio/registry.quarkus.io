@@ -30,7 +30,10 @@ public class PlatformRelease extends BaseEntity {
     @Column(columnDefinition = "json")
     public JsonNode metadata;
 
-    public String quarkusVersion;
+    @Column(nullable = false)
+    public String quarkusCore;
+
+    public String quarkusCoreUpstream;
 
     @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> extensions = new ArrayList<>();
@@ -47,7 +50,7 @@ public class PlatformRelease extends BaseEntity {
             return false;
         }
         PlatformRelease platform = (PlatformRelease) o;
-        return Objects.equals(platform, platform.platform) &&
+        return Objects.equals(this.platform, platform.platform) &&
                 Objects.equals(version, platform.version);
     }
 
