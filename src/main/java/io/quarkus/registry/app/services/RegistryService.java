@@ -59,7 +59,7 @@ public class RegistryService {
                         newPlatformRelease.platform = platform;
                         newPlatformRelease.version = version;
                         newPlatformRelease.metadata = jsonNodes.toJsonNode(descriptor.getMetadata());
-                        newPlatformRelease.quarkusVersion = descriptor.getQuarkusVersion();
+                        newPlatformRelease.quarkusCore = descriptor.getQuarkusVersion();
                         newPlatformRelease.persist();
                         return newPlatformRelease;
                     });
