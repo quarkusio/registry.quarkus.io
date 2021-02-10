@@ -1,4 +1,4 @@
-package io.quarkus.registry.app.endpoints.maven;
+package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -9,7 +9,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.util.HashUtil;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;

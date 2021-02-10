@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.fabric8.maven.Maven;
@@ -36,7 +37,7 @@ public class ArtifactResolverService {
     public ArtifactResolverService(MavenArtifactResolver resolver) {
         this.resolver = resolver;
         this.objectMapperYaml = new ObjectMapper(new YAMLFactory())
-                .setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
+                .setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
         descriptorResolver = QuarkusJsonPlatformDescriptorResolver.newInstance()
                 .setArtifactResolver(new BootstrapAppModelResolver(resolver));
     }

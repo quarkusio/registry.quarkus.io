@@ -1,4 +1,4 @@
-package io.quarkus.registry.app.endpoints.maven;
+package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;

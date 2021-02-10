@@ -1,4 +1,4 @@
-package io.quarkus.registry.app.endpoints.maven;
+package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,10 +18,10 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 
 /**
- * Exposes a Maven endpoint for our tooling
+ * Exposes a Maven resource for our tooling
  */
 @Path("/maven")
-public class MavenEndpoint {
+public class MavenResource {
 
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";

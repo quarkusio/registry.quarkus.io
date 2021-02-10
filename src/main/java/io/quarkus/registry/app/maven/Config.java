@@ -1,4 +1,4 @@
-package io.quarkus.registry.app.endpoints.maven;
+package io.quarkus.registry.app.maven;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

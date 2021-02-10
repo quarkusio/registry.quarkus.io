@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.containsString;
 
 @QuarkusTest
 @QuarkusTestResource(PostgreSQLResource.class)
-class AdminEndpointTest {
+class AdminResourceTest {
 
     @Test
     void platform_submitted_twice_should_conflict() throws Exception {

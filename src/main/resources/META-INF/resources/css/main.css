@@ -1,0 +1,36 @@
+.ui.main-menu .item {
+    font-size: 20px;
+}
+
+.ui.main-menu img {
+    border-right: 1px solid darkgrey;
+    padding-right: 10px;
+    margin-right: 15px !important;
+}
+
+.ui.main-menu .item:first-child {
+    padding: 1em 1em 1em 0.5em;
+}
+
+.ui.main-menu .item {
+    padding: 1em;
+}
+
+.ui.main-menu .item a {
+    color: white;
+}
+
+.main-content {
+    padding-top: 7em;
+    padding-bottom: 7em;
+}
+
+.ui.piled.segment.failure-message {
+    margin: 1em 0;
+    margin-left: 4em;
+    margin-bottom: 0;
+}
+
+.ui.icon.message > i.icon:not(.close) {
+    font-size: 1em;
+}

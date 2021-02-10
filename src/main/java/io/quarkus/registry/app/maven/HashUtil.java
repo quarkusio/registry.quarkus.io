@@ -1,4 +1,4 @@
-package io.quarkus.registry.app.util;
+package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
