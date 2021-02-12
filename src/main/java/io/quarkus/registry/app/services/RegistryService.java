@@ -10,7 +10,6 @@ import io.quarkus.platform.descriptor.QuarkusPlatformDescriptor;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Category;
-import io.quarkus.registry.app.model.CoreRelease;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
