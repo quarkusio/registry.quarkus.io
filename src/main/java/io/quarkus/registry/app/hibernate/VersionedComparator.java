@@ -11,6 +11,6 @@ public class VersionedComparator implements Comparator<Versioned> {
 
     @Override
     public int compare(Versioned o1, Versioned o2) {
-        return -COMPARATOR.compare(o1.getVersion(), o2.getVersion());
+        return COMPARATOR.compare(o2.getVersion(), o1.getVersion());
     }
 }
