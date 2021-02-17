@@ -10,8 +10,10 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import io.quarkus.registry.app.hibernate.VersionedComparator;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.SortComparator;
 
 @Entity
 public class Platform extends BaseEntity {
@@ -25,6 +27,7 @@ public class Platform extends BaseEntity {
     public String artifactId;
 
     @OneToMany(mappedBy = "platform")
+    @SortComparator(VersionedComparator.class)
     public List<PlatformRelease> releases = new ArrayList<>();
 
     @Override

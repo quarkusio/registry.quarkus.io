@@ -18,7 +18,7 @@ import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-public class ExtensionRelease extends BaseEntity {
+public class ExtensionRelease extends BaseEntity implements Versioned {
 
     @NaturalId
     @ManyToOne(optional = false)
@@ -33,6 +33,11 @@ public class ExtensionRelease extends BaseEntity {
 
     @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
     public List<PlatformExtension> platforms = new ArrayList<>();
+
+    @Override
+    public String getVersion() {
+        return version;
+    }
 
     @Override
     public boolean equals(Object o) {
