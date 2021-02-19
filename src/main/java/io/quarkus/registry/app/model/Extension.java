@@ -32,7 +32,7 @@ public class Extension extends BaseEntity {
     @Column(length = 4096)
     public String description;
 
-    @OneToMany(mappedBy = "extension")
+    @OneToMany(mappedBy = "extension", orphanRemoval = true)
     @SortComparator(VersionedComparator.class)
     public List<ExtensionRelease> releases;
 

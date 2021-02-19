@@ -35,10 +35,10 @@ public class PlatformRelease extends BaseEntity implements Versioned {
 
     public String quarkusCoreUpstream;
 
-    @OneToMany(mappedBy = "platformRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+    @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
     public List<PlatformExtension> extensions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "platformRelease", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "platformRelease", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<PlatformReleaseCategory> categories = new ArrayList<>();
 
     @Override

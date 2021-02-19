@@ -26,7 +26,7 @@ public class Platform extends BaseEntity {
     @Column(nullable = false)
     public String artifactId;
 
-    @OneToMany(mappedBy = "platform")
+    @OneToMany(mappedBy = "platform", orphanRemoval = true)
     @SortComparator(VersionedComparator.class)
     public List<PlatformRelease> releases = new ArrayList<>();
 

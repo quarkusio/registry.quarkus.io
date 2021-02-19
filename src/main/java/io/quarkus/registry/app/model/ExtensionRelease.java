@@ -31,7 +31,7 @@ public class ExtensionRelease extends BaseEntity implements Versioned {
     @Column(columnDefinition = "json")
     public JsonNode metadata;
 
-    @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+    @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();
 
     @Override
