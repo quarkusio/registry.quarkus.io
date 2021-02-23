@@ -23,12 +23,6 @@ Once the application is running, you can trigger the index for a specific platfo
     http --form POST localhost:8080/admin/registry/platform groupId=io.quarkus artifactId=quarkus-bom version=1.10.0.Final
 
 
-
-
-#TODO:
-
-- Rejected/on-hold: Use GitHub as the main input for data and have the app clone the repository
-
 ## Endpoints: 
 - List of platforms (marked with the recommended platform)
 - Descriptor of the chosen platform (extensions belonging to platform)
