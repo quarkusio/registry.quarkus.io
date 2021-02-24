@@ -21,7 +21,7 @@ class AdminResourceTest {
                 .formParams("groupId", "io.quarkus",
                         "artifactId", "quarkus-bom",
                         "version", "1.11.0.Final")
-                .post("/admin/registry/platform")
+                .post("/admin/api/v1/platform")
                 .then()
                 .statusCode(HttpStatus.SC_OK)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON));
@@ -31,7 +31,7 @@ class AdminResourceTest {
                 .formParams("groupId", "io.quarkus",
                         "artifactId", "quarkus-bom",
                         "version", "1.11.0.Final")
-                .post("/admin/registry/platform")
+                .post("/admin/api/v1/platform")
                 .then()
                 .statusCode(HttpStatus.SC_CONFLICT);
 
