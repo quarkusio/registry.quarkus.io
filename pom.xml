@@ -38,11 +38,6 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>io.quarkiverse.mavenresolver</groupId>
-      <artifactId>quarkus-maven-resolver</artifactId>
-      <version>0.0.2</version>
-    </dependency>
-    <dependency>
       <groupId>io.smallrye.common</groupId>
       <artifactId>smallrye-common-version</artifactId>
     </dependency>

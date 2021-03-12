@@ -92,7 +92,7 @@ public class AdminResource {
         }
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         emitter.fireAsync(event);
-        return Response.ok().build();
+        return Response.accepted().entity(extension.getArtifact()).build();
     }
 
     @CheckedTemplate

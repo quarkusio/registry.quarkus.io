@@ -109,6 +109,9 @@ public class RegistryService {
                 });
     }
 
+    /**
+     * TODO: Check if this is still necessary
+     */
     private PlatformReleaseCategory createCategory(io.quarkus.registry.catalog.Category cat,
             PlatformRelease platformRelease) {
         // Insert Category if doesn't exist
