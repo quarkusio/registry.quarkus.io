@@ -15,7 +15,7 @@
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <quarkus.version>1.12.0.Final</quarkus.version>
+    <quarkus.version>999-SNAPSHOT</quarkus.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -48,8 +48,8 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-platform-descriptor-resolver-json</artifactId>
-      <version>${quarkus.version}</version>
+      <artifactId>quarkus-devtools-registry-client</artifactId>
+      <version>999-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

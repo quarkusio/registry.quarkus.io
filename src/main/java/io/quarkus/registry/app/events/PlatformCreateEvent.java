@@ -1,58 +1,16 @@
 package io.quarkus.registry.app.events;
 
-import java.util.Objects;
+import io.quarkus.registry.catalog.Platform;
 
 public class PlatformCreateEvent implements BaseEvent {
 
-    private final String groupId;
-    private final String artifactId;
-    private final String version;
+    private final Platform platform;
 
-    public PlatformCreateEvent(String groupId, String artifactId, String version) {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
+    public PlatformCreateEvent(Platform platform) {
+        this.platform = platform;
     }
 
-    @Override
-    public String getGroupId() {
-        return groupId;
-    }
-
-    @Override
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    @Override
-    public String getVersion() {
-        return version;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof PlatformCreateEvent)) {
-            return false;
-        }
-        PlatformCreateEvent that = (PlatformCreateEvent) o;
-        return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId)
-                && Objects.equals(version, that.version);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(groupId, artifactId, version);
-    }
-
-    @Override
-    public String toString() {
-        return "PlatformCreateEvent{" +
-                "groupId='" + groupId + '\'' +
-                ", artifactId='" + artifactId + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+    public Platform getPlatform() {
+        return platform;
     }
 }

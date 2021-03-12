@@ -27,9 +27,6 @@ public class PlatformRelease extends BaseEntity implements Versioned {
     @Column(nullable = false)
     public String version;
 
-    @Column(columnDefinition = "json")
-    public JsonNode metadata;
-
     @Column(nullable = false)
     public String quarkusCore;
 

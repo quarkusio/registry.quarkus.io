@@ -1,6 +1,5 @@
 package io.quarkus.registry.app.admin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +7,6 @@ import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -18,9 +16,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
-import io.quarkus.qute.api.CheckedTemplate;
-import io.quarkus.registry.app.dto.PlatformDTO;
 import io.quarkus.registry.app.events.BaseEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
@@ -28,16 +26,13 @@ import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.services.ArtifactResolverService;
+import io.quarkus.registry.catalog.json.JsonExtension;
+import io.quarkus.registry.catalog.json.JsonPlatform;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ApplicationScoped
 @Path("/admin")
 @RolesAllowed("admin")
 public class AdminResource {
-
-    @Inject
-    ArtifactResolverService artifactResolverService;
 
     @Inject
     Event<BaseEvent> emitter;
@@ -74,39 +69,28 @@ public class AdminResource {
     @POST
     @Path("/api/v1/platform")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addPlatform(
-            @FormParam("groupId") String groupId,
-            @FormParam("artifactId") String artifactId,
-            @FormParam("version") Optional<String> version) {
-        final String resolvedVersion = version
-                .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
-        Optional<PlatformRelease> platformRelease = PlatformRelease.findByGAV(groupId, artifactId, resolvedVersion);
+    public Response addPlatform(JsonPlatform platform) {
+        ArtifactCoords bom = platform.getBom();
+        Optional<PlatformRelease> platformRelease = PlatformRelease
+                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        PlatformCreateEvent event = new PlatformCreateEvent(groupId, artifactId, resolvedVersion);
-        emitter.fireAsync(event);
-        PlatformDTO dto = new PlatformDTO();
-        dto.groupId = groupId;
-        dto.artifactId = artifactId;
-        dto.version = resolvedVersion;
-        return Response.status(Response.Status.CREATED).entity(dto).build();
+        emitter.fireAsync(new PlatformCreateEvent(platform));
+        return Response.status(Response.Status.CREATED).entity(platform.getBom()).build();
     }
 
     @POST
     @Path("/api/v1/extension")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addExtension(
-            @FormParam("groupId") String groupId,
-            @FormParam("artifactId") String artifactId,
-            @FormParam("version") Optional<String> version) {
-        final String resolvedVersion = version
-                .orElseGet(() -> artifactResolverService.resolveLatestVersion(groupId, artifactId));
-        Optional<ExtensionRelease> extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, resolvedVersion);
+    public Response addExtension(JsonExtension extension) {
+        ArtifactCoords bom = extension.getArtifact();
+        Optional<ExtensionRelease> extensionRelease = ExtensionRelease
+                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
         if (extensionRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        ExtensionCreateEvent event = new ExtensionCreateEvent(groupId, artifactId, resolvedVersion);
+        ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         emitter.fireAsync(event);
         return Response.ok().build();
     }

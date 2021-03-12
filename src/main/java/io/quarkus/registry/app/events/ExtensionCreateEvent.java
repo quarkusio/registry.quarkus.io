@@ -1,58 +1,16 @@
 package io.quarkus.registry.app.events;
 
-import java.util.Objects;
+import io.quarkus.registry.catalog.Extension;
 
 public class ExtensionCreateEvent implements BaseEvent {
 
-    private final String groupId;
-    private final String artifactId;
-    private final String version;
+    private final Extension extension;
 
-    public ExtensionCreateEvent(String groupId, String artifactId, String version) {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
+    public ExtensionCreateEvent(Extension extension) {
+        this.extension = extension;
     }
 
-    @Override
-    public String getGroupId() {
-        return groupId;
-    }
-
-    @Override
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    @Override
-    public String getVersion() {
-        return version;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ExtensionCreateEvent)) {
-            return false;
-        }
-        ExtensionCreateEvent that = (ExtensionCreateEvent) o;
-        return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId)
-                && Objects.equals(version, that.version);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(groupId, artifactId, version);
-    }
-
-    @Override
-    public String toString() {
-        return "ExtensionCreateEvent{" +
-                "groupId='" + groupId + '\'' +
-                ", artifactId='" + artifactId + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+    public Extension getExtension() {
+        return extension;
     }
 }
