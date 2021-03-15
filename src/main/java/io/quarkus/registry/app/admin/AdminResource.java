@@ -80,7 +80,7 @@ public class AdminResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
         emitter.fireAsync(new PlatformCreateEvent(platform));
-        return Response.status(Response.Status.CREATED).entity(platform.getBom()).build();
+        return Response.accepted(bom).build();
     }
 
     @POST
