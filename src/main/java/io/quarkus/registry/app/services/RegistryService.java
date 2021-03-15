@@ -103,6 +103,8 @@ public class RegistryService {
 
                         platformRelease.extensions.add(platformExtension);
                         newExtensionRelease.platforms.add(platformExtension);
+                    } else {
+                        newExtensionRelease.metadata = jsonNodes.toJsonNode(ext.getMetadata());
                     }
                     newExtensionRelease.persist();
                     return newExtensionRelease;

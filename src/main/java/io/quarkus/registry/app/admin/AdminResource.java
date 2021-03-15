@@ -7,6 +7,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -16,6 +17,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -67,8 +69,9 @@ public class AdminResource {
     }
 
     @POST
-    @Path("/api/v1/platform")
+    @Path("/v1/platform")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     public Response addPlatform(JsonPlatform platform) {
         ArtifactCoords bom = platform.getBom();
         Optional<PlatformRelease> platformRelease = PlatformRelease
@@ -81,8 +84,9 @@ public class AdminResource {
     }
 
     @POST
-    @Path("/api/v1/extension")
+    @Path("/v1/extension")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     public Response addExtension(JsonExtension extension) {
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
@@ -92,7 +96,7 @@ public class AdminResource {
         }
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         emitter.fireAsync(event);
-        return Response.accepted().entity(extension.getArtifact()).build();
+        return Response.accepted(bom).build();
     }
 
     @CheckedTemplate
