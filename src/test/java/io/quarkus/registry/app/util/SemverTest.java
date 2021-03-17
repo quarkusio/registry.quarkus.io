@@ -22,8 +22,8 @@ class SemverTest {
 
     @Test
     void should_handle_alpha_and_beta() {
-        assertEquals("1.0.0+Alpha", Semver.toSemver("1.0.0.Alpha"));
-        assertEquals("1.2.0+Beta", Semver.toSemver("1.2.0.Beta"));
+        assertEquals("1.0.0-Alpha", Semver.toSemver("1.0.0.Alpha"));
+        assertEquals("1.2.0-Beta", Semver.toSemver("1.2.0.Beta"));
     }
 
     @Test

@@ -42,9 +42,12 @@ public class Semver {
                 } else {
                     qualifier = "";
                 }
+            } else {
+                semver.append('-').append(qualifier);
+                qualifier = "";
             }
             if (!qualifier.isEmpty()) {
-                semver.append("+").append(qualifier);
+                semver.append('+').append(qualifier);
             }
         }
         return semver.toString();
