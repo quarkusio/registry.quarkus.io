@@ -2,22 +2,25 @@ package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
 
 @Entity
+//@NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext where ext.platforms is empty and ext.extension. group by extension")
 public class ExtensionRelease extends BaseEntity implements Versioned {
 
     @NaturalId
@@ -28,10 +31,14 @@ public class ExtensionRelease extends BaseEntity implements Versioned {
     @Column(nullable = false)
     public String version;
 
+    @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
-    public JsonNode metadata;
+    public Map<String, Object> metadata;
 
-    @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, orphanRemoval = true)
+    @Column(nullable = false)
+    public String quarkusCore;
+
+    @OneToMany(mappedBy = "extensionRelease", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();
 
     @Override
@@ -67,6 +74,10 @@ public class ExtensionRelease extends BaseEntity implements Versioned {
                 .using("extension", extension.get())
                 .using("version", version)
                 .loadOptional();
+    }
+
+    public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
+        return null;
     }
 
 }

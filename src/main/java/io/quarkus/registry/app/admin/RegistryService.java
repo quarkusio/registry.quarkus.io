@@ -1,8 +1,7 @@
-package io.quarkus.registry.app.services;
+package io.quarkus.registry.app.admin;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 
 import io.quarkus.maven.ArtifactCoords;
@@ -15,20 +14,12 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformReleaseCategory;
-import io.quarkus.registry.app.util.JsonNodes;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class RegistryService {
 
-    private final JsonNodes jsonNodes;
-
     private static final Logger logger = Logger.getLogger(RegistryService.class);
-
-    @Inject
-    public RegistryService(JsonNodes jsonNodes) {
-        this.jsonNodes = jsonNodes;
-    }
 
     @Transactional
     public void onPlatformCreate(@ObservesAsync PlatformCreateEvent event) {
@@ -68,11 +59,15 @@ public class RegistryService {
     @Transactional
     public void onExtensionCreate(@ObservesAsync ExtensionCreateEvent event) {
         // Non-platform extension
-        createExtensionRelease(event.getExtension(), null);
+        try {
+            createExtensionRelease(event.getExtension(), null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private ExtensionRelease createExtensionRelease(io.quarkus.registry.catalog.Extension ext,
-            PlatformRelease platformRelease) {
+                                                    PlatformRelease platformRelease) {
         ArtifactCoords coords = ext.getArtifact();
         final String groupId = coords.getGroupId();
         final String artifactId = coords.getArtifactId();
@@ -93,18 +88,18 @@ public class RegistryService {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
                     newExtensionRelease.version = version;
                     newExtensionRelease.extension = extension;
-
+                    newExtensionRelease.quarkusCore = (String) ext.getMetadata().get("built-with-quarkus-core");
                     // Many-to-many
                     if (platformRelease != null) {
                         PlatformExtension platformExtension = new PlatformExtension();
                         platformExtension.extensionRelease = newExtensionRelease;
                         platformExtension.platformRelease = platformRelease;
-                        platformExtension.metadata = jsonNodes.toJsonNode(ext.getMetadata());
+                        platformExtension.metadata = ext.getMetadata();
 
                         platformRelease.extensions.add(platformExtension);
                         newExtensionRelease.platforms.add(platformExtension);
                     } else {
-                        newExtensionRelease.metadata = jsonNodes.toJsonNode(ext.getMetadata());
+                        newExtensionRelease.metadata = ext.getMetadata();
                     }
                     newExtensionRelease.persist();
                     return newExtensionRelease;
@@ -115,7 +110,7 @@ public class RegistryService {
      * TODO: Check if this is still necessary
      */
     private PlatformReleaseCategory createCategory(io.quarkus.registry.catalog.Category cat,
-            PlatformRelease platformRelease) {
+                                                   PlatformRelease platformRelease) {
         // Insert Category if doesn't exist
         Category category =
                 Category.findByName(cat.getName())
@@ -129,7 +124,7 @@ public class RegistryService {
         PlatformReleaseCategory entity = new PlatformReleaseCategory();
         entity.category = category;
         entity.platformRelease = platformRelease;
-        entity.metadata = jsonNodes.toJsonNode(cat.getMetadata());
+        entity.metadata = cat.getMetadata();
         entity.persist();
         return entity;
     }

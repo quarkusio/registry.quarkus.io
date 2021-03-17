@@ -10,39 +10,27 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class Config {
 
     @Inject
-    @ConfigProperty(name = "quarkus.registry.groupId", defaultValue = "io.quarkus.registry")
-    private String groupId;
+    @ConfigProperty(name = "quarkus.registry.maven.groupId")
+    String groupId;
 
     @Inject
-    @ConfigProperty(name = "quarkus.registry.platform.artifactId", defaultValue = "quarkus-platforms")
-    private String platformArtifactId;
+    @ConfigProperty(name = "quarkus.registry.maven.platform.artifactId")
+    String platformArtifactId;
 
     @Inject
-    @ConfigProperty(name = "quarkus.registry.non-platform.artifactId", defaultValue = "quarkus-non-platform-extensions")
-    private String nonPlatformArtifactId;
+    @ConfigProperty(name = "quarkus.registry.maven.non-platform.artifactId")
+    String nonPlatformArtifactId;
 
     public String getGroupId() {
         return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
     }
 
     public String getPlatformArtifactId() {
         return platformArtifactId;
     }
 
-    public void setPlatformArtifactId(String platformArtifactId) {
-        this.platformArtifactId = platformArtifactId;
-    }
-
     public String getNonPlatformArtifactId() {
         return nonPlatformArtifactId;
-    }
-
-    public void setNonPlatformArtifactId(String nonPlatformArtifactId) {
-        this.nonPlatformArtifactId = nonPlatformArtifactId;
     }
 
     public boolean supports(Artifact artifact) {

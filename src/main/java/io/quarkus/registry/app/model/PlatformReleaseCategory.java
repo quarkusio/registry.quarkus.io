@@ -1,14 +1,14 @@
 package io.quarkus.registry.app.model;
 
-import javax.enterprise.inject.spi.CDI;
+import java.util.Map;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.quarkus.registry.app.util.JsonNodes;
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
 
 /**
  * Overrides category values for a specific platform
@@ -29,8 +29,9 @@ public class PlatformReleaseCategory extends BaseEntity {
     @Column(length = 4096)
     public String description;
 
+    @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
-    public JsonNode metadata;
+    public Map<String, Object> metadata;
 
     public String getName() {
         return name == null ? category.name : name;
@@ -40,8 +41,7 @@ public class PlatformReleaseCategory extends BaseEntity {
         return description == null ? category.description : description;
     }
 
-    public JsonNode getMetadata() {
-        JsonNodes jsonNodes = CDI.current().select(JsonNodes.class).get();
-        return jsonNodes.merge((ObjectNode) metadata, category.metadata);
+    public Map<String, Object> getMetadata() {
+        return metadata == null ? category.metadata : metadata;
     }
 }

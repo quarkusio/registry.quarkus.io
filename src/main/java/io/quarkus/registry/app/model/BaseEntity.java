@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.model;
 
 import java.util.Date;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -10,20 +11,17 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkiverse.hibernate.types.json.JsonBinaryType;
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import io.quarkus.registry.app.hibernate.JsonbType;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.TypeDef;
 
 /**
  * The base class for all entities
  */
-@TypeDef(name = "jsonb-node",
-        typeClass = JsonbType.class,
-        defaultForType = JsonNode.class)
 @MappedSuperclass
+@TypeDef(name = JsonTypes.JSON_BIN, typeClass = JsonBinaryType.class)
 public abstract class BaseEntity extends PanacheEntityBase {
 
     @Id

@@ -31,6 +31,7 @@ create table extension_release
         constraint extension_release_pkey
             primary key,
     created_at timestamp default CURRENT_TIMESTAMP,
+    quarkus_core varchar(255) not null,
     metadata json,
     version varchar(255) not null,
     extension_id bigint not null

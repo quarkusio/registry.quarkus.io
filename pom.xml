@@ -42,6 +42,11 @@
       <artifactId>smallrye-common-version</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.hibernatetypes</groupId>
+      <artifactId>quarkus-hibernate-types</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-devtools-registry-client</artifactId>
       <version>999-SNAPSHOT</version>
