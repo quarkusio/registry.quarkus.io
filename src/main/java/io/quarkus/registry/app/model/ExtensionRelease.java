@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -20,7 +21,7 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 @Entity
-//@NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext where ext.platforms is empty and ext.extension. group by extension")
+@NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext where ext.quarkusCore = :quarkusCore and ext.platforms is empty")
 public class ExtensionRelease extends BaseEntity implements Versioned {
 
     @NaturalId
@@ -77,7 +78,10 @@ public class ExtensionRelease extends BaseEntity implements Versioned {
     }
 
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
-        return null;
+        EntityManager entityManager = JpaOperations.getEntityManager();
+        return entityManager.createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
+                .setParameter("quarkusCore", quarkusCore)
+                .getResultList();
     }
 
 }

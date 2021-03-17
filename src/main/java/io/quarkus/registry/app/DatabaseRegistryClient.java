@@ -1,14 +1,20 @@
 package io.quarkus.registry.app;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.enterprise.context.ApplicationScoped;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.PlatformCatalog;
+import io.quarkus.registry.catalog.json.JsonCategory;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
@@ -27,7 +33,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     @GET
     @Path("platforms")
     @Override
-    public PlatformCatalog resolvePlatforms(@QueryParam("version") String quarkusVersion) {
+    public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         return catalog;
     }
@@ -43,7 +49,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     @Override
     @GET
     @Path("non-platform-extensions")
-    public ExtensionCatalog resolveNonPlatformExtensions(String quarkusVersion) {
+    public ExtensionCatalog resolveNonPlatformExtensions(@NotNull @QueryParam("v") String quarkusVersion) {
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         for (ExtensionRelease extensionRelease : ExtensionRelease.findNonPlatformExtensions(quarkusVersion)) {
             JsonExtension e = new JsonExtension();
@@ -55,6 +61,16 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
             e.setMetadata(extensionRelease.metadata);
             catalog.addExtension(e);
         }
+        // Add all categories
+        List<Category> categories = Category.listAll();
+        catalog.setCategories(categories.stream()
+                .map(category -> {
+                    JsonCategory jsonCategory = new JsonCategory();
+                    jsonCategory.setId(category.name);
+                    jsonCategory.setName(category.name);
+                    jsonCategory.setDescription(category.description);
+                    return jsonCategory;
+                }).collect(Collectors.toList()));
         return catalog;
     }
 
