@@ -16,6 +16,8 @@ public class Semver {
     private static final Predicate<String> SEMVER_PATTERN = Pattern
             .compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$").asPredicate();
 
+    public static final String FINAL_QUALIFIER = "Final";
+
     public static String toSemver(String version) {
         if (isSemVer(version)) {
             return version;
@@ -32,7 +34,7 @@ public class Semver {
                 .append(artifactVersion.getIncrementalVersion());
         if (artifactVersion.getQualifier() != null) {
             String qualifier = artifactVersion.getQualifier();
-            if (qualifier.equals("Final")) {
+            if (FINAL_QUALIFIER.equals(qualifier)) {
                 int idx = version.indexOf(qualifier);
                 if (idx != version.length() - 5) {
                     // There is something else after "Final"
