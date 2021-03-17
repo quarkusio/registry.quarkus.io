@@ -1,7 +1,6 @@
 package io.quarkus.registry.app.model;
 
 import java.util.Date;
-import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;

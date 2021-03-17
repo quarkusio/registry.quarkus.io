@@ -10,10 +10,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
-import io.quarkus.registry.app.hibernate.VersionedComparator;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.SortComparator;
 
 @Entity
 public class Extension extends BaseEntity {
@@ -33,7 +31,7 @@ public class Extension extends BaseEntity {
     public String description;
 
     @OneToMany(mappedBy = "extension", orphanRemoval = true)
-    @SortComparator(VersionedComparator.class)
+    @OrderBy("semver")
     public List<ExtensionRelease> releases;
 
     @Override

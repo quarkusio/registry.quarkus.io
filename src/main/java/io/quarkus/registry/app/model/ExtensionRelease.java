@@ -13,24 +13,32 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import io.quarkus.registry.app.util.Semver;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 @Entity
 @NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext where ext.quarkusCore = :quarkusCore and ext.platforms is empty")
-public class ExtensionRelease extends BaseEntity implements Versioned {
+public class ExtensionRelease extends BaseEntity {
 
     @NaturalId
     @ManyToOne(optional = false)
     public Extension extension;
 
     @NaturalId
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     public String version;
+
+    /**
+     * The version above formatted as a valid semver (for max and order-by operations)
+     */
+    @Column(updatable = false,  columnDefinition = "semver")
+    public String semver;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
@@ -42,9 +50,9 @@ public class ExtensionRelease extends BaseEntity implements Versioned {
     @OneToMany(mappedBy = "extensionRelease", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();
 
-    @Override
-    public String getVersion() {
-        return version;
+    @PrePersist
+    void updateSemVer() {
+        this.semver = Semver.toSemver(version);
     }
 
     @Override

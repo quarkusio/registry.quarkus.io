@@ -10,15 +10,15 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class Config {
 
     @Inject
-    @ConfigProperty(name = "quarkus.registry.maven.groupId")
+    @ConfigProperty(name = "registry.maven.groupId")
     String groupId;
 
     @Inject
-    @ConfigProperty(name = "quarkus.registry.maven.platform.artifactId")
+    @ConfigProperty(name = "registry.maven.platform.artifactId")
     String platformArtifactId;
 
     @Inject
-    @ConfigProperty(name = "quarkus.registry.maven.non-platform.artifactId")
+    @ConfigProperty(name = "registry.maven.non-platform.artifactId")
     String nonPlatformArtifactId;
 
     public String getGroupId() {
