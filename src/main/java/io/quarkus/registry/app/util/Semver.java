@@ -25,9 +25,9 @@ public class Semver {
     public static final String FINAL_QUALIFIER = "Final";
 
     private static final List<Pattern> QUALIFIERS = Arrays.asList(
-            Pattern.compile("(Alpha)([0-9])"),
-            Pattern.compile("(Beta)([0-9])"),
-            Pattern.compile("(CR)([0-9])")
+            Pattern.compile("(Alpha)([0-9]+)"),
+            Pattern.compile("(Beta)([0-9]+)"),
+            Pattern.compile("(CR)([0-9]+)")
     );
 
     public static String toSemver(String version) {

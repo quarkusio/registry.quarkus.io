@@ -27,6 +27,8 @@ class SemverTest {
         assertEquals("1.0.0-Alpha.1", Semver.toSemver("1.0.0.Alpha1"));
         assertEquals("1.2.0-Beta.2", Semver.toSemver("1.2.0.Beta2"));
         assertEquals("1.3.0-Beta.2", Semver.toSemver("1.3.0.Beta2"));
+        assertEquals("10.1.0-Beta.10", Semver.toSemver("10.1.0.Beta10"));
+
     }
 
     @Test
