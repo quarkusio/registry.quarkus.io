@@ -23,15 +23,16 @@ class SemverTest {
     }
 
     @Test
-    void should_handle_alpha_and_beta() {
-        assertEquals("1.0.0-Alpha", Semver.toSemver("1.0.0.Alpha"));
-        assertEquals("1.2.0-Beta", Semver.toSemver("1.2.0.Beta"));
+    void should_handle_qualifiers() {
+        assertEquals("1.0.0-Alpha.1", Semver.toSemver("1.0.0.Alpha1"));
+        assertEquals("1.2.0-Beta.2", Semver.toSemver("1.2.0.Beta2"));
+        assertEquals("1.3.0-Beta.2", Semver.toSemver("1.3.0.Beta2"));
     }
 
     @Test
     void should_handle_extra_qualifiers() {
-        assertEquals("1.0.0+redhat-0001", Semver.toSemver("1.0.0.Final-redhat-0001"));
-        assertEquals("1.0.0-Beta1+redhat-0001", Semver.toSemver("1.0.0.Beta1-redhat-0001"));
+        assertEquals("1.0.0-redhat-0001", Semver.toSemver("1.0.0.Final-redhat-0001"));
+        assertEquals("1.0.0-Beta.1-redhat-0001", Semver.toSemver("1.0.0.Beta1-redhat-0001"));
     }
     @Test
     void should_handle_null_versions() {

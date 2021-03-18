@@ -1,6 +1,9 @@
 package io.quarkus.registry.app.util;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -20,6 +23,12 @@ public class Semver {
             .compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$").asPredicate();
 
     public static final String FINAL_QUALIFIER = "Final";
+
+    private static final List<Pattern> QUALIFIERS = Arrays.asList(
+            Pattern.compile("(Alpha)([0-9])"),
+            Pattern.compile("(Beta)([0-9])"),
+            Pattern.compile("(CR)([0-9])")
+    );
 
     public static String toSemver(String version) {
         if (version == null || isSemver(version)) {
@@ -41,17 +50,17 @@ public class Semver {
                 int idx = version.lastIndexOf(qualifier);
                 if (idx != version.length() - FINAL_QUALIFIER.length()) {
                     // There is something else after "Final"
-                    qualifier = version.substring(idx + 6);
+                    qualifier = version.substring(idx + FINAL_QUALIFIER.length());
                 } else {
                     qualifier = "";
                 }
             } else {
-                semver.append('-').append(qualifier);
+                semver.append('-').append(normalizeQualifier(qualifier));
                 int idx = version.lastIndexOf(qualifier);
                 qualifier = version.substring(idx + qualifier.length());
             }
             if (!qualifier.isEmpty()) {
-                semver.append('+').append(qualifier.startsWith("-") ? qualifier.substring(1) : qualifier);
+                semver.append(qualifier);
             }
         }
         String result = semver.toString();
@@ -63,6 +72,18 @@ public class Semver {
             }
             return null;
         }
+    }
+
+
+    private static String normalizeQualifier(String qualifier) {
+        // Alpha1 -> Alpha+1, Beta23 -> Beta+23, CR1 -> CR+1
+        for (Pattern p : QUALIFIERS) {
+            Matcher matcher = p.matcher(qualifier);
+            if (matcher.find()) {
+                return matcher.group(1) + "." + matcher.group(2);
+            }
+        }
+        return qualifier;
     }
 
     public static boolean isSemver(String version) {

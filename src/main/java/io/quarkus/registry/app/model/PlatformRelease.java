@@ -35,7 +35,7 @@ public class PlatformRelease extends BaseEntity {
      * The version above formatted as a valid semver (for max and order-by operations)
      */
     @Column(updatable = false,  columnDefinition = "semver")
-    public String semver;
+    private String semver;
 
     @Column(nullable = false)
     public String quarkusCore;
