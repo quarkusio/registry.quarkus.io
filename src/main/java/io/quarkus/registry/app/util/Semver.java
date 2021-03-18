@@ -4,11 +4,14 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.jboss.logging.Logger;
 
 /**
  * Generates a "best-effort" Semantic version based on a Maven version.
  */
 public class Semver {
+
+    private static final Logger log = Logger.getLogger(Semver.class);
 
     /**
      * Copied from https://semver.org/
@@ -35,8 +38,8 @@ public class Semver {
         if (artifactVersion.getQualifier() != null) {
             String qualifier = artifactVersion.getQualifier();
             if (FINAL_QUALIFIER.equals(qualifier)) {
-                int idx = version.indexOf(qualifier);
-                if (idx != version.length() - 5) {
+                int idx = version.lastIndexOf(qualifier);
+                if (idx != version.length() - FINAL_QUALIFIER.length()) {
                     // There is something else after "Final"
                     qualifier = version.substring(idx + 6);
                 } else {
@@ -44,13 +47,22 @@ public class Semver {
                 }
             } else {
                 semver.append('-').append(qualifier);
-                qualifier = "";
+                int idx = version.lastIndexOf(qualifier);
+                qualifier = version.substring(idx + qualifier.length());
             }
             if (!qualifier.isEmpty()) {
-                semver.append('+').append(qualifier);
+                semver.append('+').append(qualifier.startsWith("-") ? qualifier.substring(1) : qualifier);
             }
         }
-        return semver.toString();
+        String result = semver.toString();
+        if (isSemVer(result)) {
+            return result;
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debugf("Could not convert {} to a semver format. Result was: {}", version, result);
+            }
+            return null;
+        }
     }
 
     public static boolean isSemVer(String version) {

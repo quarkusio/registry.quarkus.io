@@ -29,5 +29,7 @@ class SemverTest {
     @Test
     void should_handle_extra_qualifiers() {
         assertEquals("1.0.0+redhat-0001", Semver.toSemver("1.0.0.Final-redhat-0001"));
+        assertEquals("1.0.0-Beta1+redhat-0001", Semver.toSemver("1.0.0.Beta1-redhat-0001"));
+
     }
 }
