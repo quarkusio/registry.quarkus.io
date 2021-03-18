@@ -22,7 +22,7 @@ public class Semver {
     public static final String FINAL_QUALIFIER = "Final";
 
     public static String toSemver(String version) {
-        if (isSemVer(version)) {
+        if (version == null || isSemver(version)) {
             return version;
         }
         StringBuilder semver = new StringBuilder();
@@ -55,7 +55,7 @@ public class Semver {
             }
         }
         String result = semver.toString();
-        if (isSemVer(result)) {
+        if (isSemver(result)) {
             return result;
         } else {
             if (log.isDebugEnabled()) {
@@ -65,7 +65,7 @@ public class Semver {
         }
     }
 
-    public static boolean isSemVer(String version) {
-        return SEMVER_PATTERN.test(version);
+    public static boolean isSemver(String version) {
+        return version != null && SEMVER_PATTERN.test(version);
     }
 }

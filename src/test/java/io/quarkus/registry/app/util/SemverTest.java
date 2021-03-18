@@ -3,6 +3,8 @@ package io.quarkus.registry.app.util;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class SemverTest {
 
@@ -30,6 +32,11 @@ class SemverTest {
     void should_handle_extra_qualifiers() {
         assertEquals("1.0.0+redhat-0001", Semver.toSemver("1.0.0.Final-redhat-0001"));
         assertEquals("1.0.0-Beta1+redhat-0001", Semver.toSemver("1.0.0.Beta1-redhat-0001"));
-
     }
+    @Test
+    void should_handle_null_versions() {
+        assertNull(Semver.toSemver(null));
+        assertFalse(Semver.isSemver(null));
+    }
+
 }

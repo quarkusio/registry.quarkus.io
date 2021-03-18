@@ -37,8 +37,8 @@ public class ExtensionRelease extends BaseEntity {
     /**
      * The version above formatted as a valid semver (for max and order-by operations)
      */
-    @Column(updatable = false,  columnDefinition = "semver")
-    public String semver;
+    @Column(updatable = false, columnDefinition = "semver")
+    private String semver;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
@@ -50,6 +50,9 @@ public class ExtensionRelease extends BaseEntity {
     @OneToMany(mappedBy = "extensionRelease", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();
 
+    /**
+     * This hook will update the semver field with the version
+     */
     @PrePersist
     void updateSemVer() {
         this.semver = Semver.toSemver(version);
