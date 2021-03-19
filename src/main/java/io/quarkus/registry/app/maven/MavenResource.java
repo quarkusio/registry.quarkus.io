@@ -24,6 +24,7 @@ import org.apache.maven.artifact.DefaultArtifact;
 public class MavenResource {
 
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
+
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
     @Inject
@@ -39,10 +40,9 @@ public class MavenResource {
         for (ArtifactContentProvider contentProvider : providers) {
             if (contentProvider.supports(artifact, uriInfo)) {
                 try {
-                    String content = contentProvider.provide(artifact, uriInfo);
-                    if (content != null) {
-                        return Response.ok(content).build();
-                    }
+                    return contentProvider.provide(artifact, uriInfo);
+                } catch (WebApplicationException wae) {
+                    throw wae;
                 } catch (Exception e) {
                     e.printStackTrace();
                     return Response.serverError().build();

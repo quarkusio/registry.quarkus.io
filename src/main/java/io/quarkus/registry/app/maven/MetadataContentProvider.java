@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.registry.app.model.Platform;
@@ -19,7 +23,11 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 public class MetadataContentProvider implements ArtifactContentProvider {
 
     private static final MetadataXpp3Writer METADATA_WRITER = new MetadataXpp3Writer();
+
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
+
+    @Inject
+    MavenConfig mavenConfig;
 
     @Override
     public boolean supports(Artifact artifact, UriInfo uriInfo) {
@@ -27,19 +35,18 @@ public class MetadataContentProvider implements ArtifactContentProvider {
     }
 
     @Override
-    public String provide(Artifact artifact, UriInfo uriInfo) throws IOException {
-        String groupId = artifact.getGroupId();
-        String artifactId = artifact.getArtifactId();
-        Metadata metadata = Platform.findByGA(groupId, artifactId)
-                .map(this::generateMetadata).orElse(null);
-
-        return writeMetadata(metadata);
+    public Response provide(Artifact artifact, UriInfo uriInfo) throws IOException {
+        Metadata metadata = generateMetadata();
+        String output = writeMetadata(metadata);
+        return Response.ok(output)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML)
+                .build();
     }
 
-    private Metadata generateMetadata(Platform platform) {
+    private Metadata generateMetadata() {
         Metadata newMetadata = new Metadata();
-        newMetadata.setGroupId(platform.groupId);
-        newMetadata.setArtifactId(platform.artifactId);
+        newMetadata.setGroupId(MavenConfig.GROUP_ID);
+        newMetadata.setArtifactId(MavenConfig.PLATFORM_ARTIFACT_ID);
 
         Versioning versioning = new Versioning();
         newMetadata.setVersioning(versioning);
@@ -51,27 +58,24 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         snapshot.setTimestamp(versioning.getLastUpdated().substring(0, 8) + "." + versioning.getLastUpdated().substring(8));
         snapshot.setBuildNumber(1);
 
-        for (PlatformRelease release : platform.releases) {
-            final String baseVersion = release.version;
-            addSnapshotVersion(versioning, snapshot, baseVersion, "pom");
-            addSnapshotVersion(versioning, snapshot, baseVersion, "json");
-
-            versioning.addVersion(release.version);
-        }
+//        for (PlatformRelease release : platform.releases) {
+//            final String baseVersion = release.version;
+//            addSnapshotVersion(versioning, snapshot, baseVersion, "pom");
+//            addSnapshotVersion(versioning, snapshot, baseVersion, "json");
+//
+//            versioning.addVersion(release.version);
+//        }
         return newMetadata;
     }
 
     private String writeMetadata(Metadata metadata) throws IOException {
-        if (metadata == null) {
-            return null;
-        }
         StringWriter sw = new StringWriter();
         METADATA_WRITER.write(sw, metadata);
         return sw.toString();
     }
 
     private void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion,
-            String extension) {
+                                    String extension) {
         final SnapshotVersion sv = new SnapshotVersion();
         sv.setExtension(extension);
         sv.setVersion(baseVersion + snapshot.getTimestamp() + "-" + snapshot.getBuildNumber());

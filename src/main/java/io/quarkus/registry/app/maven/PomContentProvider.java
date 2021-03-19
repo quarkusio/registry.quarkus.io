@@ -2,11 +2,10 @@ package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
-import java.net.URL;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.maven.artifact.Artifact;
@@ -21,23 +20,23 @@ public class PomContentProvider implements ArtifactContentProvider {
     private static final MavenXpp3Writer POM_WRITER = new MavenXpp3Writer();
 
     @Inject
-    Config config;
+    MavenConfig mavenConfig;
 
     @Override
     public boolean supports(Artifact artifact, UriInfo uriInfo) {
-        return config.supports(artifact) &&
+        return mavenConfig.supports(artifact) &&
                 artifact.getType().equals("pom");
     }
 
     @Override
-    public String provide(Artifact artifact, UriInfo uriInfo) throws Exception {
+    public Response provide(Artifact artifact, UriInfo uriInfo) throws Exception {
         String result = generatePom(artifact, uriInfo);
         if (artifact.getType().endsWith(".md5")) {
             result = HashUtil.md5(result);
         } else if (artifact.getType().endsWith(".sha1")) {
             result = HashUtil.sha1(result);
         }
-        return result;
+        return Response.ok(result).build();
     }
 
     private static String generatePom(Artifact artifact, UriInfo uriInfo) throws IOException {

@@ -42,9 +42,9 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findByQuarkusCore(quarkusVersion);
-        if (platformReleases.isEmpty()) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+//        if (platformReleases.isEmpty()) {
+//            throw new WebApplicationException(Response.Status.NOT_FOUND);
+//        }
         for (PlatformRelease platformRelease : platformReleases) {
             JsonPlatform platform = new JsonPlatform();
             ArtifactCoords bom = ArtifactCoords.pom(
@@ -90,9 +90,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     public ExtensionCatalog resolveNonPlatformExtensions(@NotNull @QueryParam("v") String quarkusVersion) {
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
-        if (nonPlatformExtensions.isEmpty()) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
+
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
             addExtension(catalog, extensionRelease);
         }
