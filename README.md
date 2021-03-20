@@ -16,11 +16,11 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw compile quarkus:dev
 ```
 
-## Indexing
+## Indexing Quarkiverse extensions
 
-Once the application is running, you can trigger the index for a specific platform by running 
+Once the application is running, you can insert new extension releases by running the following in the root of your plugin: 
       
-    http --form POST localhost:8080/admin/registry/platform groupId=io.quarkus artifactId=quarkus-bom version=1.10.0.Final
+    http localhost:8080/admin/v1/extension Content-Type:application/yaml @runtime/target/classes/META-INF/quarkus-extension.yaml
 
 
 ## Endpoints: 

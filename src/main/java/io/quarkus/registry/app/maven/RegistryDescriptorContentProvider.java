@@ -41,15 +41,15 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         JsonRegistryConfig config = new JsonRegistryConfig();
         // Add descriptor
         JsonRegistryDescriptorConfig descriptorConfig = new JsonRegistryDescriptorConfig();
-        descriptorConfig.setArtifact(ArtifactCoords.pom(MavenConfig.GROUP_ID, MavenConfig.REGISTRY_ARTIFACT_ID, MavenConfig.VERSION));
+        descriptorConfig.setArtifact(new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.REGISTRY_ARTIFACT_ID, "json",  MavenConfig.VERSION));
         config.setDescriptor(descriptorConfig);
         // Add platforms
         JsonRegistryPlatformsConfig platformsConfig = new JsonRegistryPlatformsConfig();
-        platformsConfig.setArtifact(ArtifactCoords.pom(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, MavenConfig.VERSION));
+        platformsConfig.setArtifact(new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION));
         config.setPlatforms(platformsConfig);
         // Add non-platforms
         JsonRegistryNonPlatformExtensionsConfig nonPlatformExtensionsConfig = new JsonRegistryNonPlatformExtensionsConfig();
-        nonPlatformExtensionsConfig.setArtifact(ArtifactCoords.pom(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_ARTIFACT_ID, MavenConfig.VERSION));
+        nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_ARTIFACT_ID, "json",MavenConfig.VERSION));
         config.setNonPlatformExtensions(nonPlatformExtensionsConfig);
         StringWriter sw = new StringWriter();
         JsonCatalogMapperHelper.serialize(objectMapper, config, sw);

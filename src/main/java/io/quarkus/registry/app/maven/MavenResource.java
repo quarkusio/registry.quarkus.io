@@ -16,6 +16,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
+import org.jboss.logging.Logger;
 
 /**
  * Exposes a Maven resource for our tooling
@@ -26,6 +27,8 @@ public class MavenResource {
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
+
+    private static final Logger log = Logger.getLogger(MavenResource.class);
 
     @Inject
     Instance<ArtifactContentProvider> providers;
@@ -49,6 +52,7 @@ public class MavenResource {
                 }
             }
         }
+        log.infof("Not found: {}", uriInfo.getAbsolutePath());
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
@@ -60,20 +64,18 @@ public class MavenResource {
         final String fileName = pathSegmentList.get(pathSegmentList.size() - 1).getPath();
         final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
         String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
-        final String groupId;
+        final StringBuilder builder = new StringBuilder();
+        builder.append(pathSegmentList.get(0).getPath());
+        for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
+            builder.append('.').append(pathSegmentList.get(i));
+        }
+        final String groupId = builder.toString();
 
         final String classifier;
         final String type;
         if (fileName.startsWith(MAVEN_METADATA_XML)) {
             type = fileName;
             classifier = "";
-            final StringBuilder builder = new StringBuilder();
-            builder.append(pathSegmentList.get(0).getPath());
-            for (int i = 1; i < pathSegmentList.size() - 2; ++i) {
-                builder.append('.').append(pathSegmentList.get(i));
-            }
-            groupId = builder.toString();
-            artifactId = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
         } else if (fileName.startsWith(artifactId)) {
             final boolean snapshot = version.endsWith(SNAPSHOT_SUFFIX);
             // if it's a snapshot version, in some cases the file name will contain the actual -SNAPSHOT suffix,
@@ -92,13 +94,6 @@ public class MavenResource {
             classifier = artifactId.length() + 1 < versionStart
                     ? fileName.substring(artifactId.length() + 1, versionStart - 1)
                     : "";
-
-            final StringBuilder builder = new StringBuilder();
-            builder.append(pathSegmentList.get(0).getPath());
-            for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
-                builder.append('.').append(pathSegmentList.get(i));
-            }
-            groupId = builder.toString();
         } else {
             throw new WebApplicationException(
                     "Artifact file name " + fileName + " does not start with the artifactId " + artifactId,

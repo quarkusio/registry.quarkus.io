@@ -5,6 +5,7 @@ import javax.enterprise.event.ObservesAsync;
 import javax.transaction.Transactional;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Category;
@@ -14,6 +15,7 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformReleaseCategory;
+import io.quarkus.registry.catalog.ExtensionCatalog;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -22,18 +24,32 @@ public class RegistryService {
     private static final Logger logger = Logger.getLogger(RegistryService.class);
 
     @Transactional
-    public void onPlatformCreate(@ObservesAsync PlatformCreateEvent event) {
+    public void onExtensionCatalogImport(@ObservesAsync ExtensionCatalogImportEvent event) {
         try {
-            insertPlatform(event.getPlatform());
+            ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
+            PlatformRelease platformRelease = insertPlatform(extensionCatalog.getBom(), extensionCatalog.getQuarkusCoreVersion(), extensionCatalog.getUpstreamQuarkusCoreVersion());
+            for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
+                insertExtensionRelease(extension, platformRelease);
+            }
         } catch (Exception e) {
             logger.error("Error while inserting platform", e);
         }
     }
 
-    private void insertPlatform(io.quarkus.registry.catalog.Platform payload) {
-        final String groupId = payload.getBom().getGroupId();
-        final String artifactId = payload.getBom().getArtifactId();
-        final String version = payload.getBom().getVersion();
+    @Transactional
+    public void onPlatformCreate(@ObservesAsync PlatformCreateEvent event) {
+        try {
+            io.quarkus.registry.catalog.Platform platform = event.getPlatform();
+            insertPlatform(platform.getBom(), platform.getQuarkusCoreVersion(), platform.getUpstreamQuarkusCoreVersion());
+        } catch (Exception e) {
+            logger.error("Error while inserting platform", e);
+        }
+    }
+
+    private PlatformRelease insertPlatform(ArtifactCoords bom, String quarkusCore, String quarkusCoreUpstream) {
+        final String groupId = bom.getGroupId();
+        final String artifactId = bom.getArtifactId();
+        final String version = bom.getVersion();
         final Platform platform = Platform.findByGA(groupId, artifactId)
                 .orElseGet(() -> {
                     Platform newPlatform = new Platform();
@@ -43,14 +59,14 @@ public class RegistryService {
                     return newPlatform;
                 });
 
-        PlatformRelease.findByGAV(groupId, artifactId, version)
+        return PlatformRelease.findByGAV(groupId, artifactId, version)
                 .orElseGet(() -> {
                     PlatformRelease newPlatformRelease = new PlatformRelease();
                     platform.releases.add(newPlatformRelease);
                     newPlatformRelease.platform = platform;
                     newPlatformRelease.version = version;
-                    newPlatformRelease.quarkusCore = payload.getQuarkusCoreVersion();
-                    newPlatformRelease.quarkusCoreUpstream = payload.getUpstreamQuarkusCoreVersion();
+                    newPlatformRelease.quarkusCore = quarkusCore;
+                    newPlatformRelease.quarkusCoreUpstream = quarkusCoreUpstream;
                     newPlatformRelease.persist();
                     return newPlatformRelease;
                 });
@@ -60,13 +76,13 @@ public class RegistryService {
     public void onExtensionCreate(@ObservesAsync ExtensionCreateEvent event) {
         // Non-platform extension
         try {
-            createExtensionRelease(event.getExtension(), null);
+            insertExtensionRelease(event.getExtension(), null);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private ExtensionRelease createExtensionRelease(io.quarkus.registry.catalog.Extension ext,
+    private ExtensionRelease insertExtensionRelease(io.quarkus.registry.catalog.Extension ext,
                                                     PlatformRelease platformRelease) {
         ArtifactCoords coords = ext.getArtifact();
         final String groupId = coords.getGroupId();

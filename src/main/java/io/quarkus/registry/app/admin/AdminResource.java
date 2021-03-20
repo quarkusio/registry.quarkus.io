@@ -23,6 +23,7 @@ import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.registry.app.events.BaseEvent;
+import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Extension;
@@ -30,7 +31,9 @@ import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
+import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatform;
+import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
 
 @ApplicationScoped
 @Path("/admin")
@@ -81,6 +84,21 @@ public class AdminResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
         emitter.fireAsync(new PlatformCreateEvent(platform));
+        return Response.accepted(bom).build();
+    }
+
+    @POST
+    @Path("/v1/extension/catalog")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
+    public Response addExtensionCatalog(JsonExtensionCatalog catalog) {
+        ArtifactCoords bom = catalog.getBom();
+        Optional<PlatformRelease> platformRelease = PlatformRelease
+                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
+        if (platformRelease.isPresent()) {
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+        emitter.fireAsync(new ExtensionCatalogImportEvent(catalog));
         return Response.accepted(bom).build();
     }
 

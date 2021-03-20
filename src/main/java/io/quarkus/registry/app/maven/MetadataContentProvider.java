@@ -31,14 +31,20 @@ public class MetadataContentProvider implements ArtifactContentProvider {
 
     @Override
     public boolean supports(Artifact artifact, UriInfo uriInfo) {
-        return MAVEN_METADATA_XML.equals(artifact.getType());
+        return artifact.getType() != null && artifact.getType().startsWith(MAVEN_METADATA_XML);
     }
 
     @Override
     public Response provide(Artifact artifact, UriInfo uriInfo) throws IOException {
         Metadata metadata = generateMetadata();
-        String output = writeMetadata(metadata);
-        return Response.ok(output)
+        String result = writeMetadata(metadata);
+        if (artifact.getType().endsWith(".md5")) {
+            result = HashUtil.md5(result);
+        } else if (artifact.getType().endsWith(".sha1")) {
+            result = HashUtil.sha1(result);
+        }
+
+        return Response.ok(result)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML)
                 .build();
     }
@@ -48,15 +54,15 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         newMetadata.setGroupId(MavenConfig.GROUP_ID);
         newMetadata.setArtifactId(MavenConfig.PLATFORM_ARTIFACT_ID);
 
-        Versioning versioning = new Versioning();
-        newMetadata.setVersioning(versioning);
-
-        versioning.updateTimestamp();
-
-        Snapshot snapshot = new Snapshot();
-        versioning.setSnapshot(snapshot);
-        snapshot.setTimestamp(versioning.getLastUpdated().substring(0, 8) + "." + versioning.getLastUpdated().substring(8));
-        snapshot.setBuildNumber(1);
+//        Versioning versioning = new Versioning();
+//        newMetadata.setVersioning(versioning);
+//
+//        versioning.updateTimestamp();
+//
+//        Snapshot snapshot = new Snapshot();
+//        versioning.setSnapshot(snapshot);
+//        snapshot.setTimestamp(versioning.getLastUpdated().substring(0, 8) + "." + versioning.getLastUpdated().substring(8));
+//        snapshot.setBuildNumber(1);
 
 //        for (PlatformRelease release : platform.releases) {
 //            final String baseVersion = release.version;
