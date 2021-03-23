@@ -18,10 +18,13 @@ import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import org.jboss.logging.Logger;
 
+/**
+ * This class listens for async events fired from {@link AdminResource}
+ */
 @ApplicationScoped
-public class RegistryService {
+public class AdminObserver {
 
-    private static final Logger logger = Logger.getLogger(RegistryService.class);
+    private static final Logger logger = Logger.getLogger(AdminObserver.class);
 
     @Transactional
     public void onExtensionCatalogImport(@ObservesAsync ExtensionCatalogImportEvent event) {

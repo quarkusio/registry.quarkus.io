@@ -41,10 +41,12 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     @Override
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
-        List<PlatformRelease> platformReleases = PlatformRelease.findByQuarkusCore(quarkusVersion);
-//        if (platformReleases.isEmpty()) {
-//            throw new WebApplicationException(Response.Status.NOT_FOUND);
-//        }
+        List<PlatformRelease> platformReleases;
+        if (quarkusVersion == null || quarkusVersion.isEmpty()) {
+            platformReleases = PlatformRelease.findLatest();
+        } else {
+            platformReleases = PlatformRelease.findByQuarkusCore(quarkusVersion);
+        }
         for (PlatformRelease platformRelease : platformReleases) {
             JsonPlatform platform = new JsonPlatform();
             ArtifactCoords bom = ArtifactCoords.pom(
@@ -55,7 +57,9 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
             platform.setQuarkusCoreVersion(platformRelease.quarkusCore);
             platform.setUpstreamQuarkusCoreVersion(platformRelease.quarkusCoreUpstream);
             catalog.addPlatform(platform);
-            catalog.setDefaultPlatform(bom);
+            if (platformRelease.platform.isDefault) {
+                catalog.setDefaultPlatform(bom);
+            }
         }
         return catalog;
     }

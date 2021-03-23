@@ -27,8 +27,11 @@ public class Platform extends BaseEntity {
     @Column(nullable = false)
     public String artifactId;
 
+    @Column
+    public boolean isDefault;
+
     @OneToMany(mappedBy = "platform", orphanRemoval = true)
-    @OrderBy("semver")
+    @OrderBy("versionSemver")
     public List<PlatformRelease> releases = new ArrayList<>();
 
     @Override

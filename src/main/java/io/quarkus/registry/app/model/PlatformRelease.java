@@ -10,6 +10,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
@@ -20,7 +21,14 @@ import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@NamedQuery(name = "PlatformRelease.findByQuarkusCore", query = "from PlatformRelease pr where pr.quarkusCore = :quarkusCore")
+@NamedQueries({
+        @NamedQuery(name = "PlatformRelease.findByQuarkusCore", query = "from PlatformRelease pr where pr.quarkusCore = ?1"),
+        @NamedQuery(name = "PlatformRelease.findLatest", query = "from PlatformRelease pr " +
+                "where (pr.platform, pr.versionSemver) in (" +
+                "    select pr2.platform, max(pr2.versionSemver) from PlatformRelease pr2" +
+                "    group by pr2.platform" +
+                ")")
+})
 public class PlatformRelease extends BaseEntity {
 
     @NaturalId
@@ -34,8 +42,8 @@ public class PlatformRelease extends BaseEntity {
     /**
      * The version above formatted as a valid semver (for max and order-by operations)
      */
-    @Column(updatable = false,  columnDefinition = "semver")
-    private String semver;
+    @Column(updatable = false, columnDefinition = "semver")
+    private String versionSemver;
 
     @Column(nullable = false)
     public String quarkusCore;
@@ -50,7 +58,7 @@ public class PlatformRelease extends BaseEntity {
 
     @PrePersist
     void updateSemVer() {
-        this.semver = Semver.toSemver(version);
+        this.versionSemver = Semver.toSemver(version);
     }
 
     @Override
@@ -82,11 +90,11 @@ public class PlatformRelease extends BaseEntity {
                 .using("version", version)
                 .loadOptional();
     }
-
     public static List<PlatformRelease> findByQuarkusCore(String quarkusCore) {
-        EntityManager em = JpaOperations.getEntityManager();
-        return em.createNamedQuery("PlatformRelease.findByQuarkusCore", PlatformRelease.class)
-                .setParameter("quarkusCore", quarkusCore)
-                .getResultList();
+        return list("#PlatformRelease.findByQuarkusCore", quarkusCore);
+    }
+
+    public static List<PlatformRelease> findLatest() {
+        return list("#PlatformRelease.findLatest");
     }
 }

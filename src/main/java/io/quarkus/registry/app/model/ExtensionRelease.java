@@ -38,7 +38,7 @@ public class ExtensionRelease extends BaseEntity {
      * The version above formatted as a valid semver (for max and order-by operations)
      */
     @Column(updatable = false, columnDefinition = "semver")
-    private String semver;
+    private String versionSemver;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
@@ -55,7 +55,7 @@ public class ExtensionRelease extends BaseEntity {
      */
     @PrePersist
     void updateSemVer() {
-        this.semver = Semver.toSemver(version);
+        this.versionSemver = Semver.toSemver(version);
     }
 
     @Override

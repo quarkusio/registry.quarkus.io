@@ -31,7 +31,7 @@ public class Extension extends BaseEntity {
     public String description;
 
     @OneToMany(mappedBy = "extension", orphanRemoval = true)
-    @OrderBy("semver")
+    @OrderBy("versionSemver")
     public List<ExtensionRelease> releases;
 
     @Override
