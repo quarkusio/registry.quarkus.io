@@ -1,5 +1,7 @@
 package io.quarkus.registry.app.admin;
 
+import java.util.Map;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.transaction.Transactional;
@@ -30,7 +32,10 @@ public class AdminObserver {
     public void onExtensionCatalogImport(@ObservesAsync ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
-            PlatformRelease platformRelease = insertPlatform(extensionCatalog.getBom(), extensionCatalog.getQuarkusCoreVersion(), extensionCatalog.getUpstreamQuarkusCoreVersion());
+            PlatformRelease platformRelease = insertPlatform(extensionCatalog.getBom(),
+                                                             extensionCatalog.getQuarkusCoreVersion(),
+                                                             extensionCatalog.getUpstreamQuarkusCoreVersion(),
+                                                             extensionCatalog.getMetadata());
             for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
                 insertExtensionRelease(extension, platformRelease);
             }
@@ -43,13 +48,13 @@ public class AdminObserver {
     public void onPlatformCreate(@ObservesAsync PlatformCreateEvent event) {
         try {
             io.quarkus.registry.catalog.Platform platform = event.getPlatform();
-            insertPlatform(platform.getBom(), platform.getQuarkusCoreVersion(), platform.getUpstreamQuarkusCoreVersion());
+            insertPlatform(platform.getBom(), platform.getQuarkusCoreVersion(), platform.getUpstreamQuarkusCoreVersion(), null);
         } catch (Exception e) {
             logger.error("Error while inserting platform", e);
         }
     }
 
-    private PlatformRelease insertPlatform(ArtifactCoords bom, String quarkusCore, String quarkusCoreUpstream) {
+    private PlatformRelease insertPlatform(ArtifactCoords bom, String quarkusCore, String quarkusCoreUpstream, Map<String, Object> metadata) {
         final String groupId = bom.getGroupId();
         final String artifactId = bom.getArtifactId();
         final String version = bom.getVersion();
@@ -70,6 +75,7 @@ public class AdminObserver {
                     newPlatformRelease.version = version;
                     newPlatformRelease.quarkusCore = quarkusCore;
                     newPlatformRelease.quarkusCoreUpstream = quarkusCoreUpstream;
+                    newPlatformRelease.metadata = metadata;
                     newPlatformRelease.persist();
                     return newPlatformRelease;
                 });

@@ -1,6 +1,7 @@
 package io.quarkus.registry.app;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,11 +14,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.catalog.ExtensionCatalog;
+import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonCategory;
 import io.quarkus.registry.catalog.json.JsonExtension;
@@ -67,22 +71,46 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     @GET
     @Path("extensions")
     @Override
-    public ExtensionCatalog resolvePlatformExtensions(@QueryParam("c") ArtifactCoords platformCoords) {
+    public ExtensionCatalog resolvePlatformExtensions(@NotNull @QueryParam("c") ArtifactCoords platformCoords) {
+        if (platformCoords == null) {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
         JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         PlatformRelease platformRelease = PlatformRelease
                 .findByGAV(platformCoords.getGroupId(), platformCoords.getArtifactId(), platformCoords.getVersion())
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+
+        String id = new ArtifactCoords(MavenConfig.PLATFORM_COORDS.getGroupId(),
+                                       MavenConfig.PLATFORM_COORDS.getArtifactId(),
+                                       platformCoords.getVersion(),
+                                       MavenConfig.PLATFORM_COORDS.getType(),
+                                       MavenConfig.PLATFORM_COORDS.getVersion()).toString();
+
+        catalog.setId(id);
+        catalog.setBom(platformCoords);
+        catalog.setPlatform(true);
+        catalog.setQuarkusCoreVersion(platformRelease.quarkusCore);
+        catalog.setUpstreamQuarkusCoreVersion(platformRelease.quarkusCoreUpstream);
+        catalog.setMetadata(platformRelease.metadata);
         // Add extensions
-        platformRelease.extensions.stream()
-                .map(pe -> pe.extensionRelease)
-                .forEach(extensionRelease -> addExtension(catalog, extensionRelease));
+        for (PlatformExtension platformExtension : platformRelease.extensions) {
+            JsonExtension jsonExtension = toJsonExtension(platformExtension, catalog);
+            catalog.addExtension(jsonExtension);
+        }
         // Add categories
         List<io.quarkus.registry.catalog.Category> categories = new ArrayList<>();
-        for (PlatformReleaseCategory cat : platformRelease.categories) {
-            JsonCategory jsonCategory = new JsonCategory();
-            jsonCategory.setId(cat.getName());
-            jsonCategory.setName(cat.getName());
-            jsonCategory.setDescription(cat.getDescription());
+        if (platformRelease.categories.isEmpty()) {
+            categories = Category.listAll().stream()
+                    .map(Category.class::cast)
+                    .map(this::toJsonCategory)
+                    .collect(Collectors.toList());
+        } else {
+            for (PlatformReleaseCategory cat : platformRelease.categories) {
+                JsonCategory jsonCategory = new JsonCategory();
+                jsonCategory.setId(cat.getName());
+                jsonCategory.setName(cat.getName());
+                jsonCategory.setDescription(cat.getDescription());
+            }
         }
         catalog.setCategories(categories);
         return catalog;
@@ -96,7 +124,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
 
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
-            addExtension(catalog, extensionRelease);
+            catalog.addExtension(toJsonExtension(extensionRelease));
         }
         // Add all categories
         List<Category> categories = Category.listAll();
@@ -112,7 +140,14 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         return jsonCategory;
     }
 
-    private void addExtension(JsonExtensionCatalog catalog, ExtensionRelease extensionRelease) {
+    private JsonExtension toJsonExtension(PlatformExtension platformExtension, ExtensionOrigin extensionOrigin) {
+        JsonExtension e = toJsonExtension(platformExtension.extensionRelease);
+        e.setMetadata(platformExtension.metadata);
+        e.setOrigins(Collections.singletonList(extensionOrigin));
+        return e;
+    }
+
+    private JsonExtension toJsonExtension(ExtensionRelease extensionRelease) {
         JsonExtension e = new JsonExtension();
         e.setGroupId(extensionRelease.extension.groupId);
         e.setArtifactId(extensionRelease.extension.artifactId);
@@ -120,7 +155,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         e.setName(extensionRelease.extension.name);
         e.setDescription(extensionRelease.extension.description);
         e.setMetadata(extensionRelease.metadata);
-        catalog.addExtension(e);
+        return e;
     }
 
 }

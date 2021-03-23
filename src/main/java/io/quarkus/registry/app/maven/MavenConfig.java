@@ -2,6 +2,7 @@ package io.quarkus.registry.app.maven;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import io.quarkus.maven.ArtifactCoords;
 import org.apache.maven.artifact.Artifact;
 
 @ApplicationScoped
@@ -16,6 +17,8 @@ public class MavenConfig {
     static final String REGISTRY_ARTIFACT_ID = "quarkus-registry-descriptor";
 
     static final String VERSION = "1.0-SNAPSHOT";
+
+    public static final ArtifactCoords PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
 
     public boolean supports(Artifact artifact) {
         return matchesQuarkusPlatforms(artifact) ||
