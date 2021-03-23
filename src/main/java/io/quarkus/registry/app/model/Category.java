@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
@@ -17,6 +18,7 @@ import org.hibernate.annotations.Type;
  * Categories an extension belongs to
  */
 @Entity
+@Cacheable
 public class Category extends BaseEntity {
 
     @NaturalId

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -17,6 +18,7 @@ import org.hibernate.annotations.Sort;
 import org.hibernate.annotations.SortComparator;
 
 @Entity
+@Cacheable
 public class Platform extends BaseEntity {
 
     @NaturalId
