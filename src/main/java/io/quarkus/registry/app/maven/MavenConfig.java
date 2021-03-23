@@ -19,6 +19,7 @@ public class MavenConfig {
     static final String VERSION = "1.0-SNAPSHOT";
 
     public static final ArtifactCoords PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
+    public static final ArtifactCoords NON_PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
 
     public boolean supports(Artifact artifact) {
         return matchesQuarkusPlatforms(artifact) ||

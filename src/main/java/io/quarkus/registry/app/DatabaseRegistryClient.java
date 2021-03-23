@@ -71,7 +71,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     @GET
     @Path("extensions")
     @Override
-    public ExtensionCatalog resolvePlatformExtensions(@NotNull @QueryParam("c") ArtifactCoords platformCoords) {
+    public ExtensionCatalog resolvePlatformExtensions(@QueryParam("c") ArtifactCoords platformCoords) {
         if (platformCoords == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
@@ -119,8 +119,18 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     @Override
     @GET
     @Path("non-platform-extensions")
-    public ExtensionCatalog resolveNonPlatformExtensions(@NotNull @QueryParam("v") String quarkusVersion) {
+    public ExtensionCatalog resolveNonPlatformExtensions(@QueryParam("v") String quarkusVersion) {
+        if (quarkusVersion == null) {
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        String id = new ArtifactCoords(MavenConfig.PLATFORM_COORDS.getGroupId(),
+                                       MavenConfig.PLATFORM_COORDS.getArtifactId(),
+                                       quarkusVersion,
+                                       MavenConfig.PLATFORM_COORDS.getType(),
+                                       MavenConfig.PLATFORM_COORDS.getVersion()).toString();
+
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
+        catalog.setId(id);
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
 
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
