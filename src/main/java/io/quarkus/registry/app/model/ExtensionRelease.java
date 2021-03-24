@@ -17,7 +17,7 @@ import javax.persistence.PrePersist;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
-import io.quarkus.registry.app.util.Semver;
+import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
@@ -35,10 +35,10 @@ public class ExtensionRelease extends BaseEntity {
     public String version;
 
     /**
-     * The version above formatted as a valid semver (for max and order-by operations)
+     * The version above formatted for max and order-by operations
      */
-    @Column(updatable = false, columnDefinition = "semver")
-    private String versionSemver;
+    @Column(updatable = false, length = 100)
+    private String versionSortable;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
@@ -51,11 +51,11 @@ public class ExtensionRelease extends BaseEntity {
     public List<PlatformExtension> platforms = new ArrayList<>();
 
     /**
-     * This hook will update the semver field with the version
+     * This hook will update the version_sortable field with the version
      */
     @PrePersist
     void updateSemVer() {
-        this.versionSemver = Semver.toSemver(version);
+        this.versionSortable = Version.toSortable(version);
     }
 
     @Override

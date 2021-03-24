@@ -9,16 +9,17 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
+import javax.persistence.Table;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
-import io.quarkus.registry.app.util.Semver;
+import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
@@ -27,8 +28,8 @@ import org.hibernate.annotations.Type;
 @NamedQueries({
         @NamedQuery(name = "PlatformRelease.findByQuarkusCore", query = "from PlatformRelease pr where pr.quarkusCore = ?1"),
         @NamedQuery(name = "PlatformRelease.findLatest", query = "from PlatformRelease pr " +
-                "where (pr.platform, pr.versionSemver) in (" +
-                "    select pr2.platform, max(pr2.versionSemver) from PlatformRelease pr2" +
+                "where (pr.platform, pr.versionSortable) in (" +
+                "    select pr2.platform, max(pr2.versionSortable) from PlatformRelease pr2" +
                 "    group by pr2.platform" +
                 ")")
 })
@@ -45,8 +46,8 @@ public class PlatformRelease extends BaseEntity {
     /**
      * The version above formatted as a valid semver (for max and order-by operations)
      */
-    @Column(updatable = false, columnDefinition = "semver")
-    private String versionSemver;
+    @Column(updatable = false, length = 100)
+    private String versionSortable;
 
     @Column(nullable = false)
     public String quarkusCore;
@@ -65,7 +66,7 @@ public class PlatformRelease extends BaseEntity {
 
     @PrePersist
     void updateSemVer() {
-        this.versionSemver = Semver.toSemver(version);
+        this.versionSortable = Version.toSortable(version);
     }
 
     @Override

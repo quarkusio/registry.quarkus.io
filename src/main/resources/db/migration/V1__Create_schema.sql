@@ -34,7 +34,7 @@ create table extension_release
     quarkus_core varchar(255) not null,
     metadata json,
     version varchar(255) not null,
-    version_semver semver,
+    version_sortable varchar(100) not null,
     extension_id bigint not null
         constraint fka1ko47ipb9gxqh6jhwy704b7
             references extension,
@@ -63,9 +63,9 @@ create table platform_release
     created_at timestamp default CURRENT_TIMESTAMP,
     metadata json,
     version varchar(255) not null,
+    version_sortable varchar(100) not null,
     quarkus_core varchar(255) not null,
     quarkus_core_upstream varchar(255),
-    version_semver semver,
     platform_id bigint
         constraint platform_fkey
             references platform,
