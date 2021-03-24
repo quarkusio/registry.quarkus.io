@@ -49,7 +49,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         config.setPlatforms(platformsConfig);
         // Add non-platforms
         JsonRegistryNonPlatformExtensionsConfig nonPlatformExtensionsConfig = new JsonRegistryNonPlatformExtensionsConfig();
-        nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_ARTIFACT_ID, "json",MavenConfig.VERSION));
+        nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_EXTENSIONS_ARTIFACT_ID, "json", MavenConfig.VERSION));
         config.setNonPlatformExtensions(nonPlatformExtensionsConfig);
         StringWriter sw = new StringWriter();
         JsonCatalogMapperHelper.serialize(objectMapper, config, sw);

@@ -12,14 +12,15 @@ public class MavenConfig {
 
     static final String PLATFORM_ARTIFACT_ID = "quarkus-platforms";
 
-    static final String NON_PLATFORM_ARTIFACT_ID = "quarkus-non-platform-extensions";
+    static final String PLATFORM_EXTENSIONS_ARTIFACT_ID = "quarkus-platform-extensions";
+    static final String NON_PLATFORM_EXTENSIONS_ARTIFACT_ID = "quarkus-non-platform-extensions";
 
     static final String REGISTRY_ARTIFACT_ID = "quarkus-registry-descriptor";
 
     static final String VERSION = "1.0-SNAPSHOT";
 
     public static final ArtifactCoords PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
-    public static final ArtifactCoords NON_PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
+    public static final ArtifactCoords NON_PLATFORM_EXTENSION_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_EXTENSIONS_ARTIFACT_ID, "json", MavenConfig.VERSION);
 
     public boolean supports(Artifact artifact) {
         return matchesQuarkusPlatforms(artifact) ||
@@ -49,7 +50,7 @@ public class MavenConfig {
      */
     public boolean matchesNonPlatformExtensions(Artifact artifact) {
         return GROUP_ID.equals(artifact.getGroupId()) &&
-                NON_PLATFORM_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
+                NON_PLATFORM_EXTENSIONS_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
                 VERSION.equals(artifact.getVersion());
     }
 

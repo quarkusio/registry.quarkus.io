@@ -11,7 +11,6 @@ import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.registry.app.DatabaseRegistryClient;
-import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 import org.apache.maven.artifact.Artifact;
@@ -20,7 +19,7 @@ import org.apache.maven.artifact.Artifact;
  * Lists the available platforms and their recommended versions, indicating which platform is the recommended default for new projects
  */
 @ApplicationScoped
-public class PlatformExtensionsContentProvider implements ArtifactContentProvider {
+public class PlatformsContentProvider implements ArtifactContentProvider {
 
     @Inject
     MavenConfig mavenConfig;
