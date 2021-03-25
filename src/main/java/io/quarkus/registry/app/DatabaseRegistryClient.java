@@ -123,22 +123,23 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         if (quarkusVersion == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        String id = new ArtifactCoords(MavenConfig.PLATFORM_COORDS.getGroupId(),
-                                       MavenConfig.PLATFORM_COORDS.getArtifactId(),
+        String id = new ArtifactCoords(MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getGroupId(),
+                                       MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getArtifactId(),
                                        quarkusVersion,
-                                       MavenConfig.PLATFORM_COORDS.getType(),
-                                       MavenConfig.PLATFORM_COORDS.getVersion()).toString();
+                                       MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getType(),
+                                       MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getVersion()).toString();
 
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         catalog.setId(id);
+        catalog.setBom(ArtifactCoords.pom("io.quarkus","quarkus-bom", quarkusVersion));
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
 
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
-            catalog.addExtension(toJsonExtension(extensionRelease));
+            catalog.addExtension(toJsonExtension(extensionRelease, catalog));
         }
         // Add all categories
         List<Category> categories = Category.listAll();
-        catalog.setCategories(categories.stream().map(this::toJsonCategory).collect(Collectors.toList()));
+        categories.stream().map(this::toJsonCategory).forEach(catalog::addCategory);
         return catalog;
     }
 
@@ -151,19 +152,19 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
     }
 
     private JsonExtension toJsonExtension(PlatformExtension platformExtension, ExtensionOrigin extensionOrigin) {
-        JsonExtension e = toJsonExtension(platformExtension.extensionRelease);
+        JsonExtension e = toJsonExtension(platformExtension.extensionRelease, extensionOrigin);
         e.setMetadata(platformExtension.metadata);
-        e.setOrigins(Collections.singletonList(extensionOrigin));
         return e;
     }
 
-    private JsonExtension toJsonExtension(ExtensionRelease extensionRelease) {
+    private JsonExtension toJsonExtension(ExtensionRelease extensionRelease, ExtensionOrigin extensionOrigin) {
         JsonExtension e = new JsonExtension();
         e.setGroupId(extensionRelease.extension.groupId);
         e.setArtifactId(extensionRelease.extension.artifactId);
         e.setVersion(extensionRelease.version);
         e.setName(extensionRelease.extension.name);
         e.setDescription(extensionRelease.extension.description);
+        e.setOrigins(Collections.singletonList(extensionOrigin));
         e.setMetadata(extensionRelease.metadata);
         return e;
     }
