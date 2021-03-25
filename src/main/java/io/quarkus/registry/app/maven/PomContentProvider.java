@@ -3,8 +3,11 @@ package io.quarkus.registry.app.maven;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -14,7 +17,8 @@ import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
-@ApplicationScoped
+@Singleton
+@Priority(1000)
 public class PomContentProvider implements ArtifactContentProvider {
 
     private static final MavenXpp3Writer POM_WRITER = new MavenXpp3Writer();

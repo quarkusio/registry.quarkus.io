@@ -4,6 +4,7 @@ import java.io.StringWriter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -19,7 +20,7 @@ import io.quarkus.registry.config.json.JsonRegistryNonPlatformExtensionsConfig;
 import io.quarkus.registry.config.json.JsonRegistryPlatformsConfig;
 import org.apache.maven.artifact.Artifact;
 
-@ApplicationScoped
+@Singleton
 public class RegistryDescriptorContentProvider implements ArtifactContentProvider {
 
     @Inject

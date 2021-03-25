@@ -1,9 +1,8 @@
 package io.quarkus.registry.app.maven;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,7 +14,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
 import org.jboss.logging.Logger;
 
 /**
@@ -24,23 +22,40 @@ import org.jboss.logging.Logger;
 @Path("/maven")
 public class MavenResource {
 
-    private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
-
-    private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
-
     private static final Logger log = Logger.getLogger(MavenResource.class);
 
     @Inject
-    Instance<ArtifactContentProvider> providers;
+    PomContentProvider pomContentProvider;
+
+    @Inject
+    MetadataContentProvider metadataContentProvider;
+
+    @Inject
+    RegistryDescriptorContentProvider registryDescriptorContentProvider;
+
+    @Inject
+    PlatformsContentProvider platformsContentProvider;
+
+    @Inject
+    NonPlatformExtensionsContentProvider nonPlatformExtensionsContentProvider;
+
+    private ArtifactContentProvider[] getContentProviders() {
+        return new ArtifactContentProvider[]{
+                pomContentProvider,
+                metadataContentProvider,
+                registryDescriptorContentProvider,
+                platformsContentProvider,
+                nonPlatformExtensionsContentProvider
+        };
+    }
 
     @GET
     @Path("{path:.+}")
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
-            @Context UriInfo uriInfo) throws IOException {
-
-        Artifact artifact = parseArtifact(pathSegments);
-        for (ArtifactContentProvider contentProvider : providers) {
+            @Context UriInfo uriInfo) {
+        Artifact artifact = ArtifactParser.parseArtifact(pathSegments.stream().map(PathSegment::getPath).collect(Collectors.toList()));
+        for (ArtifactContentProvider contentProvider : getContentProviders()) {
             if (contentProvider.supports(artifact, uriInfo)) {
                 try {
                     return contentProvider.provide(artifact, uriInfo);
@@ -54,52 +69,5 @@ public class MavenResource {
         }
         log.infof("Not found: {}", uriInfo.getAbsolutePath());
         return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    private static Artifact parseArtifact(List<PathSegment> pathSegmentList) {
-        if (pathSegmentList.size() < 3) {
-            throw new WebApplicationException("Coordinates are missing", Response.Status.BAD_REQUEST);
-        }
-
-        final String fileName = pathSegmentList.get(pathSegmentList.size() - 1).getPath();
-        final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
-        String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
-        final StringBuilder builder = new StringBuilder();
-        builder.append(pathSegmentList.get(0).getPath());
-        for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
-            builder.append('.').append(pathSegmentList.get(i));
-        }
-        final String groupId = builder.toString();
-
-        final String classifier;
-        final String type;
-        if (fileName.startsWith(MAVEN_METADATA_XML)) {
-            type = fileName;
-            classifier = "";
-        } else if (fileName.startsWith(artifactId)) {
-            final boolean snapshot = version.endsWith(SNAPSHOT_SUFFIX);
-            // if it's a snapshot version, in some cases the file name will contain the actual -SNAPSHOT suffix,
-            // in other cases the SNAPSHOT will be replaced with a timestamp+build number expression
-            // e.g. instead of artifactId-baseVersion-SNAPSHOT the file name will look like artifactId-baseVersion-YYYYMMDD.HHMMSS-buildNumber
-            final String baseVersion = snapshot ? version.substring(0, version.length() - SNAPSHOT_SUFFIX.length()) : version;
-            final int versionStart = fileName.lastIndexOf(baseVersion);
-            int versionEnd;
-            if (snapshot) {
-                versionEnd = fileName.indexOf('-', versionStart + baseVersion.length() + 1);
-                versionEnd = fileName.indexOf('.', versionEnd < 0 ? versionStart + baseVersion.length() : versionEnd + 1);
-            } else {
-                versionEnd = versionStart + version.length();
-            }
-            type = fileName.substring(versionEnd + 1);
-            classifier = artifactId.length() + 1 < versionStart
-                    ? fileName.substring(artifactId.length() + 1, versionStart - 1)
-                    : "";
-        } else {
-            throw new WebApplicationException(
-                    "Artifact file name " + fileName + " does not start with the artifactId " + artifactId,
-                    Response.Status.BAD_REQUEST);
-        }
-
-        return new DefaultArtifact(groupId, artifactId, version, null, type, classifier, null);
     }
 }

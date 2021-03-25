@@ -4,6 +4,7 @@ import java.io.StringWriter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -18,7 +19,7 @@ import org.apache.maven.artifact.Artifact;
 /**
  * Lists the available platforms and their recommended versions, indicating which platform is the recommended default for new projects
  */
-@ApplicationScoped
+@Singleton
 public class PlatformsContentProvider implements ArtifactContentProvider {
 
     @Inject

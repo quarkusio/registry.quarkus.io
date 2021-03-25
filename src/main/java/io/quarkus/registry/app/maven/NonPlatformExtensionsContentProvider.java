@@ -4,6 +4,7 @@ import java.io.StringWriter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -15,7 +16,7 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 import org.apache.maven.artifact.Artifact;
 
-@ApplicationScoped
+@Singleton
 public class NonPlatformExtensionsContentProvider implements ArtifactContentProvider {
 
     @Inject
