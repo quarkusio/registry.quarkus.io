@@ -83,7 +83,8 @@ public class AdminResource {
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        emitter.fireAsync(new PlatformCreateEvent(platform));
+        PlatformCreateEvent event = new PlatformCreateEvent(platform);
+        emitter.fire(event);
         return Response.accepted(bom).build();
     }
 
@@ -98,7 +99,8 @@ public class AdminResource {
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        emitter.fireAsync(new ExtensionCatalogImportEvent(catalog));
+        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(catalog);
+        emitter.fire(event);
         return Response.accepted(bom).build();
     }
 
@@ -114,7 +116,7 @@ public class AdminResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
-        emitter.fireAsync(event);
+        emitter.fire(event);
         return Response.accepted(bom).build();
     }
 

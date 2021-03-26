@@ -1,5 +1,7 @@
 package io.quarkus.registry.app.util;
 
+import java.util.Objects;
+
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 public class Version {
@@ -13,7 +15,7 @@ public class Version {
      */
     public static String toSortable(String version) {
         DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
-        String qualifier = dav.getQualifier();
+        String qualifier = Objects.toString(dav.getQualifier(),"");
         // getQualifier does not work in some cases. Eg. 1.2.3.Final-redhat-00001
         if (!version.endsWith(qualifier)) {
             int idx = version.indexOf(qualifier);
