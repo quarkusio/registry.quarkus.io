@@ -5,9 +5,7 @@ import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -22,7 +20,6 @@ import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
-import io.quarkus.registry.app.events.BaseEvent;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
@@ -33,15 +30,17 @@ import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatform;
-import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 @Path("/admin")
 @RolesAllowed("admin")
 public class AdminResource {
 
+    private static final Logger log = Logger.getLogger(AdminResource.class);
+
     @Inject
-    Event<BaseEvent> emitter;
+    AdminObserver observer;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
@@ -77,6 +76,7 @@ public class AdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     public Response addPlatform(JsonPlatform platform) {
+        log.infof("Adding platform %s", platform);
         ArtifactCoords bom = platform.getBom();
         Optional<PlatformRelease> platformRelease = PlatformRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
@@ -84,7 +84,7 @@ public class AdminResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
         PlatformCreateEvent event = new PlatformCreateEvent(platform);
-        emitter.fire(event);
+        observer.onPlatformCreate(event);
         return Response.accepted(bom).build();
     }
 
@@ -93,6 +93,7 @@ public class AdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     public Response addExtensionCatalog(JsonExtensionCatalog catalog) {
+        log.infof("Adding catalog %s", catalog);
         ArtifactCoords bom = catalog.getBom();
         Optional<PlatformRelease> platformRelease = PlatformRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
@@ -100,7 +101,7 @@ public class AdminResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
         ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(catalog);
-        emitter.fire(event);
+        observer.onExtensionCatalogImport(event);
         return Response.accepted(bom).build();
     }
 
@@ -109,6 +110,7 @@ public class AdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     public Response addExtension(JsonExtension extension) {
+        log.infof("Adding extension %s", extension);
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
@@ -116,7 +118,7 @@ public class AdminResource {
             return Response.status(Response.Status.CONFLICT).build();
         }
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
-        emitter.fire(event);
+        observer.onExtensionCreate(event);
         return Response.accepted(bom).build();
     }
 

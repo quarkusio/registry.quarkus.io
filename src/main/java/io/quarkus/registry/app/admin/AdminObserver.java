@@ -3,7 +3,6 @@ package io.quarkus.registry.app.admin;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 import javax.transaction.Transactional;
 
 import io.quarkus.maven.ArtifactCoords;
@@ -29,7 +28,7 @@ public class AdminObserver {
     private static final Logger logger = Logger.getLogger(AdminObserver.class);
 
     @Transactional
-    public void onExtensionCatalogImport(@Observes ExtensionCatalogImportEvent event) {
+    public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
             PlatformRelease platformRelease = insertPlatform(extensionCatalog.getBom(),
@@ -41,11 +40,12 @@ public class AdminObserver {
             }
         } catch (Exception e) {
             logger.error("Error while inserting platform", e);
+            throw new IllegalStateException(e);
         }
     }
 
     @Transactional
-    public void onPlatformCreate(@Observes PlatformCreateEvent event) {
+    public void onPlatformCreate(PlatformCreateEvent event) {
         try {
             io.quarkus.registry.catalog.Platform platform = event.getPlatform();
             insertPlatform(platform.getBom(), platform.getQuarkusCoreVersion(), platform.getUpstreamQuarkusCoreVersion(), null);
@@ -82,12 +82,13 @@ public class AdminObserver {
     }
 
     @Transactional
-    public void onExtensionCreate(@Observes ExtensionCreateEvent event) {
+    public void onExtensionCreate(ExtensionCreateEvent event) {
         // Non-platform extension
         try {
             insertExtensionRelease(event.getExtension(), null);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new IllegalStateException(e);
         }
     }
 
