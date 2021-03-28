@@ -40,7 +40,7 @@ public class AdminResource {
     private static final Logger log = Logger.getLogger(AdminResource.class);
 
     @Inject
-    AdminObserver observer;
+    AdminService observer;
 
     @GET
     @Produces(MediaType.TEXT_HTML)

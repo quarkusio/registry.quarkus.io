@@ -23,9 +23,9 @@ import org.jboss.logging.Logger;
  * This class listens for async events fired from {@link AdminResource}
  */
 @ApplicationScoped
-public class AdminObserver {
+public class AdminService {
 
-    private static final Logger logger = Logger.getLogger(AdminObserver.class);
+    private static final Logger logger = Logger.getLogger(AdminService.class);
 
     @Transactional
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
@@ -114,7 +114,19 @@ public class AdminObserver {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
                     newExtensionRelease.version = version;
                     newExtensionRelease.extension = extension;
-                    newExtensionRelease.quarkusCore = (String) ext.getMetadata().get("built-with-quarkus-core");
+                    String quarkusCore = (String) ext.getMetadata().get("built-with-quarkus-core");
+                    // Some extensions were published using the full GAV
+                    if (quarkusCore != null) {
+                        try {
+                            quarkusCore = ArtifactCoords.fromString(quarkusCore).getVersion();
+                        } catch (IllegalArgumentException iae) {
+                            // ignore
+                        }
+                    } else {
+                        // Cannot determine Quarkus version
+                        quarkusCore = "0.0.0";
+                    }
+                    newExtensionRelease.quarkusCore = quarkusCore;
                     // Many-to-many
                     if (platformRelease != null) {
                         PlatformExtension platformExtension = new PlatformExtension();
