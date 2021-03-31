@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.cache.CacheResult;
+import io.quarkus.registry.app.CacheNames;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
@@ -52,7 +53,7 @@ public class MetadataContentProvider implements ArtifactContentProvider {
                 .build();
     }
 
-    @CacheResult(cacheName = "quarkus-metadata")
+    @CacheResult(cacheName = CacheNames.METADATA)
     Metadata generateMetadata(Artifact artifact) {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());
