@@ -29,16 +29,13 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
     @Inject
     ObjectMapper objectMapper;
 
-    @Inject
-    DatabaseRegistryClient registryClient;
-
     @Override
-    public boolean supports(Artifact artifact, UriInfo uriInfo) {
+    public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.matchesRegistryDescriptor(artifact);
     }
 
     @Override
-    public Response provide(Artifact artifact, UriInfo uriInfo) throws Exception {
+    public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         JsonRegistryConfig config = new JsonRegistryConfig();
         // Add descriptor
         JsonRegistryDescriptorConfig descriptorConfig = new JsonRegistryDescriptorConfig();

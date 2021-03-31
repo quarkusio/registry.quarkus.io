@@ -2,70 +2,81 @@ package io.quarkus.registry.app.maven;
 
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.PathSegment;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
+import io.quarkus.maven.ArtifactCoords;
 
 public class ArtifactParser {
 
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
-    public static Artifact parseArtifact(List<String> pathSegmentList) {
-        if (pathSegmentList.size() < 3) {
-            throw new WebApplicationException("Coordinates are missing", Response.Status.BAD_REQUEST);
+    private static final String SUFFIX_MD5 = ".md5";
+
+    private static final String SUFFIX_SHA1 = ".sha1";
+
+    private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
+
+
+    public static ArtifactCoords parseCoords(List<PathSegment> pathSegmentList) {
+        if (pathSegmentList.isEmpty()) {
+            throw new IllegalArgumentException("Coordinates are missing");
         }
 
-        final String fileName = pathSegmentList.get(pathSegmentList.size() - 1);
+        final String fileName = getFileName(pathSegmentList);
+        final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
+        final String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
 
-        int idx = 3;
-        final String version;
-        if (fileName.startsWith(MAVEN_METADATA_XML)) {
-            if (!MavenConfig.VERSION.equals(pathSegmentList.get(pathSegmentList.size() - 2))) {
-                idx = 2;
-            }
-            version = MavenConfig.VERSION;
-        } else {
-            version = pathSegmentList.get(pathSegmentList.size() - 2);
-        }
-        String artifactId = pathSegmentList.get(pathSegmentList.size() - idx);
-        final StringBuilder groupIdBuilder = new StringBuilder(pathSegmentList.get(0));
-        for (int i = 1; i < pathSegmentList.size() - idx; ++i) {
-            groupIdBuilder.append('.').append(pathSegmentList.get(i));
-        }
-        final String groupId = groupIdBuilder.toString();
-
-        final String classifier;
+        String classifier = "";
         final String type;
-        if (fileName.startsWith(MAVEN_METADATA_XML)) {
-            type = fileName;
-            classifier = "";
-        } else if (fileName.startsWith(artifactId)) {
-            int idxType;
-            if (fileName.endsWith("sha1") || fileName.endsWith("md5")) {
-                idxType = fileName.lastIndexOf('.', fileName.length() - 6);
-            } else {
-                idxType = fileName.lastIndexOf('.');
+        if (fileName.startsWith(artifactId)) {
+
+            int typeEnd = fileName.length();
+            if (fileName.endsWith(SUFFIX_SHA1)) {
+                typeEnd -= SUFFIX_SHA1.length();
+            } else if (fileName.endsWith(SUFFIX_MD5)) {
+                typeEnd -= SUFFIX_MD5.length();
             }
-            type = fileName.substring(idxType + 1);
-            String remaining = fileName
-                    .replace(artifactId, "")
-                    .replace("-" + version, "")
-                    .replace("." + type, "")
-                    // The remaining may be a timestamp for 1.0-SNAPSHOT
-                    .replaceAll("-1.0-[0-9]{8}.[0-9]{6}-[0-9]", "");
-            if (!remaining.isEmpty()) {
-                classifier = remaining.substring(1);
+            int typeStart = fileName.lastIndexOf('.', typeEnd - 1) + 1;
+
+            type = fileName.substring(typeStart, typeEnd);
+            final boolean snapshot = version.endsWith(SNAPSHOT_SUFFIX);
+            // if it's a snapshot version, in some cases the file name will contain the actual -SNAPSHOT suffix,
+            // in other cases the SNAPSHOT will be replaced with a timestamp+build number expression
+            // e.g. instead of artifactId-baseVersion-SNAPSHOT the file name will look like artifactId-baseVersion-YYYYMMDD.HHMMSS-buildNumber
+            final String baseVersion = snapshot ? version.substring(0, version.length() - SNAPSHOT_SUFFIX.length()) : version;
+            final int versionStart = artifactId.length() + 1;
+            int versionEnd;
+            if (snapshot) {
+                if (fileName.regionMatches(versionStart, version, 0, version.length())) {
+                    // artifactId-version[-classifier].extensions
+                    versionEnd = versionStart + version.length();
+                } else {
+                    versionEnd = fileName.indexOf('-', versionStart + baseVersion.length() + 1);
+                    versionEnd = fileName.indexOf('.', versionEnd < 0 ? versionStart + baseVersion.length() : versionEnd + 1);
+                }
             } else {
-                classifier = "";
+                versionEnd = versionStart + version.length();
             }
+
+            if (fileName.charAt(versionEnd) == '-') {
+                classifier = fileName.substring(versionEnd + 1, typeStart - 1);
+            }
+        } else if (fileName.startsWith(MAVEN_METADATA_XML)) {
+            type = MAVEN_METADATA_XML;
         } else {
-            throw new WebApplicationException(
-                    "Artifact file name " + fileName + " does not start with the artifactId " + artifactId,
-                    Response.Status.BAD_REQUEST);
+            throw new IllegalArgumentException("Artifact file name " + fileName + " does not start with the artifactId " + artifactId);
         }
 
-        return new DefaultArtifact(groupId, artifactId, version, null, type, classifier, null);
+        final StringBuilder buf = new StringBuilder();
+        buf.append(pathSegmentList.get(0).getPath());
+        for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
+            buf.append('.').append(pathSegmentList.get(i).getPath());
+        }
+
+        return new ArtifactCoords(buf.toString(), artifactId, classifier, type, version);
+    }
+
+    public static String getFileName(List<PathSegment> pathSegmentList) {
+        return pathSegmentList.get(pathSegmentList.size() - 1).getPath();
     }
 }

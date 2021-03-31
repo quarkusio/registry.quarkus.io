@@ -13,6 +13,7 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.maven.ArtifactCoords;
 import org.apache.maven.artifact.Artifact;
 import org.jboss.logging.Logger;
 
@@ -54,11 +55,11 @@ public class MavenResource {
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
             @Context UriInfo uriInfo) {
-        Artifact artifact = ArtifactParser.parseArtifact(pathSegments.stream().map(PathSegment::getPath).collect(Collectors.toList()));
+        ArtifactCoords artifactCoords = ArtifactParser.parseCoords(pathSegments);
         for (ArtifactContentProvider contentProvider : getContentProviders()) {
-            if (contentProvider.supports(artifact, uriInfo)) {
+            if (contentProvider.supports(artifactCoords, uriInfo)) {
                 try {
-                    return contentProvider.provide(artifact, uriInfo);
+                    return contentProvider.provide(artifactCoords, uriInfo);
                 } catch (WebApplicationException wae) {
                     throw wae;
                 } catch (Exception e) {

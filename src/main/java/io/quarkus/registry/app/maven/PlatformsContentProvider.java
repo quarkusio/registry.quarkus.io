@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.DatabaseRegistryClient;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
@@ -32,12 +33,12 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
     DatabaseRegistryClient registryClient;
 
     @Override
-    public boolean supports(Artifact artifact, UriInfo uriInfo) {
+    public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.matchesQuarkusPlatforms(artifact);
     }
 
     @Override
-    public Response provide(Artifact artifact, UriInfo uriInfo) throws Exception {
+    public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         String quarkusVersion = artifact.getClassifier();
         PlatformCatalog platformCatalog = registryClient.resolvePlatforms(quarkusVersion);
         StringWriter sw = new StringWriter();

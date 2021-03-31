@@ -12,11 +12,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.cache.CacheResult;
+import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
-import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 
@@ -32,14 +31,14 @@ public class MetadataContentProvider implements ArtifactContentProvider {
     MavenConfig mavenConfig;
 
     @Override
-    public boolean supports(Artifact artifact, UriInfo uriInfo) {
+    public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.supports(artifact)
                 && artifact.getType() != null &&
                 artifact.getType().startsWith(MAVEN_METADATA_XML);
     }
 
     @Override
-    public Response provide(Artifact artifact, UriInfo uriInfo) throws IOException {
+    public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {
         Metadata metadata = generateMetadata(artifact);
         String result = writeMetadata(metadata);
         if (artifact.getType().endsWith(".md5")) {
@@ -54,7 +53,7 @@ public class MetadataContentProvider implements ArtifactContentProvider {
     }
 
     @CacheResult(cacheName = CacheNames.METADATA)
-    Metadata generateMetadata(Artifact artifact) {
+    Metadata generateMetadata(ArtifactCoords artifact) {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());
         newMetadata.setArtifactId(artifact.getArtifactId());

@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.maven.ArtifactCoords;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;
@@ -27,13 +28,13 @@ public class PomContentProvider implements ArtifactContentProvider {
     MavenConfig mavenConfig;
 
     @Override
-    public boolean supports(Artifact artifact, UriInfo uriInfo) {
+    public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.supports(artifact) &&
                 artifact.getType().equals("pom");
     }
 
     @Override
-    public Response provide(Artifact artifact, UriInfo uriInfo) throws Exception {
+    public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         String result = generatePom(artifact, uriInfo);
         if (artifact.getType().endsWith(".md5")) {
             result = HashUtil.md5(result);
@@ -43,7 +44,7 @@ public class PomContentProvider implements ArtifactContentProvider {
         return Response.ok(result).build();
     }
 
-    private static String generatePom(Artifact artifact, UriInfo uriInfo) throws IOException {
+    private static String generatePom(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {
         Model model = new Model();
         model.setGroupId(artifact.getGroupId());
         model.setArtifactId(artifact.getArtifactId());

@@ -22,7 +22,7 @@ public class MavenConfig {
     public static final ArtifactCoords PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
     public static final ArtifactCoords NON_PLATFORM_EXTENSION_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_EXTENSIONS_ARTIFACT_ID, "json", MavenConfig.VERSION);
 
-    public boolean supports(Artifact artifact) {
+    public boolean supports(ArtifactCoords artifact) {
         return matchesQuarkusPlatforms(artifact) ||
                 matchesRegistryDescriptor(artifact) ||
                 matchesNonPlatformExtensions(artifact);
@@ -35,7 +35,7 @@ public class MavenConfig {
      * A JSON file that lists the preferred versions of every registered platform (e.g. quarkus-bom, quarkus-universe-bom, etc).
      * It also indicates which platform is the default one (for project creation), e.g. the quarkus-universe-bom;
      */
-    public boolean matchesQuarkusPlatforms(Artifact artifact) {
+    public boolean matchesQuarkusPlatforms(ArtifactCoords artifact) {
         return GROUP_ID.equals(artifact.getGroupId()) &&
                 PLATFORM_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
                 VERSION.equals(artifact.getVersion());
@@ -48,7 +48,7 @@ public class MavenConfig {
      * JSON catalog of non-platform extensions that are compatible with a given Quarkus core version expressed
      * with <QUARKUS-VERSION> as the artifact’s classifier;
      */
-    public boolean matchesNonPlatformExtensions(Artifact artifact) {
+    public boolean matchesNonPlatformExtensions(ArtifactCoords artifact) {
         return GROUP_ID.equals(artifact.getGroupId()) &&
                 NON_PLATFORM_EXTENSIONS_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
                 VERSION.equals(artifact.getVersion());
@@ -60,7 +60,7 @@ public class MavenConfig {
      * The JSON registry descriptor which includes the default settings to communicate with the registry
      * (including specific groupId, artifactId and versions for the QER artifacts described above, Maven repository URL, etc).
      */
-    public boolean matchesRegistryDescriptor(Artifact artifact) {
+    public boolean matchesRegistryDescriptor(ArtifactCoords artifact) {
         return GROUP_ID.equals(artifact.getGroupId()) &&
                 REGISTRY_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
                 VERSION.equals(artifact.getVersion());
