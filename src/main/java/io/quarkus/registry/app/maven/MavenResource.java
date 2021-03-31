@@ -67,7 +67,7 @@ public class MavenResource {
                 }
             }
         }
-        log.infof("Not found: {}", uriInfo.getAbsolutePath());
+        log.warnf("Not found: %s", uriInfo.getPath());
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 }
