@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.annotation.Priority;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
@@ -13,8 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import io.quarkus.registry.app.model.Platform;
-import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.cache.CacheResult;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
@@ -35,12 +32,14 @@ public class MetadataContentProvider implements ArtifactContentProvider {
 
     @Override
     public boolean supports(Artifact artifact, UriInfo uriInfo) {
-        return artifact.getType() != null && artifact.getType().startsWith(MAVEN_METADATA_XML);
+        return mavenConfig.supports(artifact)
+                && artifact.getType() != null &&
+                artifact.getType().startsWith(MAVEN_METADATA_XML);
     }
 
     @Override
     public Response provide(Artifact artifact, UriInfo uriInfo) throws IOException {
-        Metadata metadata = generateMetadata();
+        Metadata metadata = generateMetadata(artifact);
         String result = writeMetadata(metadata);
         if (artifact.getType().endsWith(".md5")) {
             result = HashUtil.md5(result);
@@ -53,10 +52,11 @@ public class MetadataContentProvider implements ArtifactContentProvider {
                 .build();
     }
 
-    private Metadata generateMetadata() {
+    @CacheResult(cacheName = "quarkus-metadata")
+    Metadata generateMetadata(Artifact artifact) {
         Metadata newMetadata = new Metadata();
-        newMetadata.setGroupId(MavenConfig.GROUP_ID);
-        newMetadata.setArtifactId(MavenConfig.PLATFORM_ARTIFACT_ID);
+        newMetadata.setGroupId(artifact.getGroupId());
+        newMetadata.setArtifactId(artifact.getArtifactId());
 
 //        Versioning versioning = new Versioning();
 //        newMetadata.setVersioning(versioning);
