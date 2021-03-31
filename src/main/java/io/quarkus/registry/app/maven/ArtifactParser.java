@@ -13,22 +13,27 @@ public class ArtifactParser {
 
     private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
-//quarkus-non-platform-extensions-1.0-SNAPSHOT-1.13.0.Final.json
-
     public static Artifact parseArtifact(List<String> pathSegmentList) {
         if (pathSegmentList.size() < 3) {
             throw new WebApplicationException("Coordinates are missing", Response.Status.BAD_REQUEST);
         }
 
         final String fileName = pathSegmentList.get(pathSegmentList.size() - 1);
-        final String version = pathSegmentList.get(pathSegmentList.size() - 2);
-        String artifactId = pathSegmentList.get(pathSegmentList.size() - 3);
-        final StringBuilder builder = new StringBuilder();
-        builder.append(pathSegmentList.get(0));
-        for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
-            builder.append('.').append(pathSegmentList.get(i));
+
+        int idx = 3;
+        final String version;
+        if (fileName.startsWith(MAVEN_METADATA_XML)) {
+            idx = 2;
+            version = MavenConfig.VERSION;
+        } else {
+            version = pathSegmentList.get(pathSegmentList.size() - 2);
         }
-        final String groupId = builder.toString();
+        String artifactId = pathSegmentList.get(pathSegmentList.size() - idx);
+        final StringBuilder groupIdBuilder = new StringBuilder(pathSegmentList.get(0));
+        for (int i = 1; i < pathSegmentList.size() - idx; ++i) {
+            groupIdBuilder.append('.').append(pathSegmentList.get(i));
+        }
+        final String groupId = groupIdBuilder.toString();
 
         final String classifier;
         final String type;

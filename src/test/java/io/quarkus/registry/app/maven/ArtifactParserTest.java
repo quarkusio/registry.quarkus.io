@@ -36,4 +36,14 @@ class ArtifactParserTest {
         assertThat(artifact.getClassifier()).isEqualTo("1.13.0.Final");
     }
 
+    @Test
+    public void testMavenMetadata() {
+        String path = "io/quarkus/registry/quarkus-non-platform-extensions/maven-metadata.xml";
+        Artifact artifact = ArtifactParser.parseArtifact(Arrays.asList(path.split("/")));
+        assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
+        assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
+        assertThat(artifact.getVersion()).isEqualTo(MavenConfig.VERSION);
+        assertThat(artifact.getType()).isEqualTo("maven-metadata.xml");
+    }
+
 }
