@@ -5,7 +5,9 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
+import io.quarkus.cache.CacheInvalidateAll;
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.CacheNames;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
@@ -28,6 +30,7 @@ public class AdminService {
     private static final Logger logger = Logger.getLogger(AdminService.class);
 
     @Transactional
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
@@ -45,6 +48,7 @@ public class AdminService {
     }
 
     @Transactional
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
     public void onPlatformCreate(PlatformCreateEvent event) {
         try {
             io.quarkus.registry.catalog.Platform platform = event.getPlatform();
@@ -82,6 +86,7 @@ public class AdminService {
     }
 
     @Transactional
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
     public void onExtensionCreate(ExtensionCreateEvent event) {
         // Non-platform extension
         try {

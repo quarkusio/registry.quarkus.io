@@ -58,23 +58,16 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         newMetadata.setGroupId(artifact.getGroupId());
         newMetadata.setArtifactId(artifact.getArtifactId());
 
-//        Versioning versioning = new Versioning();
-//        newMetadata.setVersioning(versioning);
-//
-//        versioning.updateTimestamp();
-//
-//        Snapshot snapshot = new Snapshot();
-//        versioning.setSnapshot(snapshot);
-//        snapshot.setTimestamp(versioning.getLastUpdated().substring(0, 8) + "." + versioning.getLastUpdated().substring(8));
-//        snapshot.setBuildNumber(1);
+        Versioning versioning = new Versioning();
+        newMetadata.setVersioning(versioning);
 
-//        for (PlatformRelease release : platform.releases) {
-//            final String baseVersion = release.version;
-//            addSnapshotVersion(versioning, snapshot, baseVersion, "pom");
-//            addSnapshotVersion(versioning, snapshot, baseVersion, "json");
-//
-//            versioning.addVersion(release.version);
-//        }
+        versioning.updateTimestamp();
+
+        Snapshot snapshot = new Snapshot();
+        versioning.setSnapshot(snapshot);
+        snapshot.setTimestamp(versioning.getLastUpdated().substring(0, 8) + "." + versioning.getLastUpdated().substring(8));
+        snapshot.setBuildNumber(1);
+
         return newMetadata;
     }
 
@@ -83,14 +76,4 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         METADATA_WRITER.write(sw, metadata);
         return sw.toString();
     }
-
-    private void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion,
-                                    String extension) {
-        final SnapshotVersion sv = new SnapshotVersion();
-        sv.setExtension(extension);
-        sv.setVersion(baseVersion + snapshot.getTimestamp() + "-" + snapshot.getBuildNumber());
-        sv.setUpdated(versioning.getLastUpdated());
-        versioning.addSnapshotVersion(sv);
-    }
-
 }
