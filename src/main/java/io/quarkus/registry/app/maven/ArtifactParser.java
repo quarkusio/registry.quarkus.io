@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.maven;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -23,9 +24,7 @@ public class ArtifactParser {
         int idx = 3;
         final String version;
         if (fileName.startsWith(MAVEN_METADATA_XML)) {
-            if (MavenConfig.VERSION.equals(pathSegmentList.get(pathSegmentList.size() - 2))) {
-                idx = 3;
-            } else {
+            if (!MavenConfig.VERSION.equals(pathSegmentList.get(pathSegmentList.size() - 2))) {
                 idx = 2;
             }
             version = MavenConfig.VERSION;
@@ -53,9 +52,11 @@ public class ArtifactParser {
             }
             type = fileName.substring(idxType + 1);
             String remaining = fileName
-                    .replace(artifactId + "-" + version, "")
+                    .replace(artifactId, "")
+                    .replace("-" + version, "")
                     .replace("." + type, "");
-            if (!remaining.isEmpty()) {
+            // The remaining may be a timestamp for 1.0-SNAPSHOT
+            if (!remaining.isEmpty() && !remaining.matches("-1.0-[0-9]{8}.[0-9]{6}-[0-9]") ) {
                 classifier = remaining.substring(1);
             } else {
                 classifier = "";

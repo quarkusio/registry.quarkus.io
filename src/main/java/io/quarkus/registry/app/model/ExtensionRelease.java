@@ -23,7 +23,13 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 @Entity
-@NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext where ext.quarkusCore = :quarkusCore and ext.platforms is empty")
+@NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
+        "where ext.quarkusCore = :quarkusCore" +
+        " and (ext.versionSortable) = (" +
+        "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
+        "    where ext2.extension = ext.extension" +
+        ")" +
+        " and ext.platforms is empty")
 public class ExtensionRelease extends BaseEntity {
 
     @NaturalId

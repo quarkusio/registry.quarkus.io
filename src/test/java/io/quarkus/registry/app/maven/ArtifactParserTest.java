@@ -54,7 +54,5 @@ class ArtifactParserTest {
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
         assertThat(artifact.getVersion()).isEqualTo("1.0-SNAPSHOT");
         assertThat(artifact.getType()).isEqualTo("maven-metadata.xml");
-
-
     }
 }
