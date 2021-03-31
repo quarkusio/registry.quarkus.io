@@ -55,4 +55,16 @@ class ArtifactParserTest {
         assertThat(artifact.getVersion()).isEqualTo("1.0-SNAPSHOT");
         assertThat(artifact.getType()).isEqualTo("maven-metadata.xml");
     }
+
+    @Test
+    public void testVersionedSnapshotMavenMetadata() {
+        String path = "io/quarkus/registry/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-20210331.162601-1.json";
+        Artifact artifact = ArtifactParser.parseArtifact(Arrays.asList(path.split("/")));
+        assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
+        assertThat(artifact.getArtifactId()).isEqualTo("quarkus-registry-descriptor");
+        assertThat(artifact.getVersion()).isEqualTo("1.0-SNAPSHOT");
+        assertThat(artifact.getClassifier()).isEmpty();
+        assertThat(artifact.getType()).isEqualTo("json");
+    }
+
 }
