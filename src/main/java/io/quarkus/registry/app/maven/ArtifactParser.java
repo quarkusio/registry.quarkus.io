@@ -23,7 +23,11 @@ public class ArtifactParser {
         int idx = 3;
         final String version;
         if (fileName.startsWith(MAVEN_METADATA_XML)) {
-            idx = 2;
+            if (MavenConfig.VERSION.equals(pathSegmentList.get(pathSegmentList.size() - 2))) {
+                idx = 3;
+            } else {
+                idx = 2;
+            }
             version = MavenConfig.VERSION;
         } else {
             version = pathSegmentList.get(pathSegmentList.size() - 2);
