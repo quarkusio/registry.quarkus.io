@@ -8,6 +8,7 @@ import javax.ws.rs.core.PathSegment;
 
 import io.quarkus.maven.ArtifactCoords;
 import org.apache.maven.artifact.Artifact;
+import org.assertj.core.api.SoftAssertions;
 import org.jboss.resteasy.specimpl.PathSegmentImpl;
 import org.junit.jupiter.api.Test;
 
@@ -47,10 +48,12 @@ class ArtifactParserTest {
     public void testMavenMetadata() {
         List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/maven-metadata.xml");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
-        assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
-        assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
-        assertThat(artifact.getVersion()).isEqualTo(MavenConfig.VERSION);
-        assertThat(artifact.getType()).isEqualTo("maven-metadata.xml");
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
+        softly.assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
+        softly.assertThat(artifact.getVersion()).isEqualTo(MavenConfig.VERSION);
+        softly.assertThat(artifact.getType()).isEqualTo("maven-metadata.xml");
+        softly.assertAll();
     }
 
     @Test

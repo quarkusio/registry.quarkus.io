@@ -29,7 +29,6 @@ public class ArtifactParser {
         String classifier = "";
         final String type;
         if (fileName.startsWith(artifactId)) {
-
             int typeEnd = fileName.length();
             if (fileName.endsWith(SUFFIX_SHA1)) {
                 typeEnd -= SUFFIX_SHA1.length();
@@ -52,7 +51,14 @@ public class ArtifactParser {
                     versionEnd = versionStart + version.length();
                 } else {
                     versionEnd = fileName.indexOf('-', versionStart + baseVersion.length() + 1);
-                    versionEnd = fileName.indexOf('-', versionEnd < 0 ? versionStart + baseVersion.length() : versionEnd + 1);
+                    // Checking if there is a classifier
+                    int start = versionEnd < 0 ? versionStart + baseVersion.length() : versionEnd + 1;
+                    int classifierIdx = fileName.indexOf('-', start);
+                    if (classifierIdx < 0) {
+                        versionEnd = fileName.indexOf('.', start);
+                    } else {
+                        versionEnd = classifierIdx;
+                    }
                 }
             } else {
                 versionEnd = versionStart + version.length();
