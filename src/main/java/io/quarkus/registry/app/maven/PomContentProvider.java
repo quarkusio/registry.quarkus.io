@@ -36,9 +36,10 @@ public class PomContentProvider implements ArtifactContentProvider {
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         String result = generatePom(artifact, uriInfo);
-        if (artifact.getType().endsWith(".md5")) {
+        final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
+        if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
             result = HashUtil.md5(result);
-        } else if (artifact.getType().endsWith(".sha1")) {
+        } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
             result = HashUtil.sha1(result);
         }
         return Response.ok(result).build();

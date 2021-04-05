@@ -2,8 +2,9 @@ package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
@@ -14,18 +15,17 @@ import javax.ws.rs.core.UriInfo;
 import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
+import io.quarkus.registry.app.model.PlatformRelease;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
+import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 
 @Singleton
-@Priority(1000)
 public class MetadataContentProvider implements ArtifactContentProvider {
 
     private static final MetadataXpp3Writer METADATA_WRITER = new MetadataXpp3Writer();
-
-    private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
     @Inject
     MavenConfig mavenConfig;
@@ -34,16 +34,17 @@ public class MetadataContentProvider implements ArtifactContentProvider {
     public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.supports(artifact)
                 && artifact.getType() != null &&
-                artifact.getType().startsWith(MAVEN_METADATA_XML);
+                artifact.getType().startsWith(ArtifactParser.MAVEN_METADATA_XML);
     }
 
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {
         Metadata metadata = generateMetadata(artifact);
         String result = writeMetadata(metadata);
-        if (artifact.getType().endsWith(".md5")) {
+        final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
+        if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
             result = HashUtil.md5(result);
-        } else if (artifact.getType().endsWith(".sha1")) {
+        } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
             result = HashUtil.sha1(result);
         }
 
@@ -68,7 +69,23 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         snapshot.setTimestamp(versioning.getLastUpdated().substring(0, 8) + "." + versioning.getLastUpdated().substring(8));
         snapshot.setBuildNumber(1);
 
+        final String baseVersion = artifact.getVersion().substring(0, artifact.getVersion().length() - "SNAPSHOT".length());
+        addSnapshotVersion(versioning, snapshot, baseVersion, Collections.singletonList(""), "pom");
+        addSnapshotVersion(versioning, snapshot, baseVersion, PlatformRelease.findQuarkusCores(), "json");
         return newMetadata;
+    }
+
+    private static void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion,
+                                           List<String> classifiers, String extension) {
+        final String version = baseVersion + snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
+        for (String classifier : classifiers) {
+            final SnapshotVersion sv = new SnapshotVersion();
+            sv.setClassifier(classifier);
+            sv.setExtension(extension);
+            sv.setVersion(version);
+            sv.setUpdated(versioning.getLastUpdated());
+            versioning.addSnapshotVersion(sv);
+        }
     }
 
     private String writeMetadata(Metadata metadata) throws IOException {

@@ -8,11 +8,11 @@ import io.quarkus.maven.ArtifactCoords;
 
 public class ArtifactParser {
 
-    private static final String MAVEN_METADATA_XML = "maven-metadata.xml";
+    public static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
-    private static final String SUFFIX_MD5 = ".md5";
+    public static final String SUFFIX_MD5 = ".md5";
 
-    private static final String SUFFIX_SHA1 = ".sha1";
+    public static final String SUFFIX_SHA1 = ".sha1";
 
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
@@ -67,16 +67,21 @@ public class ArtifactParser {
             throw new IllegalArgumentException("Artifact file name " + fileName + " does not start with the artifactId " + artifactId);
         }
 
-        final StringBuilder buf = new StringBuilder();
-        buf.append(pathSegmentList.get(0).getPath());
+        final StringBuilder groupId = new StringBuilder();
+        groupId.append(pathSegmentList.get(0).getPath());
         for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
-            buf.append('.').append(pathSegmentList.get(i).getPath());
+            groupId.append('.').append(pathSegmentList.get(i).getPath());
         }
 
-        return new ArtifactCoords(buf.toString(), artifactId, classifier, type, version);
+        return new ArtifactCoords(groupId.toString(), artifactId, classifier, type, version);
     }
 
     public static String getFileName(List<PathSegment> pathSegmentList) {
         return pathSegmentList.get(pathSegmentList.size() - 1).getPath();
+    }
+
+    public static String getChecksumSuffix(List<PathSegment> pathSegmentList, ArtifactCoords parsedCoords) {
+        final String fileName = getFileName(pathSegmentList);
+        return fileName.endsWith(parsedCoords.getType()) ? null : fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
     }
 }

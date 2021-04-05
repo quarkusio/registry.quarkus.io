@@ -9,13 +9,12 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Index;
+import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
-import javax.persistence.Table;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
@@ -26,6 +25,8 @@ import org.hibernate.annotations.Type;
 
 @Entity
 @NamedQueries({
+        @NamedQuery(name = "PlatformRelease.findQuarkusCores", query = "select pr.version from PlatformRelease pr " +
+                "where pr.platform.isDefault = true order by pr.versionSortable"),
         @NamedQuery(name = "PlatformRelease.findByQuarkusCore", query = "from PlatformRelease pr where pr.quarkusCore = ?1"),
         @NamedQuery(name = "PlatformRelease.findLatest", query = "from PlatformRelease pr " +
                 "where (pr.platform, pr.versionSortable) in (" +
@@ -98,6 +99,7 @@ public class PlatformRelease extends BaseEntity {
                 .using("version", version)
                 .loadOptional();
     }
+
     public static List<PlatformRelease> findByQuarkusCore(String quarkusCore) {
         return list("#PlatformRelease.findByQuarkusCore", quarkusCore);
     }
@@ -105,4 +107,11 @@ public class PlatformRelease extends BaseEntity {
     public static List<PlatformRelease> findLatest() {
         return list("#PlatformRelease.findLatest");
     }
+
+    public static List<String> findQuarkusCores() {
+        EntityManager em = JpaOperations.getEntityManager();
+        return em.createNamedQuery("PlatformRelease.findQuarkusCores", String.class)
+                .getResultList();
+    }
+
 }

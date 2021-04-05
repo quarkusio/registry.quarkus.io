@@ -1,5 +1,6 @@
 package io.quarkus.registry.app.maven;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,4 +72,5 @@ public class MavenResource {
         log.warnf("Not found: %s", uriInfo.getPath());
         return Response.status(Response.Status.NOT_FOUND).build();
     }
+
 }

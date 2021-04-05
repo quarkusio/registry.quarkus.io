@@ -39,7 +39,7 @@ class ArtifactParserTest {
         assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
         assertThat(artifact.getVersion()).isEqualTo("1.0-SNAPSHOT");
-        assertThat(artifact.getType()).isEqualTo("json.sha1");
+        assertThat(artifact.getType()).isEqualTo("json");
         assertThat(artifact.getClassifier()).isEqualTo("1.13.0.Final");
     }
 
@@ -71,6 +71,17 @@ class ArtifactParserTest {
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-registry-descriptor");
         assertThat(artifact.getVersion()).isEqualTo("1.0-SNAPSHOT");
         assertThat(artifact.getClassifier()).isEmpty();
+        assertThat(artifact.getType()).isEqualTo("json");
+    }
+
+    @Test
+    public void testVersionedSnapshotMavenMetadataWithClassifier() {
+        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-20210405.152106-1-1.13.0.Final.json");
+        ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
+        assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
+        assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
+        assertThat(artifact.getVersion()).isEqualTo("1.0-SNAPSHOT");
+        assertThat(artifact.getClassifier()).isEqualTo("1.13.0.Final");
         assertThat(artifact.getType()).isEqualTo("json");
     }
 
