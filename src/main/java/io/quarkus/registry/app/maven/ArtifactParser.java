@@ -52,7 +52,7 @@ public class ArtifactParser {
                     versionEnd = versionStart + version.length();
                 } else {
                     versionEnd = fileName.indexOf('-', versionStart + baseVersion.length() + 1);
-                    versionEnd = fileName.indexOf('.', versionEnd < 0 ? versionStart + baseVersion.length() : versionEnd + 1);
+                    versionEnd = fileName.indexOf('-', versionEnd < 0 ? versionStart + baseVersion.length() : versionEnd + 1);
                 }
             } else {
                 versionEnd = versionStart + version.length();
