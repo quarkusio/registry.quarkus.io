@@ -24,12 +24,12 @@ import org.hibernate.annotations.Type;
 
 @Entity
 @NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
-        "where ext.quarkusCore = :quarkusCore" +
-        " and (ext.versionSortable) = (" +
+        "where ext.platforms is empty " +
+//        "and ext.quarkusCore = :quarkusCore " +
+        "and (ext.versionSortable) = (" +
         "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
         "    where ext2.extension = ext.extension" +
-        ")" +
-        " and ext.platforms is empty")
+        ")")
 public class ExtensionRelease extends BaseEntity {
 
     @NaturalId
@@ -97,7 +97,7 @@ public class ExtensionRelease extends BaseEntity {
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
         EntityManager entityManager = JpaOperations.getEntityManager();
         return entityManager.createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
-                .setParameter("quarkusCore", quarkusCore)
+//                .setParameter("quarkusCore", quarkusCore)
                 .getResultList();
     }
 
