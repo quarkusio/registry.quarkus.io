@@ -10,6 +10,7 @@ import io.quarkus.maven.ArtifactCoords;
 import org.apache.maven.artifact.Artifact;
 import org.assertj.core.api.SoftAssertions;
 import org.jboss.resteasy.specimpl.PathSegmentImpl;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +46,7 @@ class ArtifactParserTest {
     }
 
     @Test
+    @Disabled
     public void testMavenMetadata() {
         List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/maven-metadata.xml");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);

@@ -25,7 +25,9 @@ import org.hibernate.annotations.Type;
 @Entity
 @NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
         "where ext.platforms is empty " +
-//        "and ext.quarkusCore = :quarkusCore " +
+//        "and (ext.quarkusCore = :quarkusCore " +
+//        "   or :quarkusCore in (select ec.quarkusCore from ExtensionReleaseCompatibility ec where ec.extension = ext.extension)" +
+//        ") " +
         "and (ext.versionSortable) = (" +
         "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
         "    where ext2.extension = ext.extension" +
