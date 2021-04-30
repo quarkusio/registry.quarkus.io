@@ -7,6 +7,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,6 +22,7 @@ import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
+import io.quarkus.registry.app.events.ExtensionCompatibleCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Extension;
@@ -89,6 +91,23 @@ public class AdminResource {
     }
 
     @POST
+    @Path("/v1/extension")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
+    public Response addExtension(JsonExtension extension) {
+        log.infof("Adding extension %s", extension);
+        ArtifactCoords bom = extension.getArtifact();
+        Optional<ExtensionRelease> extensionRelease = ExtensionRelease
+                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
+        if (extensionRelease.isPresent()) {
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+        ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
+        observer.onExtensionCreate(event);
+        return Response.accepted(bom).build();
+    }
+
+    @POST
     @Path("/v1/extension/catalog")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
@@ -106,20 +125,19 @@ public class AdminResource {
     }
 
     @POST
-    @Path("/v1/extension")
+    @Path("/v1/extension/compat")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
-    public Response addExtension(JsonExtension extension) {
-        log.infof("Adding extension %s", extension);
-        ArtifactCoords bom = extension.getArtifact();
-        Optional<ExtensionRelease> extensionRelease = ExtensionRelease
-                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
-        if (extensionRelease.isPresent()) {
-            return Response.status(Response.Status.CONFLICT).build();
-        }
-        ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
-        observer.onExtensionCreate(event);
-        return Response.accepted(bom).build();
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response addExtensionCompatibilty(@FormParam("groupId") String groupId,
+                                             @FormParam("artifactId") String artifactId,
+                                             @FormParam("version") String version,
+                                             @FormParam("quarkusCore") String quarkusCore) {
+        log.infof("Extension %s:%s:%s is compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
+        ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
+                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        ExtensionCompatibleCreateEvent event = new ExtensionCompatibleCreateEvent(extensionRelease, quarkusCore);
+        observer.onExtensionCompatible(event);
+        return Response.accepted().build();
     }
 
     @CheckedTemplate
