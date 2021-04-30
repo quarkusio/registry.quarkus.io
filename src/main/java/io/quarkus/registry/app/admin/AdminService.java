@@ -10,6 +10,7 @@ import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleCreateEvent;
+import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Category;
@@ -62,7 +63,7 @@ public class AdminService {
 
     @Transactional
     @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    public void onExtensionCompatible(ExtensionCompatibleCreateEvent event) {
+    public void onExtensionCompatibleCreate(ExtensionCompatibleCreateEvent event) {
         ExtensionReleaseCompatible.findByNaturalKey(event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
             ExtensionReleaseCompatible newEntity = new ExtensionReleaseCompatible();
             newEntity.extensionRelease = event.getExtensionRelease();
@@ -70,6 +71,14 @@ public class AdminService {
             newEntity.persistAndFlush();
             return newEntity;
         });
+    }
+
+    @Transactional
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    public void onExtensionCompatibleDelete(ExtensionCompatibleDeleteEvent event) {
+        ExtensionReleaseCompatible.delete("from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
+                                          event.getExtensionRelease(),
+                                          event.getQuarkusCore());
     }
 
     private PlatformRelease insertPlatform(ArtifactCoords bom, String quarkusCore, String quarkusCoreUpstream, Map<String, Object> metadata) {
