@@ -3,10 +3,10 @@ package io.quarkus.registry.app;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -17,9 +17,11 @@ import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformReleaseCategory;
+import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
@@ -131,11 +133,21 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
 
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         catalog.setId(id);
-        catalog.setBom(ArtifactCoords.pom("io.quarkus","quarkus-bom", quarkusVersion));
+        catalog.setBom(ArtifactCoords.pom("io.quarkus", "quarkus-bom", quarkusVersion));
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
-
+        Map<Long, Boolean> compatiblityMap = ExtensionReleaseCompatibility.findCompatiblity(quarkusVersion);
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
-            catalog.addExtension(toJsonExtension(extensionRelease, catalog));
+            JsonExtension extension = toJsonExtension(extensionRelease, catalog);
+            // Add compatibility info
+            Boolean compatibility;
+            // If the requested quarkus version matches the quarkus core built, just assume it's compatible
+            if (quarkusVersion.equals(extension.getMetadata().get(Extension.MD_BUILT_WITH_QUARKUS_CORE))) {
+                compatibility = Boolean.TRUE;
+            } else {
+                compatibility = compatiblityMap.get(extensionRelease.id);
+            }
+            extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
+            catalog.addExtension(extension);
         }
         // Add all categories
         List<Category> categories = Category.listAll();
@@ -169,4 +181,17 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         return e;
     }
 
+    private static enum CoreCompatibility {
+        UNKNOWN,
+        COMPATIBLE,
+        INCOMPATIBLE;
+
+        public static CoreCompatibility parse(Boolean compatibility) {
+            if (compatibility == null) {
+                return UNKNOWN;
+            } else {
+                return compatibility ? COMPATIBLE : INCOMPATIBLE;
+            }
+        }
+    }
 }

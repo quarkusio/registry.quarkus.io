@@ -23,7 +23,7 @@ import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
-import io.quarkus.registry.app.events.ExtensionCompatibleCreateEvent;
+import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.PlatformCreateEvent;
@@ -31,7 +31,6 @@ import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.compat.ExtensionReleaseCompatible;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatform;
@@ -134,12 +133,17 @@ public class AdminResource {
     public Response addExtensionCompatibilty(@FormParam("groupId") String groupId,
                                              @FormParam("artifactId") String artifactId,
                                              @FormParam("version") String version,
-                                             @FormParam("quarkusCore") String quarkusCore) {
-        log.infof("Extension %s:%s:%s is compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
+                                             @FormParam("quarkusCore") String quarkusCore,
+                                             @FormParam("compatible") Boolean compatible) {
+        if (compatible == null)
+            compatible = Boolean.TRUE;
+        log.infof("Extension %s:%s:%s is %s with Quarkus %s", groupId, artifactId, version,
+                  compatible ? "compatible" : "incompatible",
+                  quarkusCore);
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        ExtensionCompatibleCreateEvent event = new ExtensionCompatibleCreateEvent(extensionRelease, quarkusCore);
-        observer.onExtensionCompatibleCreate(event);
+        ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore, compatible);
+        observer.onExtensionCompatibilityCreate(event);
         return Response.accepted().build();
     }
 
