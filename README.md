@@ -8,20 +8,19 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 You need a PostgreSQL DB running. If you don't have one, use docker or podman:
 
-    podman run -e POSTGRESQL_ADMIN_PASSWORD=admin --net=host registry.redhat.io/rhscl/postgresql-12-rhel7 
+    podman run -e POSTGRESQL_ADMIN_PASSWORD=admin --net=host registry.redhat.io/rhel8/postgresql-12 
 
 You can run your application in dev mode that enables live coding using:
 
 ```shell script
-./mvnw compile quarkus:dev
+./mvnw clean compile quarkus:dev
 ```
 
 ## Indexing Quarkiverse extensions
 
-Once the application is running, you can insert new extension releases by running the following in the root of your plugin: 
+Once the application is running, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following in the root of your cloned repo: 
       
-    http localhost:8080/admin/v1/extension Content-Type:application/yaml @runtime/target/classes/META-INF/quarkus-extension.yaml
-
+    jbang .github/workflows/publishcatalog.java --working-directory=. --registry-url=http://localhost:8080 --token=test -sv
 
 ## Endpoints: 
 - List of platforms (marked with the recommended platform)
