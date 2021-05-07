@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.admin;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
@@ -10,6 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -34,6 +36,7 @@ import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatform;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -45,6 +48,10 @@ public class AdminResource {
 
     @Inject
     AdminService observer;
+
+    @Inject
+    @ConfigProperty(name = "TOKEN")
+    Optional<String> appToken;
 
     @GET
     @Produces(MediaType.TEXT_HTML)
@@ -79,7 +86,10 @@ public class AdminResource {
     @Path("/v1/platform")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
-    public Response addPlatform(JsonPlatform platform) {
+    public Response addPlatform(@HeaderParam("TOKEN") String token, JsonPlatform platform) {
+        if (!Objects.equals(appToken.orElse(null), token)){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         log.infof("Adding platform %s", platform);
         ArtifactCoords bom = platform.getBom();
         Optional<PlatformRelease> platformRelease = PlatformRelease
@@ -96,7 +106,10 @@ public class AdminResource {
     @Path("/v1/extension")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
-    public Response addExtension(JsonExtension extension) {
+    public Response addExtension(@HeaderParam("TOKEN") String token, JsonExtension extension) {
+        if (!Objects.equals(appToken.orElse(null), token)){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         log.infof("Adding extension %s", extension);
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
@@ -113,7 +126,10 @@ public class AdminResource {
     @Path("/v1/extension/catalog")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
-    public Response addExtensionCatalog(JsonExtensionCatalog catalog) {
+    public Response addExtensionCatalog(@HeaderParam("TOKEN") String token, JsonExtensionCatalog catalog) {
+        if (!Objects.equals(appToken.orElse(null), token)){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         log.infof("Adding catalog %s", catalog);
         ArtifactCoords bom = catalog.getBom();
         Optional<PlatformRelease> platformRelease = PlatformRelease
@@ -130,13 +146,18 @@ public class AdminResource {
     @Path("/v1/extension/compat")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response addExtensionCompatibilty(@FormParam("groupId") String groupId,
+    public Response addExtensionCompatibilty(@HeaderParam("TOKEN") String token,
+                                             @FormParam("groupId") String groupId,
                                              @FormParam("artifactId") String artifactId,
                                              @FormParam("version") String version,
                                              @FormParam("quarkusCore") String quarkusCore,
                                              @FormParam("compatible") Boolean compatible) {
-        if (compatible == null)
+        if (!Objects.equals(appToken.orElse(null), token)){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        if (compatible == null) {
             compatible = Boolean.TRUE;
+        }
         log.infof("Extension %s:%s:%s is %s with Quarkus %s", groupId, artifactId, version,
                   compatible ? "compatible" : "incompatible",
                   quarkusCore);
@@ -151,10 +172,14 @@ public class AdminResource {
     @Path("/v1/extension/compat")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response removeExtensionCompatibilty(@FormParam("groupId") String groupId,
+    public Response removeExtensionCompatibilty(@HeaderParam("TOKEN") String token,
+                                                @FormParam("groupId") String groupId,
                                                 @FormParam("artifactId") String artifactId,
                                                 @FormParam("version") String version,
                                                 @FormParam("quarkusCore") String quarkusCore) {
+        if (!Objects.equals(appToken.orElse(null), token)){
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
