@@ -33,7 +33,7 @@ public class Platform extends BaseEntity {
     public boolean isDefault;
 
     @OneToMany(mappedBy = "platform", orphanRemoval = true)
-    @OrderBy("versionSortable")
+    @OrderBy("versionSortable DESC")
     public List<PlatformRelease> releases = new ArrayList<>();
 
     @Override
