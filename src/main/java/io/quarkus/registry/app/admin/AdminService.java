@@ -143,9 +143,9 @@ public class AdminService {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
                     newExtensionRelease.version = version;
                     newExtensionRelease.extension = extension;
-                    String quarkusCore = (String) ext.getMetadata().get("built-with-quarkus-core");
+                    String quarkusCore = (String) ext.getMetadata().get(io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE);
                     // Some extensions were published using the full GAV
-                    if (quarkusCore != null) {
+                    if (quarkusCore != null && quarkusCore.contains(":")) {
                         try {
                             quarkusCore = ArtifactCoords.fromString(quarkusCore).getVersion();
                         } catch (IllegalArgumentException iae) {

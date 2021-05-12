@@ -140,8 +140,19 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
             JsonExtension extension = toJsonExtension(extensionRelease, catalog);
             // Add compatibility info
             Boolean compatibility;
+
+            String extensionQuarkusCore = (String) extension.getMetadata().get(Extension.MD_BUILT_WITH_QUARKUS_CORE);
+            // Some extensions were published using the full GAV
+            if (extensionQuarkusCore != null && extensionQuarkusCore.contains(":")) {
+                try {
+                    extensionQuarkusCore = ArtifactCoords.fromString(extensionQuarkusCore).getVersion();
+                } catch (IllegalArgumentException iae) {
+                    // ignore
+                }
+            }
+
             // If the requested quarkus version matches the quarkus core built, just assume it's compatible
-            if (quarkusVersion.equals(extension.getMetadata().get(Extension.MD_BUILT_WITH_QUARKUS_CORE))) {
+            if (quarkusVersion.equals(extensionQuarkusCore)) {
                 compatibility = Boolean.TRUE;
             } else {
                 compatibility = compatiblityMap.get(extensionRelease.id);
