@@ -7,14 +7,12 @@
     <thead>
     <tr>
       <th class="fourteen wide">{extension.name} - {extension.groupId}:{extension.artifactId}</th>
-      <th class="two wide center aligned">Actions</th>
     </tr>
     </thead>
     <tbody>
     {#for release in extension.releases}
     <tr>
       <td><strong>{release.version}</strong></td>
-      <td><button>Compatibility</button></td>
     </tr>
     {/for}
     </tbody>

@@ -7,14 +7,12 @@
       <thead>
       <tr>
         <th class="fourteen wide">{platform.groupId}:{platform.artifactId}</th>
-        <th class="two wide center aligned">Actions</th>
       </tr>
       </thead>
       <tbody>
       {#for release in platform.releases}
         <tr>
           <td><strong>{release.version}</strong></td>
-          <td><button>+</button></td>
         </tr>
       {/for}
       </tbody>
