@@ -12,6 +12,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -26,6 +27,7 @@ public class LetsEncryptResource {
     @GET
     @Path("/acme-challenge/{token}")
     @Produces(MediaType.TEXT_PLAIN)
+    @Operation(hidden = true)
     public String challenge(@PathParam("token") String key) {
         logger.infof("Requested Token: %s", key);
         return acmeContents.orElseThrow(NotFoundException::new);
