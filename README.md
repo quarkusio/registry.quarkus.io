@@ -19,7 +19,8 @@ You can run your application in dev mode that enables live coding using:
 ## Indexing Quarkiverse extensions
 
 Once the application is running, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following in the root of your cloned repo: 
-      
+     
+    export TOKEN=test 
     jbang .github/workflows/publishcatalog.java --working-directory=. --registry-url=http://localhost:8080 --token=test -sv
 
 ## Endpoints: 
