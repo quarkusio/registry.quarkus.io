@@ -33,12 +33,14 @@ import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
 import io.quarkus.registry.client.RegistryNonPlatformExtensionsResolver;
 import io.quarkus.registry.client.RegistryPlatformExtensionsResolver;
 import io.quarkus.registry.client.RegistryPlatformsResolver;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
  * This class will query the database for the requested information
  */
 @ApplicationScoped
 @Path("/client")
+@Tag(name = "Client", description = "Client related services")
 public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsResolver,
         RegistryPlatformExtensionsResolver, RegistryPlatformsResolver {
 

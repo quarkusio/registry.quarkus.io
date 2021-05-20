@@ -1,8 +1,6 @@
 package io.quarkus.registry.app.maven;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -15,13 +13,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.maven.ArtifactCoords;
-import org.apache.maven.artifact.Artifact;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
 /**
  * Exposes a Maven resource for our tooling
  */
 @Path("/maven")
+@Tag(name = "Client", description = "Client related services")
 public class MavenResource {
 
     private static final Logger log = Logger.getLogger(MavenResource.class);
