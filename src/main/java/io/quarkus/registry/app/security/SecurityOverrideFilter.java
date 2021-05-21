@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -23,12 +25,12 @@ public class SecurityOverrideFilter implements ContainerRequestFilter {
     
     @Inject
     @ConfigProperty(name = "TOKEN")
-    Optional<String> appToken;
+    Instance<Optional<String>> appToken;
     
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String token = requestContext.getHeaders().getFirst("TOKEN");
-        if (token != null && !token.isEmpty() && Objects.equals(appToken.orElse(null), token)) {
+        if (token != null && !token.isEmpty() && Objects.equals(appToken.get().orElse(null), token)) {
             requestContext.setSecurityContext(new SecurityContext() {
                 @Override
                 public Principal getUserPrincipal() {
