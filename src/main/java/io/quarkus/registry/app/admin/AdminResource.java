@@ -2,7 +2,6 @@ package io.quarkus.registry.app.admin;
 
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -22,7 +21,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 
 @ApplicationScoped
 @Path("/admin")
-@RolesAllowed("admin")
 public class AdminResource {
 
     @Inject
