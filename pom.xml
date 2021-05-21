@@ -15,7 +15,7 @@
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <quarkus.version>2.0.0.Alpha2</quarkus.version>
+    <quarkus.version>2.0.0.Alpha3</quarkus.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -85,6 +85,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-cache</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-security</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
