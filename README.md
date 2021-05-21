@@ -13,7 +13,6 @@ You need a PostgreSQL DB running. If you don't have one, use docker or podman:
 You can run your application in dev mode that enables live coding using:
 
 ```shell script
- export TOKEN=test
 ./mvnw clean compile quarkus:dev
 ```
 
