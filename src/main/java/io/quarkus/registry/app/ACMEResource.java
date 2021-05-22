@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.logging.Logger;
 
 @ApplicationScoped
@@ -32,6 +33,7 @@ public class ACMEResource {
     @GET
     @Path("/{type:(acme-challenge|pki-validation)}/{token}")
     @Produces(MediaType.TEXT_PLAIN)
+    @Operation(hidden = true)
     public Response challenge(@PathParam("type") String type, @PathParam("token") String token) {
         logger.infof("Requested Token: %s", token);
         return Response.ok(acmeThumbprint
