@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
@@ -55,7 +54,7 @@ public class Extension extends BaseEntity {
     }
 
     public static Optional<Extension> findByGA(String groupId, String artifactId) {
-        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(Extension.class)
                 .using("groupId", groupId)
                 .using("artifactId", artifactId)

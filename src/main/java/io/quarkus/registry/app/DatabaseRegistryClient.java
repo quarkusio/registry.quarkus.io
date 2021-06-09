@@ -24,15 +24,20 @@ import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
+import io.quarkus.registry.catalog.Platform;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonCategory;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatform;
 import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
+import io.quarkus.registry.catalog.json.JsonPlatformRelease;
+import io.quarkus.registry.catalog.json.JsonPlatformReleaseVersion;
+import io.quarkus.registry.catalog.json.JsonPlatformStream;
 import io.quarkus.registry.client.RegistryNonPlatformExtensionsResolver;
 import io.quarkus.registry.client.RegistryPlatformExtensionsResolver;
 import io.quarkus.registry.client.RegistryPlatformsResolver;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -55,20 +60,37 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         } else {
             platformReleases = PlatformRelease.findByQuarkusCore(quarkusVersion);
         }
+        List<Platform> platforms = new ArrayList<>();
         for (PlatformRelease platformRelease : platformReleases) {
             JsonPlatform platform = new JsonPlatform();
             ArtifactCoords bom = ArtifactCoords.pom(
                     platformRelease.platform.groupId,
                     platformRelease.platform.artifactId,
                     platformRelease.version);
-            platform.setBom(bom);
-            platform.setQuarkusCoreVersion(platformRelease.quarkusCore);
-            platform.setUpstreamQuarkusCoreVersion(platformRelease.quarkusCoreUpstream);
-            catalog.addPlatform(platform);
+            platform.setPlatformKey(platformRelease.platform.groupId);
+
+            JsonPlatformRelease release = new JsonPlatformRelease();
+
+            DefaultArtifactVersion version = new DefaultArtifactVersion(platformRelease.version);
+            release.setVersion(JsonPlatformReleaseVersion.fromString(String.valueOf(version.getIncrementalVersion())));
+            release.setMemberBoms(Collections.singletonList(bom));
+            release.setQuarkusCoreVersion(platformRelease.quarkusCore);
+            release.setUpstreamQuarkusCoreVersion(platformRelease.quarkusCoreUpstream);
+
+            JsonPlatformStream stream = new JsonPlatformStream();
+
+            stream.setId(version.getMajorVersion() + "." + version.getMinorVersion());
+            stream.setReleases(Collections.singletonList(release));
+            platform.setStreams(Collections.singletonList(stream));
+
             if (platformRelease.platform.isDefault) {
-                catalog.setDefaultPlatform(bom);
+                // JsonPlatformRelease.getRecommendedPlatform() uses the first element
+                platforms.add(0, platform);
+            } else {
+                platforms.add(platform);
             }
         }
+        catalog.setPlatforms(platforms);
         return catalog;
     }
 
@@ -137,7 +159,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         catalog.setId(id);
         catalog.setBom(ArtifactCoords.pom("io.quarkus", "quarkus-bom", quarkusVersion));
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
-        Map<Long, Boolean> compatiblityMap = ExtensionReleaseCompatibility.findCompatiblity(quarkusVersion);
+        Map<Long, Boolean> compatiblityMap = ExtensionReleaseCompatibility.findCompatibleMap(quarkusVersion);
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
             JsonExtension extension = toJsonExtension(extensionRelease, catalog);
             // Add compatibility info
@@ -194,7 +216,7 @@ public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsReso
         return e;
     }
 
-    private static enum CoreCompatibility {
+    private enum CoreCompatibility {
         UNKNOWN,
         COMPATIBLE,
         INCOMPATIBLE;

@@ -12,7 +12,6 @@ import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
-import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -47,17 +46,6 @@ public class AdminService {
         } catch (Exception e) {
             logger.error("Error while inserting platform", e);
             throw new IllegalStateException(e);
-        }
-    }
-
-    @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    public void onPlatformCreate(PlatformCreateEvent event) {
-        try {
-            io.quarkus.registry.catalog.Platform platform = event.getPlatform();
-            insertPlatform(platform.getBom(), platform.getQuarkusCoreVersion(), platform.getUpstreamQuarkusCoreVersion(), null);
-        } catch (Exception e) {
-            logger.error("Error while inserting platform", e);
         }
     }
 

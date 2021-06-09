@@ -9,7 +9,6 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -17,7 +16,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
-import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
@@ -93,7 +91,7 @@ public class PlatformRelease extends BaseEntity {
         if (!p.isPresent()) {
             return Optional.empty();
         }
-        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(PlatformRelease.class)
                 .using("platform", p.get())
                 .using("version", version)
@@ -109,8 +107,7 @@ public class PlatformRelease extends BaseEntity {
     }
 
     public static List<String> findQuarkusCores() {
-        EntityManager em = JpaOperations.getEntityManager();
-        return em.createNamedQuery("PlatformRelease.findQuarkusCores", String.class)
+        return getEntityManager().createNamedQuery("PlatformRelease.findQuarkusCores", String.class)
                 .getResultList();
     }
 

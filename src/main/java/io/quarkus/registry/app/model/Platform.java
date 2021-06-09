@@ -11,11 +11,8 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Sort;
-import org.hibernate.annotations.SortComparator;
 
 @Entity
 @Cacheable
@@ -55,7 +52,7 @@ public class Platform extends BaseEntity {
     }
 
     public static Optional<Platform> findByGA(String groupId, String artifactId) {
-        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(Platform.class)
                 .using("groupId", groupId)
                 .using("artifactId", artifactId)

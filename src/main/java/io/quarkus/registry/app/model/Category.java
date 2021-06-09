@@ -9,7 +9,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
-import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
@@ -50,7 +49,7 @@ public class Category extends BaseEntity {
     }
 
     public static Optional<Category> findByName(String name) {
-        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(Category.class)
                 .using("name", name)
                 .loadOptional();

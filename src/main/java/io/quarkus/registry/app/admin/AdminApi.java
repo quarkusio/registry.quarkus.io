@@ -21,12 +21,10 @@ import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
-import io.quarkus.registry.app.events.PlatformCreateEvent;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
-import io.quarkus.registry.catalog.json.JsonPlatform;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
@@ -38,8 +36,8 @@ import org.jboss.logging.Logger;
 @Path("/admin")
 @RolesAllowed("admin")
 @SecurityScheme(securitySchemeName = "Authentication",
-        description = "Admin token", 
-        type = SecuritySchemeType.APIKEY, 
+        description = "Admin token",
+        type = SecuritySchemeType.APIKEY,
         apiKeyName = "TOKEN",
         in = SecuritySchemeIn.HEADER)
 @Tag(name = "Admin", description = "Admin related services")
@@ -49,24 +47,6 @@ public class AdminApi {
 
     @Inject
     AdminService observer;
-
-    @POST
-    @Path("/v1/platform")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
-    @SecurityRequirement(name = "Authentication")
-    public Response addPlatform(JsonPlatform platform) {
-        log.infof("Adding platform %s", platform);
-        ArtifactCoords bom = platform.getBom();
-        Optional<PlatformRelease> platformRelease = PlatformRelease
-                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
-        if (platformRelease.isPresent()) {
-            return Response.status(Response.Status.CONFLICT).build();
-        }
-        PlatformCreateEvent event = new PlatformCreateEvent(platform);
-        observer.onPlatformCreate(event);
-        return Response.accepted(bom).build();
-    }
 
     @POST
     @Path("/v1/extension")

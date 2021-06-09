@@ -12,34 +12,32 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
  * This is a very basic token authentication that check for a TOKEN that is set
  * in the Header, and if it match the configured token, set the use as the Admin user
+ *
  * @author Phillip Kruger (phillip.kruger@redhat.com)
  */
 @Provider
 @PreMatching
 public class SecurityOverrideFilter implements ContainerRequestFilter {
-    
+
     @Inject
     @ConfigProperty(name = "TOKEN")
     Instance<Optional<String>> appToken;
-    
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        Optional<String> serverToken = appToken.get();
         String token = requestContext.getHeaders().getFirst("TOKEN");
-        if (token != null && !token.isEmpty() && Objects.equals(appToken.get().orElse(null), token)) {
+        if (serverToken.isEmpty() || Objects.equals(serverToken.orElse(null), token)) {
             requestContext.setSecurityContext(new SecurityContext() {
                 @Override
                 public Principal getUserPrincipal() {
-                    return new Principal() {
-                        @Override
-                        public String getName() {
-                            return "Admin";
-                        }
-                    };
+                    return () -> "Admin";
                 }
 
                 @Override

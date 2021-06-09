@@ -9,14 +9,12 @@ import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
-import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
@@ -86,7 +84,7 @@ public class ExtensionRelease extends BaseEntity {
         if (!extension.isPresent()) {
             return Optional.empty();
         }
-        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(ExtensionRelease.class)
                 .using("extension", extension.get())
                 .using("version", version)
@@ -94,8 +92,7 @@ public class ExtensionRelease extends BaseEntity {
     }
 
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
-        EntityManager entityManager = JpaOperations.getEntityManager();
-        return entityManager.createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
+        return getEntityManager().createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
                 .getResultList();
     }
 

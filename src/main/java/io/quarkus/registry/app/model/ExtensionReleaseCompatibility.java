@@ -6,12 +6,10 @@ import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.Tuple;
 
-import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
@@ -32,16 +30,15 @@ public class ExtensionReleaseCompatibility extends BaseEntity {
     public boolean compatible;
 
     public static Optional<ExtensionReleaseCompatibility> findByNaturalKey(ExtensionRelease extensionRelease, String quarkusCore) {
-        Session session = JpaOperations.getEntityManager().unwrap(Session.class);
+        Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(ExtensionReleaseCompatibility.class)
                 .using("extensionRelease", extensionRelease)
                 .using("quarkusCore", quarkusCore)
                 .loadOptional();
     }
 
-    public static Map<Long, Boolean> findCompatiblity(String quarkusCore) {
-        EntityManager entityManager = JpaOperations.getEntityManager();
-        return entityManager.createNamedQuery("ExtensionReleaseCompatibility.findCompatibility", Tuple.class)
+    public static Map<Long, Boolean> findCompatibleMap(String quarkusCore) {
+        return getEntityManager().createNamedQuery("ExtensionReleaseCompatibility.findCompatibility", Tuple.class)
                 .setParameter("quarkusCore", quarkusCore)
                 .getResultStream()
                 .collect(
