@@ -46,7 +46,7 @@ class Category {
 }
 
 class ExtensionReleaseCompatibility {
-  + String quarkusCore
+  + String quarkusCoreVersion
   + boolean compatible
 }
 

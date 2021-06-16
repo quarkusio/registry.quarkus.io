@@ -9,7 +9,6 @@ import io.quarkus.registry.catalog.json.JsonPlatformRelease;
 import io.quarkus.registry.catalog.json.JsonPlatformReleaseVersion;
 import io.quarkus.registry.catalog.json.JsonPlatformStream;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 /**
  * Mapper to convert from JPA entities to the JSON representation
