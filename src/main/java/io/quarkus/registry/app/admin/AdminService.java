@@ -1,7 +1,5 @@
 package io.quarkus.registry.app.admin;
 
-import java.util.Map;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
@@ -12,14 +10,12 @@ import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
-import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import org.jboss.logging.Logger;
 
@@ -36,10 +32,7 @@ public class AdminService {
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
-            PlatformRelease platformRelease = insertPlatform(extensionCatalog.getBom(),
-                                                             extensionCatalog.getQuarkusCoreVersion(),
-                                                             extensionCatalog.getUpstreamQuarkusCoreVersion(),
-                                                             extensionCatalog.getMetadata());
+            PlatformRelease platformRelease = insertPlatform(event.getPlatform(), extensionCatalog);
             for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
                 insertExtensionRelease(extension, platformRelease);
             }
@@ -49,52 +42,8 @@ public class AdminService {
         }
     }
 
-    @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    public void onExtensionCompatibilityCreate(ExtensionCompatibilityCreateEvent event) {
-        ExtensionReleaseCompatibility extensionReleaseCompatibility = ExtensionReleaseCompatibility.findByNaturalKey(event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
-            ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
-            newEntity.extensionRelease = event.getExtensionRelease();
-            newEntity.quarkusCore = event.getQuarkusCore();
-            return newEntity;
-        });
-        extensionReleaseCompatibility.compatible = event.isCompatible();
-        extensionReleaseCompatibility.persistAndFlush();
-    }
-
-    @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    public void onExtensionCompatibleDelete(ExtensionCompatibleDeleteEvent event) {
-        ExtensionReleaseCompatibility.delete("from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
-                                             event.getExtensionRelease(),
-                                             event.getQuarkusCore());
-    }
-
-    private PlatformRelease insertPlatform(ArtifactCoords bom, String quarkusCore, String quarkusCoreUpstream, Map<String, Object> metadata) {
-        final String groupId = bom.getGroupId();
-        final String artifactId = bom.getArtifactId();
-        final String version = bom.getVersion();
-        final Platform platform = Platform.findByGA(groupId, artifactId)
-                .orElseGet(() -> {
-                    Platform newPlatform = new Platform();
-                    newPlatform.groupId = groupId;
-                    newPlatform.artifactId = artifactId;
-                    newPlatform.persist();
-                    return newPlatform;
-                });
-
-        return PlatformRelease.findByGAV(groupId, artifactId, version)
-                .orElseGet(() -> {
-                    PlatformRelease newPlatformRelease = new PlatformRelease();
-                    platform.releases.add(newPlatformRelease);
-                    newPlatformRelease.platform = platform;
-                    newPlatformRelease.version = version;
-                    newPlatformRelease.quarkusCore = quarkusCore;
-                    newPlatformRelease.quarkusCoreUpstream = quarkusCoreUpstream;
-                    newPlatformRelease.metadata = metadata;
-                    newPlatformRelease.persist();
-                    return newPlatformRelease;
-                });
+    private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog) {
+        return null;
     }
 
     @Transactional
@@ -143,7 +92,7 @@ public class AdminService {
                         // Cannot determine Quarkus version
                         quarkusCore = "0.0.0";
                     }
-                    newExtensionRelease.quarkusCore = quarkusCore;
+                    newExtensionRelease.quarkusCoreVersion = quarkusCore;
                     // Many-to-many
                     if (platformRelease != null) {
                         PlatformExtension platformExtension = new PlatformExtension();
@@ -161,26 +110,24 @@ public class AdminService {
                 });
     }
 
-    /**
-     * TODO: Check if this is still necessary
-     */
-    private PlatformReleaseCategory createCategory(io.quarkus.registry.catalog.Category cat,
-                                                   PlatformRelease platformRelease) {
-        // Insert Category if doesn't exist
-        Category category =
-                Category.findByName(cat.getName())
-                        .orElseGet(() -> {
-                            Category newCategory = new Category();
-                            newCategory.name = cat.getName();
-                            newCategory.description = cat.getDescription();
-                            newCategory.persistAndFlush();
-                            return newCategory;
-                        });
-        PlatformReleaseCategory entity = new PlatformReleaseCategory();
-        entity.category = category;
-        entity.platformRelease = platformRelease;
-        entity.metadata = cat.getMetadata();
-        entity.persist();
-        return entity;
+    @Transactional
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    public void onExtensionCompatibilityCreate(ExtensionCompatibilityCreateEvent event) {
+        ExtensionReleaseCompatibility extensionReleaseCompatibility = ExtensionReleaseCompatibility.findByNaturalKey(event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
+            ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
+            newEntity.extensionRelease = event.getExtensionRelease();
+            newEntity.quarkusCoreVersion = event.getQuarkusCore();
+            return newEntity;
+        });
+        extensionReleaseCompatibility.compatible = event.isCompatible();
+        extensionReleaseCompatibility.persistAndFlush();
+    }
+
+    @Transactional
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    public void onExtensionCompatibilityDelete(ExtensionCompatibleDeleteEvent event) {
+        ExtensionReleaseCompatibility.delete("from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
+                                             event.getExtensionRelease(),
+                                             event.getQuarkusCore());
     }
 }

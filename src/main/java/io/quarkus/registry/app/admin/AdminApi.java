@@ -5,9 +5,11 @@ import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -22,6 +24,7 @@ import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
@@ -46,7 +49,27 @@ public class AdminApi {
     private static final Logger log = Logger.getLogger(AdminApi.class);
 
     @Inject
-    AdminService observer;
+    AdminService adminService;
+
+    @POST
+    @Path("/v1/extension/catalog")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
+    @SecurityRequirement(name = "Authentication")
+    public Response addExtensionCatalog(@NotNull @HeaderParam("X-Platform") String platformKey,
+                                        JsonExtensionCatalog catalog) {
+        log.infof("Adding catalog %s", catalog);
+        ArtifactCoords bom = catalog.getBom();
+        Platform platform = Platform.findByKey(platformKey).orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        Optional<PlatformRelease> platformRelease = PlatformRelease
+                .findByKey(platformKey, bom.getVersion());
+        if (platformRelease.isPresent()) {
+            return Response.status(Response.Status.CONFLICT).build();
+        }
+        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog);
+        adminService.onExtensionCatalogImport(event);
+        return Response.accepted(bom).build();
+    }
 
     @POST
     @Path("/v1/extension")
@@ -62,25 +85,7 @@ public class AdminApi {
             return Response.status(Response.Status.CONFLICT).build();
         }
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
-        observer.onExtensionCreate(event);
-        return Response.accepted(bom).build();
-    }
-
-    @POST
-    @Path("/v1/extension/catalog")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
-    @SecurityRequirement(name = "Authentication")
-    public Response addExtensionCatalog(JsonExtensionCatalog catalog) {
-        log.infof("Adding catalog %s", catalog);
-        ArtifactCoords bom = catalog.getBom();
-        Optional<PlatformRelease> platformRelease = PlatformRelease
-                .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
-        if (platformRelease.isPresent()) {
-            return Response.status(Response.Status.CONFLICT).build();
-        }
-        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(catalog);
-        observer.onExtensionCatalogImport(event);
+        adminService.onExtensionCreate(event);
         return Response.accepted(bom).build();
     }
 
@@ -103,7 +108,7 @@ public class AdminApi {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore, compatible);
-        observer.onExtensionCompatibilityCreate(event);
+        adminService.onExtensionCompatibilityCreate(event);
         return Response.accepted().build();
     }
 
@@ -120,7 +125,7 @@ public class AdminApi {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         ExtensionCompatibleDeleteEvent event = new ExtensionCompatibleDeleteEvent(extensionRelease, quarkusCore);
-        observer.onExtensionCompatibleDelete(event);
+        adminService.onExtensionCompatibilityDelete(event);
         return Response.accepted().build();
     }
 }

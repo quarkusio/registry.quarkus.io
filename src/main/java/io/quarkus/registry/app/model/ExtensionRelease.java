@@ -48,7 +48,7 @@ public class ExtensionRelease extends BaseEntity {
     public Map<String, Object> metadata;
 
     @Column(nullable = false)
-    public String quarkusCore;
+    public String quarkusCoreVersion;
 
     @OneToMany(mappedBy = "extensionRelease", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();

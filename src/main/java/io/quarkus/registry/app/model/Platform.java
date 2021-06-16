@@ -2,6 +2,7 @@ package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -9,10 +10,11 @@ import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Cacheable
@@ -20,18 +22,20 @@ public class Platform extends BaseEntity {
 
     @NaturalId
     @Column(nullable = false)
-    public String groupId;
+    public String platformKey;
 
-    @NaturalId
-    @Column(nullable = false)
-    public String artifactId;
+    @Column
+    public String name;
 
     @Column
     public boolean isDefault;
 
+    @Type(type = JsonTypes.JSON_BIN)
+    @Column(columnDefinition = "json")
+    public Map<String, Object> metadata;
+
     @OneToMany(mappedBy = "platform", orphanRemoval = true)
-    @OrderBy("versionSortable DESC")
-    public List<PlatformRelease> releases = new ArrayList<>();
+    public List<PlatformStream> streams = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
@@ -42,20 +46,18 @@ public class Platform extends BaseEntity {
             return false;
         }
         Platform platform = (Platform) o;
-        return Objects.equals(groupId, platform.groupId) &&
-                Objects.equals(artifactId, platform.artifactId);
+        return Objects.equals(platformKey, platform.platformKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupId, artifactId);
+        return Objects.hash(platformKey);
     }
 
-    public static Optional<Platform> findByGA(String groupId, String artifactId) {
+    public static Optional<Platform> findByKey(String platformKey) {
         Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(Platform.class)
-                .using("groupId", groupId)
-                .using("artifactId", artifactId)
+                .using("platformKey", platformKey)
                 .loadOptional();
     }
 }

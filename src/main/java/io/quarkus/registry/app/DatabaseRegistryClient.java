@@ -1,12 +1,11 @@
 package io.quarkus.registry.app;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
@@ -18,26 +17,17 @@ import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
+import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
-import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.PlatformReleaseCategory;
+import io.quarkus.registry.app.model.mapper.PlatformMapper;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
-import io.quarkus.registry.catalog.Platform;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonCategory;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
-import io.quarkus.registry.catalog.json.JsonPlatform;
 import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
-import io.quarkus.registry.catalog.json.JsonPlatformRelease;
-import io.quarkus.registry.catalog.json.JsonPlatformReleaseVersion;
-import io.quarkus.registry.catalog.json.JsonPlatformStream;
-import io.quarkus.registry.client.RegistryNonPlatformExtensionsResolver;
-import io.quarkus.registry.client.RegistryPlatformExtensionsResolver;
-import io.quarkus.registry.client.RegistryPlatformsResolver;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -46,103 +36,22 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @ApplicationScoped
 @Path("/client")
 @Tag(name = "Client", description = "Client related services")
-public class DatabaseRegistryClient implements RegistryNonPlatformExtensionsResolver,
-        RegistryPlatformExtensionsResolver, RegistryPlatformsResolver {
+public class DatabaseRegistryClient {
+
+    @Inject
+    PlatformMapper platformMapper;
 
     @GET
     @Path("platforms")
-    @Override
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
-        List<PlatformRelease> platformReleases;
-        if (quarkusVersion == null || quarkusVersion.isEmpty()) {
-            platformReleases = PlatformRelease.findLatest();
-        } else {
-            platformReleases = PlatformRelease.findByQuarkusCore(quarkusVersion);
-        }
-        List<Platform> platforms = new ArrayList<>();
-        for (PlatformRelease platformRelease : platformReleases) {
-            JsonPlatform platform = new JsonPlatform();
-            ArtifactCoords bom = ArtifactCoords.pom(
-                    platformRelease.platform.groupId,
-                    platformRelease.platform.artifactId,
-                    platformRelease.version);
-            platform.setPlatformKey(platformRelease.platform.groupId);
-
-            JsonPlatformRelease release = new JsonPlatformRelease();
-
-            DefaultArtifactVersion version = new DefaultArtifactVersion(platformRelease.version);
-            release.setVersion(JsonPlatformReleaseVersion.fromString(String.valueOf(version.getIncrementalVersion())));
-            release.setMemberBoms(Collections.singletonList(bom));
-            release.setQuarkusCoreVersion(platformRelease.quarkusCore);
-            release.setUpstreamQuarkusCoreVersion(platformRelease.quarkusCoreUpstream);
-
-            JsonPlatformStream stream = new JsonPlatformStream();
-
-            stream.setId(version.getMajorVersion() + "." + version.getMinorVersion());
-            stream.setReleases(Collections.singletonList(release));
-            platform.setStreams(Collections.singletonList(stream));
-
-            if (platformRelease.platform.isDefault) {
-                // JsonPlatformRelease.getRecommendedPlatform() uses the first element
-                platforms.add(0, platform);
-            } else {
-                platforms.add(platform);
-            }
-        }
-        catalog.setPlatforms(platforms);
+        List<Platform> platforms = Platform.listAll();
+        platforms.stream()
+                .map(platformMapper::toJsonPlatform)
+                .forEach(catalog::addPlatform);
         return catalog;
     }
 
-    @GET
-    @Path("extensions")
-    @Override
-    public ExtensionCatalog resolvePlatformExtensions(@QueryParam("c") ArtifactCoords platformCoords) {
-        if (platformCoords == null) {
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-        JsonExtensionCatalog catalog = new JsonExtensionCatalog();
-        PlatformRelease platformRelease = PlatformRelease
-                .findByGAV(platformCoords.getGroupId(), platformCoords.getArtifactId(), platformCoords.getVersion())
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-
-        String id = new ArtifactCoords(MavenConfig.PLATFORM_COORDS.getGroupId(),
-                                       MavenConfig.PLATFORM_COORDS.getArtifactId(),
-                                       platformCoords.getVersion(),
-                                       MavenConfig.PLATFORM_COORDS.getType(),
-                                       MavenConfig.PLATFORM_COORDS.getVersion()).toString();
-
-        catalog.setId(id);
-        catalog.setBom(platformCoords);
-        catalog.setPlatform(true);
-        catalog.setQuarkusCoreVersion(platformRelease.quarkusCore);
-        catalog.setUpstreamQuarkusCoreVersion(platformRelease.quarkusCoreUpstream);
-        catalog.setMetadata(platformRelease.metadata);
-        // Add extensions
-        for (PlatformExtension platformExtension : platformRelease.extensions) {
-            JsonExtension jsonExtension = toJsonExtension(platformExtension, catalog);
-            catalog.addExtension(jsonExtension);
-        }
-        // Add categories
-        List<io.quarkus.registry.catalog.Category> categories = new ArrayList<>();
-        if (platformRelease.categories.isEmpty()) {
-            categories = Category.listAll().stream()
-                    .map(Category.class::cast)
-                    .map(this::toJsonCategory)
-                    .collect(Collectors.toList());
-        } else {
-            for (PlatformReleaseCategory cat : platformRelease.categories) {
-                JsonCategory jsonCategory = new JsonCategory();
-                jsonCategory.setId(cat.getName());
-                jsonCategory.setName(cat.getName());
-                jsonCategory.setDescription(cat.getDescription());
-            }
-        }
-        catalog.setCategories(categories);
-        return catalog;
-    }
-
-    @Override
     @GET
     @Path("non-platform-extensions")
     public ExtensionCatalog resolveNonPlatformExtensions(@QueryParam("v") String quarkusVersion) {

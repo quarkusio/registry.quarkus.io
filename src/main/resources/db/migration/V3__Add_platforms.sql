@@ -1,2 +1,2 @@
-INSERT INTO platform (artifact_id, group_id, is_default) VALUES ('quarkus-bom', 'io.quarkus', false);
-INSERT INTO platform (artifact_id, group_id, is_default) VALUES ('quarkus-universe-bom', 'io.quarkus', true);
+INSERT INTO platform (platform_key, name, is_default) VALUES ('io.quarkus.platform', 'Member specific BOMs', false);
+INSERT INTO platform (platform_key, name, is_default) VALUES ('io.quarkus', 'Quarkus BOM', true);

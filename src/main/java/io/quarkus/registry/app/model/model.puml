@@ -1,0 +1,64 @@
+@startuml
+class Platform {
+  + String platformKey
+  + String name
+  + Map<String,Object> metadata
+  + boolean isDefault
+}
+
+class PlatformStream {
+  + String streamKey
+  + String name
+  + Map<String,Object> metadata
+}
+
+class PlatformRelease {
+  + String version
+  - String versionSortable
+  + String quarkusCoreVersion
+  + String upstreamQuarkusCoreVersion
+  + List<String> memberBoms
+  + Map<String,Object> metadata
+}
+
+class PlatformExtension {
+  + Map<String,Object> metadata
+}
+
+class Extension {
+  + String groupId
+  + String artifactId
+  + String name
+  + String description
+}
+
+class ExtensionRelease {
+  + String version
+  - String versionSortable
+  + Map<String,Object> metadata
+  + String quarkusCore
+}
+
+class Category {
+  + String name
+  + String description
+  + Map<String,Object> metadata
+}
+
+class ExtensionReleaseCompatibility {
+  + String quarkusCore
+  + boolean compatible
+}
+
+note right of PlatformRelease::memberBoms
+  This is stored as a JSON array
+end note
+
+Platform         *-- PlatformStream
+PlatformStream   *-- PlatformRelease
+PlatformRelease  *-- PlatformExtension
+
+Extension        *-- ExtensionRelease
+ExtensionRelease o-- PlatformExtension
+ExtensionRelease <-- ExtensionReleaseCompatibility
+@enduml

@@ -28,7 +28,7 @@ public class Extension extends BaseEntity {
     @Column(nullable = false)
     public String name;
 
-    @Column(length = 4096)
+    @Column
     public String description;
 
     @OneToMany(mappedBy = "extension", orphanRemoval = true)

@@ -7,6 +7,17 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 public class Version {
 
     /**
+     * Converts a version to an appropriate stream key
+     *
+     * @param version
+     * @return
+     */
+    public static String toStreamId(String version) {
+        DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
+        return String.format("%s.%s", dav.getMajorVersion(), dav.getMinorVersion());
+    }
+
+    /**
      * Transforms the given version into a lexicographically sortable type
      * Eg. 1.2.3.Final -> 00001.00002.00003.Final
      *
