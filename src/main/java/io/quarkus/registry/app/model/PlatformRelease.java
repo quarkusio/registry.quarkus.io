@@ -1,10 +1,12 @@
 package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,6 +24,7 @@ import org.hibernate.annotations.Type;
 
 @Entity
 @NamedQueries({
+        @NamedQuery(name = "PlatformRelease.findByPlatformKey", query = "from PlatformRelease pr where pr.platformStream.platform.platformKey = ?1 and pr.version = ?2"),
         @NamedQuery(name = "PlatformRelease.findQuarkusCores", query = "select pr.version from PlatformRelease pr " +
                 "where pr.platformStream.platform.isDefault = true order by pr.versionSortable"),
         @NamedQuery(name = "PlatformRelease.findByQuarkusCoreVersion", query = "from PlatformRelease pr where pr.quarkusCoreVersion = ?1"),
@@ -54,7 +57,7 @@ public class PlatformRelease extends BaseEntity {
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
-    public List<String> memberBoms;
+    public Set<String> memberBoms = new LinkedHashSet<>();
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
@@ -62,6 +65,15 @@ public class PlatformRelease extends BaseEntity {
 
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
     public List<PlatformExtension> extensions = new ArrayList<>();
+
+    public PlatformRelease() {
+
+    }
+
+    public PlatformRelease(PlatformStream platformStream, String version) {
+        this.platformStream = platformStream;
+        this.version = version;
+    }
 
     @PrePersist
     void updateSemVer() {
@@ -86,14 +98,10 @@ public class PlatformRelease extends BaseEntity {
         return Objects.hash(platformStream, version);
     }
 
-    public static Optional<PlatformRelease> findByKey(String platformKey, String version) {
-        Optional<Platform> p = Platform.findByKey(platformKey);
-        if (!p.isPresent()) {
-            return Optional.empty();
-        }
+    public static Optional<PlatformRelease> findByNaturalKey(PlatformStream platformStream, String version) {
         Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(PlatformRelease.class)
-                .using("platform", p.get())
+                .using("platformStream", platformStream)
                 .using("version", version)
                 .loadOptional();
     }
@@ -104,6 +112,10 @@ public class PlatformRelease extends BaseEntity {
 
     public static List<PlatformRelease> findLatest() {
         return list("#PlatformRelease.findLatest");
+    }
+
+    public static Optional<PlatformRelease> findByPlatformKey(String platformKey, String version) {
+        return find("#PlatformRelease.findByPlatformKey", platformKey, version).firstResultOptional();
     }
 
     public static List<String> findQuarkusCores() {

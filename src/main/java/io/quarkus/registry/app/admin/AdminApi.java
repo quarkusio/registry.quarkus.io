@@ -61,8 +61,7 @@ public class AdminApi {
         log.infof("Adding catalog %s", catalog);
         ArtifactCoords bom = catalog.getBom();
         Platform platform = Platform.findByKey(platformKey).orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        Optional<PlatformRelease> platformRelease = PlatformRelease
-                .findByKey(platformKey, bom.getVersion());
+        Optional<PlatformRelease> platformRelease = PlatformRelease.findByPlatformKey(platformKey, bom.getVersion());
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }

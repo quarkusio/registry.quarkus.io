@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +13,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
@@ -37,6 +39,15 @@ public class PlatformStream extends BaseEntity {
     @OrderBy("versionSortable DESC")
     public List<PlatformRelease> releases = new ArrayList<>();
 
+    public PlatformStream() {
+
+    }
+
+    public PlatformStream(Platform platform, String streamKey) {
+        this.platform = platform;
+        this.streamKey = streamKey;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -48,5 +59,13 @@ public class PlatformStream extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(platform, streamKey);
+    }
+
+    public static Optional<PlatformStream> findByNaturalKey(Platform platform, String streamKey) {
+        Session session = getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(PlatformStream.class)
+                .using("platform", platform)
+                .using("streamKey", streamKey)
+                .loadOptional();
     }
 }

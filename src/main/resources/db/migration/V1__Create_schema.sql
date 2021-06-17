@@ -95,6 +95,7 @@ create table platform_release
             primary key,
     created_at timestamptz default CURRENT_TIMESTAMP,
     metadata json,
+    member_boms json,
     version varchar not null,
     version_sortable varchar not null,
     quarkus_core_version varchar not null,

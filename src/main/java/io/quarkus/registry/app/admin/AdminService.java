@@ -16,11 +16,13 @@ import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.registry.app.util.Version;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import org.jboss.logging.Logger;
 
 /**
- * This class listens for async events fired from {@link AdminResource}
+ * Administrative operations on the database
  */
 @ApplicationScoped
 public class AdminService {
@@ -43,7 +45,22 @@ public class AdminService {
     }
 
     private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog) {
-        return null;
+        ArtifactCoords bom = extensionCatalog.getBom();
+        String memberBom = bom.toString();
+        String bomVersion = bom.getVersion();
+        String streamKey = Version.toStreamId(bomVersion);
+        PlatformStream platformStream = PlatformStream.findByNaturalKey(platform, streamKey).orElseGet(() -> {
+            PlatformStream stream = new PlatformStream(platform, streamKey);
+            stream.persist();
+            return stream;
+        });
+        PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, bomVersion)
+                .orElseGet(() -> new PlatformRelease(platformStream, bomVersion));
+        platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
+        platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
+        platformRelease.memberBoms.add(memberBom);
+        platformRelease.persistAndFlush();
+        return platformRelease;
     }
 
     @Transactional

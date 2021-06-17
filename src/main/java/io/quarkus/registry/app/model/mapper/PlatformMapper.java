@@ -9,6 +9,7 @@ import io.quarkus.registry.catalog.json.JsonPlatformRelease;
 import io.quarkus.registry.catalog.json.JsonPlatformReleaseVersion;
 import io.quarkus.registry.catalog.json.JsonPlatformStream;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 /**
  * Mapper to convert from JPA entities to the JSON representation
@@ -18,6 +19,7 @@ public interface PlatformMapper {
 
     JsonPlatform toJsonPlatform(Platform person);
 
+    @Mapping(source = "streamKey", target = "id")
     JsonPlatformStream toJsonPlatformStream(PlatformStream value);
 
     JsonPlatformRelease toJsonPlatformRelease(PlatformRelease value);
