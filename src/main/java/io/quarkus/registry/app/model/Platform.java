@@ -10,10 +10,12 @@ import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 
 @Entity
@@ -35,6 +37,7 @@ public class Platform extends BaseEntity {
     public Map<String, Object> metadata;
 
     @OneToMany(mappedBy = "platform", orphanRemoval = true)
+    @OrderBy("streamKeySortable DESC")
     public List<PlatformStream> streams = new ArrayList<>();
 
     @Override

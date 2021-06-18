@@ -11,8 +11,10 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.PrePersist;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
+import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
@@ -27,6 +29,12 @@ public class PlatformStream extends BaseEntity {
     @NaturalId
     @Column(nullable = false)
     public String streamKey;
+
+    /**
+     * The key above formatted as a valid semver (for max and order-by operations)
+     */
+    @Column(updatable = false)
+    private String streamKeySortable;
 
     @Column
     public String name;
@@ -46,6 +54,11 @@ public class PlatformStream extends BaseEntity {
     public PlatformStream(Platform platform, String streamKey) {
         this.platform = platform;
         this.streamKey = streamKey;
+    }
+
+    @PrePersist
+    void updateSemVer() {
+        this.streamKeySortable = Version.toSortable(streamKey);
     }
 
     @Override

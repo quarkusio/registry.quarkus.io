@@ -26,7 +26,7 @@ public class Version {
      */
     public static String toSortable(String version) {
         DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
-        String qualifier = Objects.toString(dav.getQualifier(),"");
+        String qualifier = Objects.toString(dav.getQualifier(), "");
         // getQualifier does not work in some cases. Eg. 1.2.3.Final-redhat-00001
         if (!version.endsWith(qualifier)) {
             int idx = version.indexOf(qualifier);

@@ -78,6 +78,7 @@ create table platform_stream
             primary key,
     created_at timestamptz default CURRENT_TIMESTAMP,
     stream_key varchar not null,
+    stream_key_sortable varchar not null,
     name varchar,
     metadata json,
     platform_id bigint

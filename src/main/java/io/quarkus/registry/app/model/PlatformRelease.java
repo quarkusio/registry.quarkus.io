@@ -1,12 +1,10 @@
 package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -47,7 +45,7 @@ public class PlatformRelease extends BaseEntity {
     /**
      * The version above formatted as a valid semver (for max and order-by operations)
      */
-    @Column(updatable = false, length = 100)
+    @Column(updatable = false)
     private String versionSortable;
 
     @Column(nullable = false)
@@ -57,7 +55,7 @@ public class PlatformRelease extends BaseEntity {
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
-    public Set<String> memberBoms = new LinkedHashSet<>();
+    public List<String> memberBoms = new ArrayList<>();
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
@@ -67,7 +65,6 @@ public class PlatformRelease extends BaseEntity {
     public List<PlatformExtension> extensions = new ArrayList<>();
 
     public PlatformRelease() {
-
     }
 
     public PlatformRelease(PlatformStream platformStream, String version) {
