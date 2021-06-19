@@ -8,6 +8,7 @@ class Platform {
 
 class PlatformStream {
   + String streamKey
+  - String streamKeySortable
   + String name
   + Map<String,Object> metadata
 }
