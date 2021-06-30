@@ -1,5 +1,8 @@
 package io.quarkus.registry.app.admin;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
@@ -17,7 +20,6 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
-import io.quarkus.registry.app.util.Version;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import org.jboss.logging.Logger;
 
@@ -45,20 +47,20 @@ public class AdminService {
     }
 
     private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog) {
-        ArtifactCoords bom = extensionCatalog.getBom();
-        String memberBom = bom.toString();
-        String bomVersion = bom.getVersion();
-        String streamKey = Version.toStreamId(bomVersion);
+        Map<String, Object> platformReleaseMetadata = (Map<String, Object>) extensionCatalog.getMetadata().get("platform-release");
+        String streamKey = (String) platformReleaseMetadata.get("stream");
+        String version = (String) platformReleaseMetadata.get("version");
+        List<String> memberBoms = (List<String>) platformReleaseMetadata.get("members");
         PlatformStream platformStream = PlatformStream.findByNaturalKey(platform, streamKey).orElseGet(() -> {
             PlatformStream stream = new PlatformStream(platform, streamKey);
             stream.persist();
             return stream;
         });
-        PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, bomVersion)
-                .orElseGet(() -> new PlatformRelease(platformStream, bomVersion));
+        PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
+                .orElseGet(() -> new PlatformRelease(platformStream, version));
         platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
         platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
-        platformRelease.memberBoms.add(memberBom);
+        platformRelease.memberBoms.addAll(memberBoms);
         platformRelease.persistAndFlush();
         return platformRelease;
     }
