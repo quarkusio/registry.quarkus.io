@@ -1,2 +1,2 @@
-INSERT INTO platform (platform_key, name, is_default) VALUES ('io.quarkus.platform', 'Quarkus Community Platform', false);
-INSERT INTO platform (platform_key, name, is_default) VALUES ('io.quarkus', 'Quarkus 1.x Community Platform', true);
+INSERT INTO platform (platform_key, name, is_default) VALUES ('io.quarkus.platform', 'Quarkus Community Platform', true);
+INSERT INTO platform (platform_key, name, is_default) VALUES ('io.quarkus', 'Quarkus 1.x Community Platform', false);
