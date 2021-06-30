@@ -13,6 +13,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.panache.common.Sort;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -45,7 +46,7 @@ public class DatabaseRegistryClient {
     @Path("platforms")
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
-        List<Platform> platforms = Platform.listAll();
+        List<Platform> platforms = Platform.listAll(Sort.descending("isDefault"));
         platforms.stream()
                 .map(platformMapper::toJsonPlatform)
                 .forEach(catalog::addPlatform);
