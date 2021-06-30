@@ -2,6 +2,7 @@ package io.quarkus.registry.app.admin;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -21,6 +22,7 @@ import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
+import io.quarkus.registry.util.PlatformArtifacts;
 import org.jboss.logging.Logger;
 
 /**
@@ -60,7 +62,9 @@ public class AdminService {
                 .orElseGet(() -> new PlatformRelease(platformStream, version));
         platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
         platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
-        platformRelease.memberBoms.addAll(memberBoms);
+        platformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
+                                                  .map(PlatformArtifacts::ensureBomArtifact)
+                                                  .map(ArtifactCoords::toString).collect(Collectors.toList()));
         platformRelease.persistAndFlush();
         return platformRelease;
     }
