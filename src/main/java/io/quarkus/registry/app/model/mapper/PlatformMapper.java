@@ -1,9 +1,11 @@
 package io.quarkus.registry.app.model.mapper;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.registry.catalog.json.JsonCategory;
 import io.quarkus.registry.catalog.json.JsonPlatform;
 import io.quarkus.registry.catalog.json.JsonPlatformRelease;
 import io.quarkus.registry.catalog.json.JsonPlatformReleaseVersion;
@@ -24,6 +26,9 @@ public interface PlatformMapper {
 
     JsonPlatformRelease toJsonPlatformRelease(PlatformRelease value);
 
+    @Mapping(source = "name", target = "id")
+    JsonCategory toJsonCategory(Category category);
+
     default JsonPlatformReleaseVersion toJsonPlatformReleaseVersion(String version) {
         return JsonPlatformReleaseVersion.fromString(version);
     }
@@ -31,4 +36,5 @@ public interface PlatformMapper {
     default ArtifactCoords toArtifactCoords(String value) {
         return ArtifactCoords.fromString(value);
     }
+
 }

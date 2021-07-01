@@ -25,7 +25,6 @@ import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
-import io.quarkus.registry.catalog.json.JsonCategory;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
@@ -96,16 +95,8 @@ public class DatabaseRegistryClient {
         }
         // Add all categories
         List<Category> categories = Category.listAll();
-        categories.stream().map(this::toJsonCategory).forEach(catalog::addCategory);
+        categories.stream().map(platformMapper::toJsonCategory).forEach(catalog::addCategory);
         return catalog;
-    }
-
-    private JsonCategory toJsonCategory(Category category) {
-        JsonCategory jsonCategory = new JsonCategory();
-        jsonCategory.setId(category.name);
-        jsonCategory.setName(category.name);
-        jsonCategory.setDescription(category.description);
-        return jsonCategory;
     }
 
     private JsonExtension toJsonExtension(PlatformExtension platformExtension, ExtensionOrigin extensionOrigin) {
