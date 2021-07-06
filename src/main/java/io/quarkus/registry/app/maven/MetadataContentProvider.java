@@ -2,8 +2,11 @@ package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Collections;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,6 +29,9 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 public class MetadataContentProvider implements ArtifactContentProvider {
 
     private static final MetadataXpp3Writer METADATA_WRITER = new MetadataXpp3Writer();
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)
+            .withZone(ZoneId.of("UTC"));
 
     @Inject
     MavenConfig mavenConfig;
@@ -70,22 +76,20 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         snapshot.setBuildNumber(1);
 
         final String baseVersion = artifact.getVersion().substring(0, artifact.getVersion().length() - "SNAPSHOT".length());
-        addSnapshotVersion(versioning, snapshot, baseVersion, Collections.singletonList(""), "pom");
-        addSnapshotVersion(versioning, snapshot, baseVersion, PlatformRelease.findQuarkusCores(), "json");
+        Instant now = Instant.now();
+        addSnapshotVersion(versioning, snapshot, baseVersion, now, "pom");
+        addSnapshotVersion(versioning, snapshot, baseVersion, now, "json");
         return newMetadata;
     }
 
-    private static void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion,
-                                           List<String> classifiers, String extension) {
+    private static void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion, Instant instant,
+                                           String extension) {
         final String version = baseVersion + snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
-        for (String classifier : classifiers) {
-            final SnapshotVersion sv = new SnapshotVersion();
-            sv.setClassifier(classifier);
-            sv.setExtension(extension);
-            sv.setVersion(version);
-            sv.setUpdated(versioning.getLastUpdated());
-            versioning.addSnapshotVersion(sv);
-        }
+        final SnapshotVersion sv = new SnapshotVersion();
+        sv.setExtension(extension);
+        sv.setVersion(version);
+        sv.setUpdated(DATE_TIME_FORMATTER.format(instant));
+        versioning.addSnapshotVersion(sv);
     }
 
     private String writeMetadata(Metadata metadata) throws IOException {
