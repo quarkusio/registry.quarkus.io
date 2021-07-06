@@ -2,11 +2,6 @@ package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,7 +13,6 @@ import javax.ws.rs.core.UriInfo;
 import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
-import io.quarkus.registry.app.model.PlatformRelease;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
@@ -29,9 +23,6 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 public class MetadataContentProvider implements ArtifactContentProvider {
 
     private static final MetadataXpp3Writer METADATA_WRITER = new MetadataXpp3Writer();
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)
-            .withZone(ZoneId.of("UTC"));
 
     @Inject
     MavenConfig mavenConfig;
@@ -76,19 +67,18 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         snapshot.setBuildNumber(1);
 
         final String baseVersion = artifact.getVersion().substring(0, artifact.getVersion().length() - "SNAPSHOT".length());
-        Instant now = Instant.now();
-        addSnapshotVersion(versioning, snapshot, baseVersion, now, "pom");
-        addSnapshotVersion(versioning, snapshot, baseVersion, now, "json");
+        addSnapshotVersion(versioning, snapshot, baseVersion, "pom");
+        addSnapshotVersion(versioning, snapshot, baseVersion, "json");
         return newMetadata;
     }
 
-    private static void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion, Instant instant,
+    private static void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion,
                                            String extension) {
         final String version = baseVersion + snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
         final SnapshotVersion sv = new SnapshotVersion();
         sv.setExtension(extension);
         sv.setVersion(version);
-        sv.setUpdated(DATE_TIME_FORMATTER.format(instant));
+        sv.setUpdated(versioning.getLastUpdated());
         versioning.addSnapshotVersion(sv);
     }
 
