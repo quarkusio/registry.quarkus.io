@@ -46,7 +46,7 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("platforms")
-    public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
+    public PlatformCatalog resolvePlatforms() {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest();
         for (PlatformRelease platformRelease : platformReleases) {
