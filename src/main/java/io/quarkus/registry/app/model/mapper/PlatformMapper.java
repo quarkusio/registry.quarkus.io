@@ -19,9 +19,11 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "cdi")
 public interface PlatformMapper {
 
+    @Mapping(target = "streams", ignore = true)
     JsonPlatform toJsonPlatform(Platform person);
 
     @Mapping(source = "streamKey", target = "id")
+    @Mapping(target = "releases", ignore = true)
     JsonPlatformStream toJsonPlatformStream(PlatformStream value);
 
     JsonPlatformRelease toJsonPlatformRelease(PlatformRelease value);

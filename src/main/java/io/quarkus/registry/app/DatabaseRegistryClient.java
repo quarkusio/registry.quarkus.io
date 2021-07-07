@@ -13,13 +13,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.panache.common.Sort;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
+import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.app.model.mapper.PlatformMapper;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
@@ -27,7 +28,9 @@ import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
+import io.quarkus.registry.catalog.json.JsonPlatform;
 import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
+import io.quarkus.registry.catalog.json.JsonPlatformStream;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -45,10 +48,19 @@ public class DatabaseRegistryClient {
     @Path("platforms")
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String quarkusVersion) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
-        List<Platform> platforms = Platform.listAll(Sort.descending("isDefault"));
-        platforms.stream()
-                .map(platformMapper::toJsonPlatform)
-                .forEach(catalog::addPlatform);
+        List<PlatformRelease> platformReleases = PlatformRelease.findLatest();
+        for (PlatformRelease platformRelease : platformReleases) {
+            PlatformStream platformStream = platformRelease.platformStream;
+            Platform platform = platformStream.platform;
+
+            JsonPlatformStream jsonPlatformStream = platformMapper.toJsonPlatformStream(platformStream);
+            jsonPlatformStream.addRelease(platformMapper.toJsonPlatformRelease(platformRelease));
+
+            JsonPlatform jsonPlatform = platformMapper.toJsonPlatform(platform);
+            jsonPlatform.addStream(jsonPlatformStream);
+
+            catalog.addPlatform(jsonPlatform);
+        }
         return catalog;
     }
 

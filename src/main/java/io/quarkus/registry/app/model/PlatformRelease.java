@@ -30,7 +30,7 @@ import org.hibernate.annotations.Type;
                 "where (pr.platformStream, pr.versionSortable) in (" +
                 "    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2" +
                 "    group by pr2.platformStream" +
-                ")")
+                ") order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc")
 })
 public class PlatformRelease extends BaseEntity {
 
