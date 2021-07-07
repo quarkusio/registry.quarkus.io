@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: Perform release
+    name: Build and publish Docker image
     runs-on: ubuntu-latest
 
     steps:
