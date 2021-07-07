@@ -44,7 +44,6 @@ jobs:
         run: |
           IMAGE_TAG=$(git rev-parse --short=7 HEAD)
           # IMAGE_TAG=v${{ github.run_number }}
-          ./mvnw package -Pnative
           docker build -f src/main/docker/Dockerfile.native -t quay.io/quarkus/registry-app:latest .
           docker tag quay.io/quarkus/registry-app:latest quay.io/quarkus/registry-app:${IMAGE_TAG}
           docker push quay.io/quarkus/registry-app:latest
