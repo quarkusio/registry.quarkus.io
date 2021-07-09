@@ -12,6 +12,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
@@ -46,6 +47,7 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("platforms")
+    @CacheResult(cacheName = CacheNames.PLATFORMS)
     public PlatformCatalog resolvePlatforms() {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest();

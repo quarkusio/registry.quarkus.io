@@ -35,6 +35,7 @@ public class AdminService {
 
     @Transactional
     @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    @CacheInvalidateAll(cacheName = CacheNames.PLATFORMS)
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
