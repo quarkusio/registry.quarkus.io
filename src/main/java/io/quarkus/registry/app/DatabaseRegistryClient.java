@@ -68,6 +68,7 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("non-platform-extensions")
+    @CacheResult(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
     public ExtensionCatalog resolveNonPlatformExtensions(@QueryParam("v") String quarkusVersion) {
         if (quarkusVersion == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);

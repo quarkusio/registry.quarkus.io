@@ -72,6 +72,7 @@ public class AdminService {
 
     @Transactional
     @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
     public void onExtensionCreate(ExtensionCreateEvent event) {
         // Non-platform extension
         try {
@@ -136,6 +137,7 @@ public class AdminService {
 
     @Transactional
     @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
     public void onExtensionCompatibilityCreate(ExtensionCompatibilityCreateEvent event) {
         ExtensionReleaseCompatibility extensionReleaseCompatibility = ExtensionReleaseCompatibility.findByNaturalKey(event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
             ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
@@ -149,6 +151,7 @@ public class AdminService {
 
     @Transactional
     @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
     public void onExtensionCompatibilityDelete(ExtensionCompatibleDeleteEvent event) {
         ExtensionReleaseCompatibility.delete("from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
                                              event.getExtensionRelease(),
