@@ -81,7 +81,7 @@ public class DatabaseRegistryClient {
 
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         catalog.setId(id);
-        catalog.setBom(ArtifactCoords.pom("io.quarkus", "quarkus-bom", quarkusVersion));
+        catalog.setBom(ArtifactCoords.pom("io.quarkus.platform", "quarkus-bom", quarkusVersion));
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
         Map<Long, Boolean> compatiblityMap = ExtensionReleaseCompatibility.findCompatibleMap(quarkusVersion);
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
