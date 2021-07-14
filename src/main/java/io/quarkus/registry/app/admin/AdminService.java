@@ -7,13 +7,12 @@ import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
-import io.quarkus.cache.CacheInvalidateAll;
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.app.CacheNames;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
+import io.quarkus.registry.app.maven.cache.MavenCacheClear;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
@@ -34,8 +33,7 @@ public class AdminService {
     private static final Logger logger = Logger.getLogger(AdminService.class);
 
     @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    @CacheInvalidateAll(cacheName = CacheNames.PLATFORMS)
+    @MavenCacheClear
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
@@ -71,8 +69,7 @@ public class AdminService {
     }
 
     @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
+    @MavenCacheClear
     public void onExtensionCreate(ExtensionCreateEvent event) {
         // Non-platform extension
         try {
@@ -136,8 +133,7 @@ public class AdminService {
     }
 
     @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
+    @MavenCacheClear
     public void onExtensionCompatibilityCreate(ExtensionCompatibilityCreateEvent event) {
         ExtensionReleaseCompatibility extensionReleaseCompatibility = ExtensionReleaseCompatibility.findByNaturalKey(event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
             ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
@@ -150,8 +146,7 @@ public class AdminService {
     }
 
     @Transactional
-    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
-    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
+    @MavenCacheClear
     public void onExtensionCompatibilityDelete(ExtensionCompatibleDeleteEvent event) {
         ExtensionReleaseCompatibility.delete("from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
                                              event.getExtensionRelease(),
