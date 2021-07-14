@@ -12,14 +12,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
-import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.app.model.mapper.PlatformMapper;
@@ -47,7 +45,6 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("platforms")
-    @CacheResult(cacheName = CacheNames.PLATFORMS)
     public PlatformCatalog resolvePlatforms() {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest();
@@ -68,7 +65,6 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("non-platform-extensions")
-    @CacheResult(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
     public ExtensionCatalog resolveNonPlatformExtensions(@QueryParam("v") String quarkusVersion) {
         if (quarkusVersion == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
@@ -112,12 +108,6 @@ public class DatabaseRegistryClient {
         List<Category> categories = Category.listAll();
         categories.stream().map(platformMapper::toJsonCategory).forEach(catalog::addCategory);
         return catalog;
-    }
-
-    private JsonExtension toJsonExtension(PlatformExtension platformExtension, ExtensionOrigin extensionOrigin) {
-        JsonExtension e = toJsonExtension(platformExtension.extensionRelease, extensionOrigin);
-        e.setMetadata(platformExtension.metadata);
-        return e;
     }
 
     private JsonExtension toJsonExtension(ExtensionRelease extensionRelease, ExtensionOrigin extensionOrigin) {

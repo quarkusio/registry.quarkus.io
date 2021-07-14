@@ -10,9 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.app.CacheNames;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
@@ -50,7 +48,6 @@ public class MetadataContentProvider implements ArtifactContentProvider {
                 .build();
     }
 
-    @CacheResult(cacheName = CacheNames.METADATA)
     Metadata generateMetadata(ArtifactCoords artifact) {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());

@@ -13,6 +13,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.maven.cache.MavenCacheClear;
+import javax.ws.rs.DELETE;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
@@ -72,4 +74,10 @@ public class MavenResource {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
+    @DELETE
+    @Path("/cache")
+    @MavenCacheClear
+    public Response clearCache(){
+        return Response.accepted().build();
+    }
 }
