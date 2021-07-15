@@ -48,7 +48,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
                 if(notModified){
                     containerRequestContext.abortWith(toNotModifiedResponse(mavenResponse));
                 }else {
-                    log.warn("Serving [" + path + "] from cache");
+                    log.debug("Serving [" + path + "] from cache");
                     containerRequestContext.abortWith(toResponse(mavenResponse));
                 }    
             }
@@ -60,7 +60,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException {
         if(isMavenGetRequest(containerRequestContext) && !isCachedResponse(containerResponseContext) && containerResponseContext.getStatus()==200){ 
             String path = containerRequestContext.getUriInfo().getPath();
-            log.warn("Caching [" + path + "]");
+            log.debug("Caching [" + path + "]");
             mavenCache.getCache().put(path, toMavenResponse(containerResponseContext));
         }
     }
