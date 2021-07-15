@@ -58,11 +58,9 @@ public class DatabaseRegistryClient {
             JsonPlatform jsonPlatform = (JsonPlatform) catalog.getPlatform(platform.platformKey);
             if (jsonPlatform == null) {
                 jsonPlatform = platformMapper.toJsonPlatform(platform);
-                jsonPlatform.addStream(jsonPlatformStream);
                 catalog.addPlatform(jsonPlatform);
-            } else {
-                jsonPlatform.addStream(jsonPlatformStream);
             }
+            jsonPlatform.addStream(jsonPlatformStream);
         }
         return catalog;
     }
