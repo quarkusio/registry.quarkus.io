@@ -15,7 +15,6 @@ import javax.persistence.OrderBy;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 
 @Entity

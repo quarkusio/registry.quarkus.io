@@ -48,7 +48,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     }
     
     private MavenResponse toMavenResponse(ContainerResponseContext containerResponseContext){
-        MavenResponse mavenResponse = new MavenResponse(containerResponseContext.getStatus(),(String)containerResponseContext.getEntity());
+        MavenResponse mavenResponse = new MavenResponse(containerResponseContext.getStatus(),containerResponseContext.getEntity());
         Set<String> headerKeys = containerResponseContext.getHeaders().keySet();
         for(String key : headerKeys){
             mavenResponse.addHeader(key, containerResponseContext.getHeaderString(key));
