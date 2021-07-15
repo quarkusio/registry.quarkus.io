@@ -2,7 +2,6 @@ package io.quarkus.registry.app.maven;
 
 import java.io.StringWriter;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
@@ -15,7 +14,6 @@ import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.DatabaseRegistryClient;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
-import org.apache.maven.artifact.Artifact;
 
 @Singleton
 public class NonPlatformExtensionsContentProvider implements ArtifactContentProvider {

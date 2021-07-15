@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.annotation.Priority;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.spi.Prioritized;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.maven.ArtifactCoords;
-import org.apache.maven.artifact.Artifact;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
@@ -42,7 +41,9 @@ public class PomContentProvider implements ArtifactContentProvider {
         } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
             result = HashUtil.sha1(result);
         }
-        return Response.ok(result).build();
+        return Response.ok(result)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML)
+                .build();
     }
 
     private static String generatePom(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {

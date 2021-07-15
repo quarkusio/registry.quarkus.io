@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.PathSegment;
 
 import io.quarkus.maven.ArtifactCoords;
-import org.apache.maven.artifact.Artifact;
 import org.assertj.core.api.SoftAssertions;
 import org.jboss.resteasy.specimpl.PathSegmentImpl;
 import org.junit.jupiter.api.Disabled;

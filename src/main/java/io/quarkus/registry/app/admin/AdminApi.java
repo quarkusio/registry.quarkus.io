@@ -23,6 +23,7 @@ import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
+import io.quarkus.registry.app.maven.cache.MavenCacheClear;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
@@ -125,6 +126,14 @@ public class AdminApi {
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         ExtensionCompatibleDeleteEvent event = new ExtensionCompatibleDeleteEvent(extensionRelease, quarkusCore);
         adminService.onExtensionCompatibilityDelete(event);
+        return Response.accepted().build();
+    }
+    
+    @DELETE
+    @Path("/v1/maven/cache")
+    @SecurityRequirement(name = "Authentication")
+    @MavenCacheClear
+    public Response clearCache(){
         return Response.accepted().build();
     }
 }

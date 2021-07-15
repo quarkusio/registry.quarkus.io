@@ -8,14 +8,14 @@ import java.util.HashMap;
  */
 public class MavenResponse {
     private int status;
-    private String response;
+    private Object response;
     private Map<String,String> headers = new HashMap<>();
     
     public MavenResponse(){
         
     }
     
-    public MavenResponse(int status, String response) {
+    public MavenResponse(int status, Object response) {
         this.status = status;
         this.response = response;
     }
@@ -28,11 +28,11 @@ public class MavenResponse {
         this.status = status;
     }
 
-    public String getResponse() {
+    public Object getResponse() {
         return response;
     }
 
-    public void setResponse(String response) {
+    public void setResponse(Object response) {
         this.response = response;
     }
 

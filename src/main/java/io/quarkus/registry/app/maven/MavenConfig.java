@@ -3,7 +3,6 @@ package io.quarkus.registry.app.maven;
 import javax.enterprise.context.ApplicationScoped;
 
 import io.quarkus.maven.ArtifactCoords;
-import org.apache.maven.artifact.Artifact;
 
 @ApplicationScoped
 public class MavenConfig {
