@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -30,10 +30,10 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     @Inject MavenCache mavenCache;
     
     @ConfigProperty(name = "maven.cache.path", defaultValue = "/maven")
-    String pathToCache;
+    Instance<String> pathToCache;
     
     @ConfigProperty(name = "maven.cache.header.cache-control", defaultValue = "no-cache") // Check for etag everytime
-    String headerCacheControl;
+    Instance<String> headerCacheControl;
     
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
@@ -92,7 +92,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
         // see https://www.keycdn.com/blog/http-cache-headers#no-cache-and-no-store
 
         // Cache control
-        containerResponseContext.getHeaders().add(CACHE_CONTROL, headerCacheControl);
+        containerResponseContext.getHeaders().add(CACHE_CONTROL, headerCacheControl.get());
         
         // Etag (to be compared with If-None-Match)
         // We try and set this based on the actual content. This means that if the content did not change (even if we recreate the cache)
@@ -103,11 +103,11 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
             if(containerResponseContext.getEntityClass().equals(String.class)){
                 String content = (String)containerResponseContext.getEntity();
                 String uuid = UUID.nameUUIDFromBytes(content.getBytes()).toString();
-                containerResponseContext.getHeaders().put(ETAG, List.of(uuid));
+                containerResponseContext.getHeaders().add(ETAG, uuid);
             // etag - Else we just use a UUID, this will change everytime our cache invalidate
             }else{
                 String randomEtag = UUID.randomUUID().toString();
-                containerResponseContext.getHeaders().put(ETAG, List.of(randomEtag));
+                containerResponseContext.getHeaders().add(ETAG, randomEtag);
             }
         }
         
@@ -145,7 +145,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
  
     private boolean isMavenGetRequest(ContainerRequestContext containerRequestContext){
         String path = containerRequestContext.getUriInfo().getPath();
-        return path.startsWith(pathToCache) && containerRequestContext.getMethod().equalsIgnoreCase(GET);
+        return path.startsWith(pathToCache.get()) && containerRequestContext.getMethod().equalsIgnoreCase(GET);
     }
     
     private boolean isCachedResponse(ContainerResponseContext containerResponseContext){
