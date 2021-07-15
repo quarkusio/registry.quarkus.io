@@ -21,6 +21,7 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.app.model.mapper.PlatformMapper;
+import io.quarkus.registry.app.util.Version;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
@@ -48,6 +49,7 @@ public class DatabaseRegistryClient {
     public PlatformCatalog resolvePlatforms() {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest();
+        platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
         for (PlatformRelease platformRelease : platformReleases) {
             PlatformStream platformStream = platformRelease.platformStream;
             Platform platform = platformStream.platform;
