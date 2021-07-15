@@ -1,0 +1,66 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - '.gitignore'
+      - '.dockerignore'
+      - '*.md'
+      - '*.adoc'
+      - '*.txt'
+      - '.github/**'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - '.gitignore'
+      - '.dockerignore'
+      - '*.md'
+      - '*.adoc'
+      - '*.txt'
+      - '.github/**'
+jobs:
+  build-jdk11:
+    name: "Initial JDK 11 Build"
+    runs-on: ubuntu-latest
+    # Skip main in forks
+    # Skip draft PRs and those with WIP in the subject, rerun as soon as its removed
+    if: "(github.repository == 'quarkusio/registry.quarkus.io' || !endsWith(github.ref, '/main')) && ( \
+           github.event_name != 'pull_request' || ( \
+             github.event.pull_request.draft == false && \
+             github.event.pull_request.state != 'closed' && \
+             contains(github.event.pull_request.title, 'wip ') == false && \
+             contains(github.event.pull_request.title, '[wip]') == false && \
+             (
+               github.event.action != 'edited' || \
+               contains(github.event.changes.title.from, 'wip ') || \
+               contains(github.event.changes.title.from, '[wip]') \
+             ) \
+           ) \
+         )"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: n1hility/cancel-previous-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up JDK 11
+        # Uses sha for added security since tags can be updated
+        uses: joschi/setup-jdk@e87a7cec853d2dd7066adf837fe12bf0f3d45e52
+        with:
+          java-version: 11
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "::set-output name=date::$(/bin/date -u "+%Y-%m")"
+        shell: bash
+      - name: Cache Maven Repository
+        id: cache-maven
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          # refresh cache every month to avoid unlimited growth
+          key: q2maven-${{ steps.get-date.outputs.date }}
+      - name: Build
+        run: |
+          ./mvnw clean integration-test -Dnative

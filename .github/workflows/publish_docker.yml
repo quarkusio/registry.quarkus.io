@@ -40,6 +40,12 @@ jobs:
           # Container registry server url
           login-server: quay.io
 
+      - name: Get Image tag ID
+        id: get-image-tag
+        run: |
+          echo "::set-output name=image_tag::$(git rev-parse --short=7 HEAD)"
+        shell: bash
+
       - name: Build and push Docker images
         run: |
           IMAGE_TAG=$(git rev-parse --short=7 HEAD)
