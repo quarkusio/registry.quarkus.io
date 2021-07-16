@@ -33,13 +33,16 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         RegistriesConfigMapperHelper.toJson(REGISTRY_CONFIG, sw);
         String result = sw.toString();
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
+        String contentType = MediaType.APPLICATION_JSON;
         if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
             result = HashUtil.md5(result);
+            contentType = MediaType.TEXT_PLAIN;
         } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
             result = HashUtil.sha1(result);
+            contentType = MediaType.TEXT_PLAIN;
         }
         return Response.ok(result)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .build();
     }
 }

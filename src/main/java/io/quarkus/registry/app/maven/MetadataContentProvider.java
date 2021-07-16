@@ -39,14 +39,17 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         Metadata metadata = generateMetadata(artifact);
         String result = writeMetadata(metadata);
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
+        String contentType = MediaType.APPLICATION_XML;
         if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
             result = HashUtil.md5(result);
+            contentType = MediaType.TEXT_PLAIN;
         } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
             result = HashUtil.sha1(result);
+            contentType = MediaType.TEXT_PLAIN;
         }
 
         return Response.ok(result)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML)
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .build();
     }
 
