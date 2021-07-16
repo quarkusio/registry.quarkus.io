@@ -5,6 +5,9 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.LocalDateTime;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+
+import io.quarkus.cache.CacheInvalidateAll;
+import io.quarkus.registry.app.CacheNames;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
@@ -27,7 +30,8 @@ public class MavenCache {
             .maximumSize(maximumSize)
             .build();
     }
-    
+
+    @CacheInvalidateAll(cacheName = CacheNames.METADATA)
     public void clear(){
         cache.invalidateAll();
         lastInvalidateTime = LocalDateTime.now();
