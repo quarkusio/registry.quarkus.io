@@ -10,7 +10,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.CacheNames;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
@@ -37,17 +39,21 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         Metadata metadata = generateMetadata(artifact);
         String result = writeMetadata(metadata);
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
+        String contentType = MediaType.APPLICATION_XML;
         if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
             result = HashUtil.md5(result);
+            contentType = MediaType.TEXT_PLAIN;
         } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
             result = HashUtil.sha1(result);
+            contentType = MediaType.TEXT_PLAIN;
         }
 
         return Response.ok(result)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML)
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .build();
     }
 
+    @CacheResult(cacheName = CacheNames.METADATA)
     Metadata generateMetadata(ArtifactCoords artifact) {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());
