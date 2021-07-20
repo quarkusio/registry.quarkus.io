@@ -59,13 +59,13 @@ public class AdminApi {
     @SecurityRequirement(name = "Authentication")
     public Response addExtensionCatalog(@NotNull @HeaderParam("X-Platform") String platformKey,
                                         JsonExtensionCatalog catalog) {
-        log.infof("Adding catalog %s", catalog);
         ArtifactCoords bom = catalog.getBom();
         Platform platform = Platform.findByKey(platformKey).orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         Optional<PlatformRelease> platformRelease = PlatformRelease.findByPlatformKey(platformKey, bom.getVersion());
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
+        log.infof("Adding catalog %s", catalog);
         ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog);
         adminService.onExtensionCatalogImport(event);
         return Response.accepted(bom).build();
@@ -77,13 +77,13 @@ public class AdminApi {
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     @SecurityRequirement(name = "Authentication")
     public Response addExtension(JsonExtension extension) {
-        log.infof("Adding extension %s", extension);
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
         if (extensionRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
+        log.infof("Adding extension %s", extension);
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         adminService.onExtensionCreate(event);
         return Response.accepted(bom).build();
@@ -102,11 +102,11 @@ public class AdminApi {
         if (compatible == null) {
             compatible = Boolean.TRUE;
         }
+        ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
+                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         log.infof("Extension %s:%s:%s is %s with Quarkus %s", groupId, artifactId, version,
                   compatible ? "compatible" : "incompatible",
                   quarkusCore);
-        ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore, compatible);
         adminService.onExtensionCompatibilityCreate(event);
         return Response.accepted().build();
@@ -121,9 +121,9 @@ public class AdminApi {
                                                 @FormParam("artifactId") String artifactId,
                                                 @FormParam("version") String version,
                                                 @FormParam("quarkusCore") String quarkusCore) {
-        log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
         ExtensionCompatibleDeleteEvent event = new ExtensionCompatibleDeleteEvent(extensionRelease, quarkusCore);
         adminService.onExtensionCompatibilityDelete(event);
         return Response.accepted().build();
