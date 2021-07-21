@@ -31,7 +31,6 @@ import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatform;
 import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
 import io.quarkus.registry.catalog.json.JsonPlatformStream;
-import io.smallrye.common.annotation.Blocking;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 /**
@@ -47,7 +46,6 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("platforms")
-    @Blocking
     public PlatformCatalog resolvePlatforms() {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest();
@@ -71,7 +69,6 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("non-platform-extensions")
-    @Blocking
     public ExtensionCatalog resolveNonPlatformExtensions(@QueryParam("v") String quarkusVersion) {
         if (quarkusVersion == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
