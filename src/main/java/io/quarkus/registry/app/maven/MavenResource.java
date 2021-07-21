@@ -1,6 +1,5 @@
 package io.quarkus.registry.app.maven;
 
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -8,7 +7,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -53,7 +51,7 @@ public class MavenResource {
     @GET
     @Path("{path:.+}")
     public Response handleArtifactRequest(
-            @PathParam("path") List<PathSegment> pathSegments,
+            @PathParam("path") String pathSegments,
             @Context UriInfo uriInfo) {
         ArtifactCoords artifactCoords = ArtifactParser.parseCoords(pathSegments);
         for (ArtifactContentProvider contentProvider : getContentProviders()) {

@@ -2,9 +2,9 @@ package io.quarkus.registry.app.maven;
 
 import java.util.List;
 
-import javax.ws.rs.core.PathSegment;
-
 import io.quarkus.maven.ArtifactCoords;
+import java.util.Arrays;
+import javax.ws.rs.core.PathSegment;
 
 public class ArtifactParser {
 
@@ -17,14 +17,18 @@ public class ArtifactParser {
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
 
-    public static ArtifactCoords parseCoords(List<PathSegment> pathSegmentList) {
+    public static ArtifactCoords parseCoords(String path){
+        return ArtifactParser.parseCoords(Arrays.asList(path.split("/")));
+    }
+    
+    public static ArtifactCoords parseCoords(List<String> pathSegmentList) {
         if (pathSegmentList.isEmpty()) {
             throw new IllegalArgumentException("Coordinates are missing");
         }
-
+        
         final String fileName = getFileName(pathSegmentList);
-        final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
-        final String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
+        final String version = pathSegmentList.get(pathSegmentList.size() - 2);
+        final String artifactId = pathSegmentList.get(pathSegmentList.size() - 3);
 
         String classifier = "";
         final String type;
@@ -74,20 +78,24 @@ public class ArtifactParser {
         }
 
         final StringBuilder groupId = new StringBuilder();
-        groupId.append(pathSegmentList.get(0).getPath());
+        groupId.append(pathSegmentList.get(0));
         for (int i = 1; i < pathSegmentList.size() - 3; ++i) {
-            groupId.append('.').append(pathSegmentList.get(i).getPath());
+            groupId.append('.').append(pathSegmentList.get(i));
         }
 
         return new ArtifactCoords(groupId.toString(), artifactId, classifier, type, version);
     }
 
-    public static String getFileName(List<PathSegment> pathSegmentList) {
-        return pathSegmentList.get(pathSegmentList.size() - 1).getPath();
+    public static String getChecksumSuffix(List<PathSegment> pathSegmentList, ArtifactCoords parsedCoords) {
+        final String fileName = getFileNameFromPathSegment(pathSegmentList);
+        return fileName.endsWith(parsedCoords.getType()) ? null : fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
+    }
+    
+    public static String getFileName(List<String> pathSegmentList) {
+        return pathSegmentList.get(pathSegmentList.size() - 1);
     }
 
-    public static String getChecksumSuffix(List<PathSegment> pathSegmentList, ArtifactCoords parsedCoords) {
-        final String fileName = getFileName(pathSegmentList);
-        return fileName.endsWith(parsedCoords.getType()) ? null : fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
+    private static String getFileNameFromPathSegment(List<PathSegment> pathSegmentList) {
+        return pathSegmentList.get(pathSegmentList.size() - 1).getPath();
     }
 }

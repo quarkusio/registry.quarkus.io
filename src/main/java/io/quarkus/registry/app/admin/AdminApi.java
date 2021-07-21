@@ -29,6 +29,7 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
+import io.smallrye.common.annotation.Blocking;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
@@ -57,6 +58,7 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     @SecurityRequirement(name = "Authentication")
+    @Blocking
     public Response addExtensionCatalog(@NotNull @HeaderParam("X-Platform") String platformKey,
                                         JsonExtensionCatalog catalog) {
         ArtifactCoords bom = catalog.getBom();
@@ -76,6 +78,7 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     @SecurityRequirement(name = "Authentication")
+    @Blocking
     public Response addExtension(JsonExtension extension) {
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
@@ -94,6 +97,7 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
+    @Blocking
     public Response addExtensionCompatibilty(@FormParam("groupId") String groupId,
                                              @FormParam("artifactId") String artifactId,
                                              @FormParam("version") String version,
@@ -117,6 +121,7 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
+    @Blocking
     public Response removeExtensionCompatibilty(@FormParam("groupId") String groupId,
                                                 @FormParam("artifactId") String artifactId,
                                                 @FormParam("version") String version,
