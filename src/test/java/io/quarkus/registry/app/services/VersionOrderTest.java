@@ -53,17 +53,17 @@ public class VersionOrderTest {
             release210CR1.persistAndFlush();
         }
         {
-            Platform platform = Platform.findByKey("io.quarkus").get();
-            PlatformStream stream13 = new PlatformStream();
-            stream13.platform = platform;
-            stream13.streamKey = "1.3";
-            stream13.persistAndFlush();
+            Platform platform = Platform.findByKey("com.redhat.quarkus.platform").get();
+            PlatformStream stream20 = new PlatformStream();
+            stream20.platform = platform;
+            stream20.streamKey = "2.0";
+            stream20.persistAndFlush();
 
-            PlatformRelease release131 = new PlatformRelease();
-            release131.platformStream = stream13;
-            release131.version = "1.3.1.Final";
-            release131.quarkusCoreVersion = "1.3.1.Final";
-            release131.persistAndFlush();
+            PlatformRelease release200 = new PlatformRelease();
+            release200.platformStream = stream20;
+            release200.version = "2.0.0.Final-redhat0001";
+            release200.quarkusCoreVersion = release200.version;
+            release200.persistAndFlush();
         }
 
     }
@@ -77,7 +77,7 @@ public class VersionOrderTest {
                 .log().body(true)
                 .header("Content-Type", containsString(MediaType.APPLICATION_JSON))
                 .extract().path("platforms.streams.id");
-        assertThat(ids).containsExactly(List.of("2.0","2.1"), List.of("1.3"));
+        assertThat(ids).containsExactly(List.of("2.0","2.1"), List.of("2.0"));
     }
 
 }
