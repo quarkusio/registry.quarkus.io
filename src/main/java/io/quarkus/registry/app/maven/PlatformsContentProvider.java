@@ -37,7 +37,8 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
 
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
-        PlatformCatalog platformCatalog = registryClient.resolvePlatforms();
+        var quarkusVersion = artifact.getClassifier();
+        PlatformCatalog platformCatalog = registryClient.resolvePlatforms(quarkusVersion);
         StringWriter sw = new StringWriter();
         JsonCatalogMapperHelper.serialize(objectMapper, platformCatalog, sw);
         String result = sw.toString();
