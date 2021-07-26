@@ -25,7 +25,12 @@ import org.hibernate.annotations.Type;
         @NamedQuery(name = "PlatformRelease.findByPlatformKey", query = "from PlatformRelease pr where pr.platformStream.platform.platformKey = ?1 and pr.version = ?2"),
         @NamedQuery(name = "PlatformRelease.findQuarkusCores", query = "select pr.version from PlatformRelease pr " +
                 "where pr.platformStream.platform.isDefault = true order by pr.versionSortable"),
-        @NamedQuery(name = "PlatformRelease.findByQuarkusCoreVersion", query = "from PlatformRelease pr where pr.quarkusCoreVersion = ?1"),
+        @NamedQuery(name = "PlatformRelease.findLatestByQuarkusCoreVersion", query = "from PlatformRelease pr " +
+                "where pr.quarkusCoreVersion = ?1 " +
+                "   and (pr.platformStream, pr.versionSortable) in (" +
+                "    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2" +
+                "    group by pr2.platformStream" +
+                "  ) order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc"),
         @NamedQuery(name = "PlatformRelease.findLatest", query = "from PlatformRelease pr " +
                 "where (pr.platformStream, pr.versionSortable) in (" +
                 "    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2" +
@@ -103,12 +108,13 @@ public class PlatformRelease extends BaseEntity {
                 .loadOptional();
     }
 
-    public static List<PlatformRelease> findByQuarkusCoreVersion(String quarkusCore) {
-        return list("#PlatformRelease.findByQuarkusCoreVersion", quarkusCore);
-    }
 
-    public static List<PlatformRelease> findLatest() {
-        return list("#PlatformRelease.findLatest");
+    public static List<PlatformRelease> findLatest(String quarkusCore) {
+        if (quarkusCore != null && !quarkusCore.isBlank()) {
+            return list("#PlatformRelease.findLatestByQuarkusCoreVersion", quarkusCore);
+        } else {
+            return list("#PlatformRelease.findLatest");
+        }
     }
 
     public static Optional<PlatformRelease> findByPlatformKey(String platformKey, String version) {

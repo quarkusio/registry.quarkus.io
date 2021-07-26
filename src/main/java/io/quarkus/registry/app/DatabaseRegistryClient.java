@@ -46,9 +46,9 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("platforms")
-    public PlatformCatalog resolvePlatforms() {
+    public PlatformCatalog resolvePlatforms(@QueryParam("v") String version) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
-        List<PlatformRelease> platformReleases = PlatformRelease.findLatest();
+        List<PlatformRelease> platformReleases = PlatformRelease.findLatest(version);
         platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
         for (PlatformRelease platformRelease : platformReleases) {
             PlatformStream platformStream = platformRelease.platformStream;
