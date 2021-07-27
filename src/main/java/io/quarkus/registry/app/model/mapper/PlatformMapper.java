@@ -1,5 +1,7 @@
 package io.quarkus.registry.app.model.mapper;
 
+import java.util.Locale;
+
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
@@ -12,6 +14,7 @@ import io.quarkus.registry.catalog.json.JsonPlatformReleaseVersion;
 import io.quarkus.registry.catalog.json.JsonPlatformStream;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 /**
  * Mapper to convert from JPA entities to the JSON representation
@@ -28,8 +31,13 @@ public interface PlatformMapper {
 
     JsonPlatformRelease toJsonPlatformRelease(PlatformRelease value);
 
-    @Mapping(source = "name", target = "id")
+    @Mapping(source = "name", target = "id" ,qualifiedByName = "toCategoryId" )
     JsonCategory toJsonCategory(Category category);
+
+    @Named("toCategoryId")
+    static String toCategoryId(String id) {
+        return id.toLowerCase(Locale.ROOT).replace(' ', '-');
+    }
 
     default JsonPlatformReleaseVersion toJsonPlatformReleaseVersion(String version) {
         return JsonPlatformReleaseVersion.fromString(version);
