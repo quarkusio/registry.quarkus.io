@@ -16,11 +16,15 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw clean compile quarkus:dev
 ```
 
-## Indexing Quarkiverse extensions
+## Indexing extensions and platforms
 
 Once the application is running, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following in the root of your cloned repo: 
           
     jbang publishcatalog@quarkusio --working-directory=. --registry-url=http://localhost:8080 --token=test -sv
+
+## CI Builds
+
+CI deploys a new tag to [Quay](https://quay.io/repository/quarkus/registry-app?tab=tags) on every build. The tag is based on the first 7 characters from the SHA1 commit.
 
 ## Endpoints: 
 - List of platforms (marked with the recommended platform)
@@ -97,3 +101,9 @@ jbang publishcatalog@quarkusio --working-directory=. --registry-url=https://regi
 `$TOKEN` is a shared secret known to the registry maintainers.
 
 If you need help please [open an issue](https://github.com/quarkusio/registry.quarkus.io/issues).
+
+### How to update/bump a deployed version? 
+
+If you need to update a registry.quarkus.io application running in an openshift cluster, 
+use the `./update_tag.sh` script after performing a `oc login` in the cluster. This will tag the `quarkus-registry-app:production` imagestream with the tag provided. 
+
