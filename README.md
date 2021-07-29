@@ -80,3 +80,20 @@ You can go to https://graphql.github.com to perform these queries.
     }
 }
 ```
+
+## Troubleshooting
+
+### My extension or the latest platform is still not listed. Why?
+Updates to the registry.quarkus.io happen from an scheduled job set in https://github.com/quarkusio/quarkus-extension-catalog.
+Everytime an extension or platform update is detected, the corresponding YAML file is updated with the detected version. 
+If you would still like to manually trigger the indexing, do the following:
+
+- Clone https://github.com/quarkusio/quarkus-extension-catalog
+- Run the following command (make sure you have [JBang](https://www.jbang.dev/documentation/guide/latest/installation.html) installed): 
+```bash
+jbang publishcatalog@quarkusio --working-directory=. --registry-url=https://registry.quarkus.io --token=$TOKEN -sv` 
+```
+
+`$TOKEN` is a shared secret known to the registry maintainers.
+
+If you need help please [open an issue](https://github.com/quarkusio/registry.quarkus.io/issues).
