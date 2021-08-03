@@ -100,6 +100,21 @@ jbang publishcatalog@quarkusio --working-directory=. --registry-url=https://regi
 
 If you need help please [open an issue](https://github.com/quarkusio/registry.quarkus.io/issues).
 
+### SRCFG00011: Could not expand value buildNumber in property quarkus.application.version
+
+If while running the application during quarkus:dev mode and changing the `application.properties` file, you may encounter this error once you restart the application (by typing `s`): 
+
+```
+One or more configuration errors have prevented the application from starting. The errors are:
+  - SRCFG00011: Could not expand value buildNumber in property quarkus.application.version
+```
+
+The workaround is to create an `.env` file in the root with the following contents: 
+
+```properties
+buildNumber=999-SNAPSHOT
+```
+
 ### How to update/bump a deployed version? 
 
 If you need to update a registry.quarkus.io application running in an openshift cluster, 
