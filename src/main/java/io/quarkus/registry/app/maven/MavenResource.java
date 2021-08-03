@@ -55,7 +55,13 @@ public class MavenResource {
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
             @Context UriInfo uriInfo) {
-        ArtifactCoords artifactCoords = ArtifactParser.parseCoords(pathSegments);
+        ArtifactCoords artifactCoords;
+        try {
+            artifactCoords = ArtifactParser.parseCoords(pathSegments);
+        } catch (IllegalArgumentException iae) {
+            log.debug("Error while parsing coords: "+ iae.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
         for (ArtifactContentProvider contentProvider : getContentProviders()) {
             if (contentProvider.supports(artifactCoords, uriInfo)) {
                 try {
@@ -63,12 +69,12 @@ public class MavenResource {
                 } catch (WebApplicationException wae) {
                     throw wae;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Error while providing content", e);
                     return Response.serverError().build();
                 }
             }
         }
-        log.warnf("Not found: %s", uriInfo.getPath());
+        log.debugf("Not found: %s", uriInfo.getPath());
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 }
