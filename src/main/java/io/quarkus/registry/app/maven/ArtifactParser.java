@@ -18,7 +18,7 @@ public class ArtifactParser {
 
 
     public static ArtifactCoords parseCoords(List<PathSegment> pathSegmentList) {
-        if (pathSegmentList.isEmpty()) {
+        if (pathSegmentList.isEmpty() || pathSegmentList.size() < 3) {
             throw new IllegalArgumentException("Coordinates are missing");
         }
 

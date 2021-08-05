@@ -41,7 +41,7 @@ public class MavenResource {
     NonPlatformExtensionsContentProvider nonPlatformExtensionsContentProvider;
 
     private ArtifactContentProvider[] getContentProviders() {
-        return new ArtifactContentProvider[]{
+        return new ArtifactContentProvider[] {
                 pomContentProvider,
                 metadataContentProvider,
                 registryDescriptorContentProvider,
@@ -59,8 +59,8 @@ public class MavenResource {
         try {
             artifactCoords = ArtifactParser.parseCoords(pathSegments);
         } catch (IllegalArgumentException iae) {
-            log.debug("Error while parsing coords: "+ iae.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            log.debug("Error while parsing coords: " + iae.getMessage());
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
         for (ArtifactContentProvider contentProvider : getContentProviders()) {
             if (contentProvider.supports(artifactCoords, uriInfo)) {
