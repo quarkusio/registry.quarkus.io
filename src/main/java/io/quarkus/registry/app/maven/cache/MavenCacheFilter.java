@@ -154,7 +154,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     
     private static final String GET = "GET";
     private static final String VIA = "Via";
-    private static final String VIA_CACHE = "register.quarkus.io maven-cache";
+    private static final String VIA_CACHE = "registry.quarkus.io maven-cache";
     private static final String ETAG = "etag";
     private static final String CACHE_CONTROL = "cache-control";
     private static final String LAST_MODIFIED = "last-modified";
