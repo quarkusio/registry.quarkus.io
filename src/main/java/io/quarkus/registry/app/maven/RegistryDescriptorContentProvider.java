@@ -9,9 +9,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.config.RegistriesConfigLocator;
+import io.quarkus.registry.Constants;
+import io.quarkus.registry.app.CacheNames;
 import io.quarkus.registry.config.RegistryConfig;
+import io.quarkus.registry.config.json.JsonRegistryConfig;
+import io.quarkus.registry.config.json.JsonRegistryDescriptorConfig;
+import io.quarkus.registry.config.json.JsonRegistryMavenConfig;
+import io.quarkus.registry.config.json.JsonRegistryMavenRepoConfig;
+import io.quarkus.registry.config.json.JsonRegistryNonPlatformExtensionsConfig;
+import io.quarkus.registry.config.json.JsonRegistryPlatformsConfig;
 import io.quarkus.registry.config.json.RegistriesConfigMapperHelper;
 
 @Singleton
@@ -20,17 +28,17 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
     @Inject
     MavenConfig mavenConfig;
 
-    private static final RegistryConfig REGISTRY_CONFIG = RegistriesConfigLocator.getDefaultRegistry();
-
     @Override
     public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.matchesRegistryDescriptor(artifact);
     }
 
     @Override
+    @CacheResult(cacheName = CacheNames.DESCRIPTOR)
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         StringWriter sw = new StringWriter();
-        RegistriesConfigMapperHelper.toJson(REGISTRY_CONFIG, sw);
+        RegistryConfig registryConfig = getRegistryConfig(uriInfo);
+        RegistriesConfigMapperHelper.toJson(registryConfig, sw);
         String result = sw.toString();
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
         String contentType = MediaType.APPLICATION_JSON;
@@ -44,5 +52,39 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         return Response.ok(result)
                 .header(HttpHeaders.CONTENT_TYPE, contentType)
                 .build();
+    }
+
+    private RegistryConfig getRegistryConfig(UriInfo uriInfo) {
+        final JsonRegistryConfig qer = new JsonRegistryConfig();
+        qer.setId(Constants.DEFAULT_REGISTRY_ID);
+
+        final JsonRegistryDescriptorConfig descriptor = new JsonRegistryDescriptorConfig();
+        qer.setDescriptor(descriptor);
+        descriptor.setArtifact(
+                new ArtifactCoords(mavenConfig.getRegistryGroupId(),
+                        Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID, null,
+                        Constants.JSON, Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+
+        final JsonRegistryMavenConfig registryMavenConfig = new JsonRegistryMavenConfig();
+        qer.setMaven(registryMavenConfig);
+
+        final JsonRegistryPlatformsConfig platformsConfig = new JsonRegistryPlatformsConfig();
+        qer.setPlatforms(platformsConfig);
+        platformsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
+                Constants.DEFAULT_REGISTRY_PLATFORMS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+
+        if (mavenConfig.supportsNonPlatforms()) {
+            final JsonRegistryNonPlatformExtensionsConfig nonPlatformExtensionsConfig = new JsonRegistryNonPlatformExtensionsConfig();
+            qer.setNonPlatformExtensions(nonPlatformExtensionsConfig);
+            nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
+                    Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
+                    Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+        }
+        final JsonRegistryMavenRepoConfig mavenRepo = new JsonRegistryMavenRepoConfig();
+        registryMavenConfig.setRepository(mavenRepo);
+        mavenRepo.setId(Constants.DEFAULT_REGISTRY_ID);
+        mavenRepo.setUrl(uriInfo.getBaseUri().resolve("maven").toString());
+        return qer;
     }
 }

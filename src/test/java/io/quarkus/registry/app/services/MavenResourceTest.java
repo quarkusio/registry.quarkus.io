@@ -1,12 +1,18 @@
 package io.quarkus.registry.app.services;
 
+import java.util.Map;
+
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,9 +21,14 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 @QuarkusTest
+@QuarkusTestResource(MavenResourceTest.CustomRegistryTestResource.class)
 public class MavenResourceTest {
+    @Inject
+    MavenConfig mavenConfig;
+
     @BeforeAll
     @Transactional
     static void setUp() {
@@ -54,16 +65,28 @@ public class MavenResourceTest {
     }
 
     @Test
+    void should_use_custom_group_id() {
+        given()
+                .get("/maven/foo/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-SNAPSHOT.json")
+                .then()
+                .statusCode(200)
+                .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
+                .body("descriptor.artifact", is("foo:quarkus-registry-descriptor::json:1.0-SNAPSHOT"),
+                        "platforms.artifact", is("foo:quarkus-platforms::json:1.0-SNAPSHOT"),
+                        "non-platforms-extensions.artifact", is(nullValue()));
+    }
+
+    @Test
     void should_return_only_matching_platforms() {
         given()
-                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-2.1.0.CR1.json")
+                .get("/maven/foo/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-2.1.0.CR1.json")
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
                 .body("platforms.streams.size()", is(1),
-                      "platforms.streams[0].id[0]", is("2.1"),
-                      "platforms.streams[0].releases.size()", is(1),
-                      "platforms.streams[0].releases[0].quarkus-core-version[0]", is("2.1.0.CR1"));
+                        "platforms.streams[0].id[0]", is("2.1"),
+                        "platforms.streams[0].releases.size()", is(1),
+                        "platforms.streams[0].releases[0].quarkus-core-version[0]", is("2.1.0.CR1"));
     }
 
     @AfterAll
@@ -71,6 +94,18 @@ public class MavenResourceTest {
     static void tearDown() {
         PlatformRelease.deleteAll();
         PlatformStream.deleteAll();
+    }
+
+    public static class CustomRegistryTestResource implements QuarkusTestResourceLifecycleManager {
+        @Override
+        public Map<String, String> start() {
+            return Map.of("quarkus.registry.groupId", "foo",
+                    "quarkus.registry.non-platform-extensions.support", "false");
+        }
+
+        @Override public void stop() {
+
+        }
     }
 
 }
