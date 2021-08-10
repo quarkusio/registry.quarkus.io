@@ -57,7 +57,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
 
     private RegistryConfig getRegistryConfig(UriInfo uriInfo) {
         final JsonRegistryConfig qer = new JsonRegistryConfig();
-        qer.setId(Constants.DEFAULT_REGISTRY_ID);
+        qer.setId(mavenConfig.getRegistryId());
 
         final JsonRegistryDescriptorConfig descriptor = new JsonRegistryDescriptorConfig();
         qer.setDescriptor(descriptor);
@@ -90,7 +90,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         }
         final JsonRegistryMavenRepoConfig mavenRepo = new JsonRegistryMavenRepoConfig();
         registryMavenConfig.setRepository(mavenRepo);
-        mavenRepo.setId(Constants.DEFAULT_REGISTRY_ID);
+        mavenRepo.setId(mavenConfig.getRegistryId());
         mavenRepo.setUrl(uriInfo.getBaseUri().resolve("maven").toString());
         return qer;
     }

@@ -14,6 +14,10 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class MavenConfig {
 
     @Inject
+    @ConfigProperty(name = "quarkus.registry.id", defaultValue = Constants.DEFAULT_REGISTRY_ID)
+    String registryId;
+
+    @Inject
     @ConfigProperty(name = "quarkus.registry.groupId", defaultValue = Constants.DEFAULT_REGISTRY_GROUP_ID)
     String registryGroupId;
 
@@ -84,6 +88,10 @@ public class MavenConfig {
         return registryGroupId.equals(artifact.getGroupId()) &&
                 Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
                 Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion());
+    }
+
+    public String getRegistryId() {
+        return registryId;
     }
 
     public String getRegistryGroupId() {
