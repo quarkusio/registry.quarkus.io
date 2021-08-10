@@ -1,25 +1,51 @@
 package io.quarkus.registry.app.maven;
 
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.Constants;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class MavenConfig {
 
-    static final String GROUP_ID = "io.quarkus.registry";
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.id", defaultValue = Constants.DEFAULT_REGISTRY_ID)
+    String registryId;
 
-    static final String PLATFORM_ARTIFACT_ID = "quarkus-platforms";
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.groupId", defaultValue = Constants.DEFAULT_REGISTRY_GROUP_ID)
+    String registryGroupId;
 
-    static final String PLATFORM_EXTENSIONS_ARTIFACT_ID = "quarkus-platform-extensions";
-    static final String NON_PLATFORM_EXTENSIONS_ARTIFACT_ID = "quarkus-non-platform-extensions";
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.non-platform-extensions.support", defaultValue = "true")
+    boolean supportsNonPlatforms;
 
-    static final String REGISTRY_ARTIFACT_ID = "quarkus-registry-descriptor";
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.quarkus-versions.expression")
+    Optional<String> quarkusVersionsExpression;
 
-    static final String VERSION = "1.0-SNAPSHOT";
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.quarkus-versions.exclusive-provider")
+    Optional<Boolean> quarkusVersionsExclusiveProvider;
 
-    public static final ArtifactCoords PLATFORM_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.PLATFORM_ARTIFACT_ID, "json", MavenConfig.VERSION);
-    public static final ArtifactCoords NON_PLATFORM_EXTENSION_COORDS = new ArtifactCoords(MavenConfig.GROUP_ID, MavenConfig.NON_PLATFORM_EXTENSIONS_ARTIFACT_ID, "json", MavenConfig.VERSION);
+    private ArtifactCoords nonPlatformExtensionCoords;
+
+    @PostConstruct
+    void init() {
+        this.nonPlatformExtensionCoords = new ArtifactCoords(registryGroupId,
+                Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID,
+                Constants.JSON,
+                Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID);
+    }
+
+    public ArtifactCoords getNonPlatformExtensionCoords() {
+        return nonPlatformExtensionCoords;
+    }
 
     public boolean supports(ArtifactCoords artifact) {
         return matchesQuarkusPlatforms(artifact) ||
@@ -35,11 +61,10 @@ public class MavenConfig {
      * It also indicates which platform is the default one (for project creation), e.g. the quarkus-universe-bom;
      */
     public boolean matchesQuarkusPlatforms(ArtifactCoords artifact) {
-        return GROUP_ID.equals(artifact.getGroupId()) &&
-                PLATFORM_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
-                VERSION.equals(artifact.getVersion());
+        return registryGroupId.equals(artifact.getGroupId()) &&
+                Constants.DEFAULT_REGISTRY_PLATFORMS_CATALOG_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion());
     }
-
 
     /**
      * io.quarkus.registry:quarkus-non-platform-extensions:<QUARKUS-VERSION>:json:1.0-SNAPSHOT -
@@ -48,9 +73,9 @@ public class MavenConfig {
      * with <QUARKUS-VERSION> as the artifact’s classifier;
      */
     public boolean matchesNonPlatformExtensions(ArtifactCoords artifact) {
-        return GROUP_ID.equals(artifact.getGroupId()) &&
-                NON_PLATFORM_EXTENSIONS_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
-                VERSION.equals(artifact.getVersion());
+        return registryGroupId.equals(artifact.getGroupId()) &&
+                Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion());
     }
 
     /**
@@ -60,8 +85,28 @@ public class MavenConfig {
      * (including specific groupId, artifactId and versions for the QER artifacts described above, Maven repository URL, etc).
      */
     public boolean matchesRegistryDescriptor(ArtifactCoords artifact) {
-        return GROUP_ID.equals(artifact.getGroupId()) &&
-                REGISTRY_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
-                VERSION.equals(artifact.getVersion());
+        return registryGroupId.equals(artifact.getGroupId()) &&
+                Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID.equals(artifact.getArtifactId()) &&
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion());
+    }
+
+    public String getRegistryId() {
+        return registryId;
+    }
+
+    public String getRegistryGroupId() {
+        return registryGroupId;
+    }
+
+    public boolean supportsNonPlatforms() {
+        return supportsNonPlatforms;
+    }
+
+    public Optional<String> getQuarkusVersionsExpression() {
+        return quarkusVersionsExpression;
+    }
+
+    public Optional<Boolean> getQuarkusVersionsExclusiveProvider() {
+        return quarkusVersionsExclusiveProvider;
     }
 }

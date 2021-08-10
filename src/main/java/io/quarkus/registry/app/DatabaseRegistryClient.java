@@ -44,6 +44,9 @@ public class DatabaseRegistryClient {
     @Inject
     PlatformMapper platformMapper;
 
+    @Inject
+    MavenConfig mavenConfig;
+
     @GET
     @Path("platforms")
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String version) {
@@ -73,11 +76,12 @@ public class DatabaseRegistryClient {
         if (quarkusVersion == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
-        String id = new ArtifactCoords(MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getGroupId(),
-                                       MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getArtifactId(),
-                                       quarkusVersion,
-                                       MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getType(),
-                                       MavenConfig.NON_PLATFORM_EXTENSION_COORDS.getVersion()).toString();
+        ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
+        String id = new ArtifactCoords(nonPlatformExtensionCoords.getGroupId(),
+                nonPlatformExtensionCoords.getArtifactId(),
+                quarkusVersion,
+                nonPlatformExtensionCoords.getType(),
+                nonPlatformExtensionCoords.getVersion()).toString();
 
         final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
         catalog.setId(id);
