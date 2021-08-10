@@ -1,5 +1,7 @@
 package io.quarkus.registry.app.maven;
 
+import java.util.Optional;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -18,6 +20,14 @@ public class MavenConfig {
     @Inject
     @ConfigProperty(name = "quarkus.registry.non-platform-extensions.support", defaultValue = "true")
     boolean supportsNonPlatforms;
+
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.quarkus-versions.expression")
+    Optional<String> quarkusVersionsExpression;
+
+    @Inject
+    @ConfigProperty(name = "quarkus.registry.quarkus-versions.exclusive-provider")
+    Optional<Boolean> quarkusVersionsExclusiveProvider;
 
     private ArtifactCoords nonPlatformExtensionCoords;
 
@@ -82,5 +92,13 @@ public class MavenConfig {
 
     public boolean supportsNonPlatforms() {
         return supportsNonPlatforms;
+    }
+
+    public Optional<String> getQuarkusVersionsExpression() {
+        return quarkusVersionsExpression;
+    }
+
+    public Optional<Boolean> getQuarkusVersionsExclusiveProvider() {
+        return quarkusVersionsExclusiveProvider;
     }
 }

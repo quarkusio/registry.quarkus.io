@@ -65,15 +65,18 @@ public class MavenResourceTest {
     }
 
     @Test
-    void should_use_custom_group_id() {
+    void should_use_custom_descriptor_settings() {
         given()
                 .get("/maven/foo/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-SNAPSHOT.json")
                 .then()
                 .statusCode(200)
+                .log().body()
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
                 .body("descriptor.artifact", is("foo:quarkus-registry-descriptor::json:1.0-SNAPSHOT"),
                         "platforms.artifact", is("foo:quarkus-platforms::json:1.0-SNAPSHOT"),
-                        "non-platforms-extensions.artifact", is(nullValue()));
+                        "non-platforms-extensions.artifact", is(nullValue()),
+                        "quarkus-versions.recognized-versions-expression", is("[2.1.0.Final,)"),
+                        "quarkus-versions.exclusive-provider",is(true));
     }
 
     @Test
@@ -100,7 +103,9 @@ public class MavenResourceTest {
         @Override
         public Map<String, String> start() {
             return Map.of("quarkus.registry.groupId", "foo",
-                    "quarkus.registry.non-platform-extensions.support", "false");
+                    "quarkus.registry.non-platform-extensions.support", "false",
+                    "quarkus.registry.quarkus-versions.expression","[2.1.0.Final,)",
+                    "quarkus.registry.quarkus-versions.exclusive-provider","true");
         }
 
         @Override public void stop() {

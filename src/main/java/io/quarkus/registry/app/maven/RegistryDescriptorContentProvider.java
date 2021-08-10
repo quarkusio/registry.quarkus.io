@@ -20,6 +20,7 @@ import io.quarkus.registry.config.json.JsonRegistryMavenConfig;
 import io.quarkus.registry.config.json.JsonRegistryMavenRepoConfig;
 import io.quarkus.registry.config.json.JsonRegistryNonPlatformExtensionsConfig;
 import io.quarkus.registry.config.json.JsonRegistryPlatformsConfig;
+import io.quarkus.registry.config.json.JsonRegistryQuarkusVersionsConfig;
 import io.quarkus.registry.config.json.RegistriesConfigMapperHelper;
 
 @Singleton
@@ -80,6 +81,12 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
             nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
                     Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
                     Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+        }
+        if (mavenConfig.getQuarkusVersionsExpression().isPresent()) {
+            final JsonRegistryQuarkusVersionsConfig quarkusVersionsConfig = new JsonRegistryQuarkusVersionsConfig();
+            quarkusVersionsConfig.setRecognizedVersionsExpression(mavenConfig.getQuarkusVersionsExpression().orElse(null));
+            quarkusVersionsConfig.setExclusiveProvider(mavenConfig.getQuarkusVersionsExclusiveProvider().orElse(false));
+            qer.setQuarkusVersions(quarkusVersionsConfig);
         }
         final JsonRegistryMavenRepoConfig mavenRepo = new JsonRegistryMavenRepoConfig();
         registryMavenConfig.setRepository(mavenRepo);
