@@ -14,17 +14,14 @@ import javax.ws.rs.core.Response;
 
 import io.quarkus.cache.CacheResult;
 import io.quarkus.registry.app.CacheNames;
-import org.jboss.logging.Logger;
 import org.sonatype.nexus.repository.metadata.model.RepositoryMetadata;
 import org.sonatype.nexus.repository.metadata.model.io.xpp3.RepositoryMetadataXpp3Writer;
 
 /**
- * Exposes a Maven resource for our tooling
+ * Exposes Maven resource metadata for registering as a Nexus repository proxy
  */
 @Path("/maven/.meta")
 public class MavenMetadataResource {
-
-    private static final Logger log = Logger.getLogger(MavenMetadataResource.class);
 
     @Inject
     MavenConfig mavenConfig;
@@ -48,7 +45,7 @@ public class MavenMetadataResource {
         repositoryMetadata.setPolicy(RepositoryMetadata.POLICY_SNAPSHOT);
         String contentType = MediaType.APPLICATION_XML;
         String content = writeMetadata(repositoryMetadata);
-        if (extension.endsWith(".sha1")) {
+        if (extension.endsWith(ArtifactParser.SUFFIX_SHA1)) {
             content = HashUtil.sha1(content);
             contentType = MediaType.TEXT_PLAIN;
         }
