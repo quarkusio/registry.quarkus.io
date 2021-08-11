@@ -120,3 +120,15 @@ buildNumber=999-SNAPSHOT
 If you need to update a registry.quarkus.io application running in an openshift cluster, 
 use the `./update_tag.sh` script after performing a `oc login` in the cluster. This will tag the `quarkus-registry-app:production` imagestream with the tag provided. 
 
+### How to register as a Nexus Repository proxy
+
+You can register this as a Nexus repository proxy. Some options need to be set: 
+
+- Set the `Repository Policy` to `Snapshot`;
+- Disable `Download Remote Indexes`;
+- Disable `Allow File Browsing`;
+- Disable `Include in Search`.
+
+Here is an example on how it should look like: 
+
+![image](https://user-images.githubusercontent.com/54133/129068554-1db01f5e-5b57-405b-8386-636449e7d6ae.png)
