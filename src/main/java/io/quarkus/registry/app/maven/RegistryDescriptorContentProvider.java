@@ -91,7 +91,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         final JsonRegistryMavenRepoConfig mavenRepo = new JsonRegistryMavenRepoConfig();
         registryMavenConfig.setRepository(mavenRepo);
         mavenRepo.setId(mavenConfig.getRegistryId());
-        mavenRepo.setUrl(uriInfo.getBaseUri().resolve("maven").toString());
+        mavenRepo.setUrl(mavenConfig.getRegistryUrl());
         return qer;
     }
 }

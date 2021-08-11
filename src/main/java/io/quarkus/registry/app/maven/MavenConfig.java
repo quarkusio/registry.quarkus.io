@@ -18,6 +18,10 @@ public class MavenConfig {
     String registryId;
 
     @Inject
+    @ConfigProperty(name = "quarkus.registry.maven-repo.url", defaultValue = Constants.DEFAULT_REGISTRY_MAVEN_REPO_URL)
+    String registryUrl;
+
+    @Inject
     @ConfigProperty(name = "quarkus.registry.groupId", defaultValue = Constants.DEFAULT_REGISTRY_GROUP_ID)
     String registryGroupId;
 
@@ -96,6 +100,10 @@ public class MavenConfig {
 
     public String getRegistryGroupId() {
         return registryGroupId;
+    }
+
+    public String getRegistryUrl() {
+        return registryUrl;
     }
 
     public boolean supportsNonPlatforms() {
