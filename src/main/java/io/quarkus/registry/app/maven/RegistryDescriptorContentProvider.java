@@ -55,7 +55,8 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
                 .build();
     }
 
-    private RegistryConfig getRegistryConfig(UriInfo uriInfo) {
+    @CacheResult(cacheName = CacheNames.DESCRIPTOR)
+    RegistryConfig getRegistryConfig(UriInfo uriInfo) {
         final JsonRegistryConfig qer = new JsonRegistryConfig();
         qer.setId(mavenConfig.getRegistryId());
 
