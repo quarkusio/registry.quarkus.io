@@ -76,8 +76,8 @@ public class MavenResourceTest {
                         "platforms.artifact", is("foo:quarkus-platforms::json:1.0-SNAPSHOT"),
                         "non-platforms-extensions.artifact", is(nullValue()),
                         "quarkus-versions.recognized-versions-expression", is("[2.1.0.Final,)"),
-                        "quarkus-versions.exclusive-provider",is(true),
-                        "maven.repository.id",is("custom"));
+                        "quarkus-versions.exclusive-provider", is(true),
+                        "maven.repository.id", is("custom"));
     }
 
     @Test
@@ -105,9 +105,9 @@ public class MavenResourceTest {
         public Map<String, String> start() {
             return Map.of("quarkus.registry.groupId", "foo",
                     "quarkus.registry.non-platform-extensions.support", "false",
-                    "quarkus.registry.quarkus-versions.expression","[2.1.0.Final,)",
-                    "quarkus.registry.quarkus-versions.exclusive-provider","true",
-                    "quarkus.registry.id","custom");
+                    "quarkus.registry.quarkus-versions.expression", "[2.1.0.Final,)",
+                    "quarkus.registry.quarkus-versions.exclusive-provider", "true",
+                    "quarkus.registry.id", "custom");
         }
 
         @Override public void stop() {
