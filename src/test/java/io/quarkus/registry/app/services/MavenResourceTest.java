@@ -65,21 +65,6 @@ public class MavenResourceTest {
     }
 
     @Test
-    void should_support_repository_index() {
-        given()
-                .get("/maven/.meta/repository-metadata.xml")
-                .then()
-                .statusCode(200)
-                .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML));
-
-        given()
-                .get("/maven/.meta/repository-metadata.xml.sha1")
-                .then()
-                .statusCode(200)
-                .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.TEXT_PLAIN));
-    }
-
-    @Test
     void should_use_custom_descriptor_settings() {
         given()
                 .get("/maven/foo/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-SNAPSHOT.json")

@@ -48,9 +48,6 @@ public class MavenResource {
     @Inject
     NonPlatformExtensionsContentProvider nonPlatformExtensionsContentProvider;
 
-    @Inject
-    MavenConfig mavenConfig;
-
     private ArtifactContentProvider[] getContentProviders() {
         return new ArtifactContentProvider[] {
                 pomContentProvider,
@@ -59,25 +56,6 @@ public class MavenResource {
                 platformsContentProvider,
                 nonPlatformExtensionsContentProvider
         };
-    }
-
-    @GET
-    @Path("/.meta/repository-metadata.{extension}")
-    @CacheResult(cacheName = CacheNames.METADATA)
-    public Response handleRepositoryMetadataRequest(@PathParam("extension") String extension) throws IOException {
-        RepositoryMetadata repositoryMetadata = new RepositoryMetadata();
-        repositoryMetadata.setVersion(RepositoryMetadata.MODEL_VERSION);
-        repositoryMetadata.setId(mavenConfig.getRegistryId());
-        repositoryMetadata.setUrl(mavenConfig.getRegistryUrl());
-        repositoryMetadata.setLayout(RepositoryMetadata.LAYOUT_MAVEN2);
-        repositoryMetadata.setPolicy(RepositoryMetadata.POLICY_SNAPSHOT);
-        String contentType = MediaType.APPLICATION_XML;
-        String content = writeMetadata(repositoryMetadata);
-        if (extension.endsWith(".sha1")) {
-            content = HashUtil.sha1(content);
-            contentType = MediaType.TEXT_PLAIN;
-        }
-        return Response.ok(content).header(HttpHeaders.CONTENT_TYPE, contentType).build();
     }
 
     @GET
@@ -106,11 +84,5 @@ public class MavenResource {
         }
         log.debugf("Not found: %s", uriInfo.getPath());
         return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    private String writeMetadata(RepositoryMetadata metadata) throws IOException {
-        StringWriter sw = new StringWriter();
-        new RepositoryMetadataXpp3Writer().write(sw, metadata);
-        return sw.toString();
     }
 }
