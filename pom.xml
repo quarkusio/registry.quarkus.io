@@ -135,6 +135,9 @@
       <resource>
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
+        <excludes>
+          <exclude>**/favicon.ico</exclude>
+        </excludes>
       </resource>
     </resources>
     <plugins>
