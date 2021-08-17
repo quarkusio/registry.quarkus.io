@@ -66,6 +66,18 @@ objects:
                   value: ${QUARKUS_REGISTRY_GROUPID}
                 - name: QUARKUS_REGISTRY_MAVEN_REPO_URL
                   value: ${QUARKUS_REGISTRY_MAVEN_REPO_URL}
+                - name: QUARKUS_DATASOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-user
+                - name: QUARKUS_DATASOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: database-password
+                - name: QUARKUS_DATASOURCE_JDBC_URL
+                  value: 'jdbc:postgresql://postgresql:5432/quarkus-registry'
                 - name: TOKEN
                   valueFrom:
                     secretKeyRef:
