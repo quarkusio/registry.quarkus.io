@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import io.quarkus.cache.CacheResult;
 import io.quarkus.registry.app.CacheNames;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.sonatype.nexus.repository.metadata.model.RepositoryMetadata;
 import org.sonatype.nexus.repository.metadata.model.io.xpp3.RepositoryMetadataXpp3Writer;
 
@@ -29,12 +30,14 @@ public class MavenMetadataResource {
     @GET
     @Path("prefixes.txt")
     @Produces(MediaType.TEXT_PLAIN)
+    @Operation(hidden = true)
     public String handlePrefixesTxt() {
         return "/" + mavenConfig.getRegistryGroupId().replace('.', '/');
     }
 
     @GET
     @Path("repository-metadata.{extension}")
+    @Operation(hidden = true)
     @CacheResult(cacheName = CacheNames.METADATA)
     public Response handleRepositoryMetadataRequest(@PathParam("extension") String extension) throws IOException {
         RepositoryMetadata repositoryMetadata = new RepositoryMetadata();
