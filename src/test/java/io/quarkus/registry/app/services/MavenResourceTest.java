@@ -93,6 +93,18 @@ public class MavenResourceTest {
                         "platforms.streams[0].releases[0].quarkus-core-version[0]", is("2.1.0.CR1"));
     }
 
+    @Test
+    void non_platform_descriptor_should_contain_quarkus_core() {
+        given()
+                .get("/maven/foo/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-2.1.3.Final.json")
+                .then()
+                .statusCode(200)
+                .log().body()
+                .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
+                .body("quarkus-core-version", is("2.1.3.Final"));
+    }
+
+
     @AfterAll
     @Transactional
     static void tearDown() {
