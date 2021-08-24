@@ -25,6 +25,7 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 public class MetadataTest {
@@ -63,6 +64,19 @@ public class MetadataTest {
         release210CR1.version = "2.1.0.Final";
         release210CR1.quarkusCoreVersion = "2.1.0.Final";
         release210CR1.persistAndFlush();
+    }
+
+    @Test
+    public void should_contain_version() throws Exception {
+        given()
+                .get("/maven/"
+                        + mavenConfig.getRegistryGroupId().replace('.', '/')
+                        + "/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
+                .then()
+                .statusCode(200)
+                .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML))
+                .log().body()
+                .body("metadata.version",is("1.0-SNAPSHOT"));
     }
 
     @Test

@@ -64,6 +64,7 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());
         newMetadata.setArtifactId(artifact.getArtifactId());
+        newMetadata.setVersion(artifact.getVersion());
 
         Versioning versioning = new Versioning();
         newMetadata.setVersioning(versioning);
