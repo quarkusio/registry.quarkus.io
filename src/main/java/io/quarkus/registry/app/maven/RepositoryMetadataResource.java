@@ -22,7 +22,7 @@ import org.sonatype.nexus.repository.metadata.model.io.xpp3.RepositoryMetadataXp
  * Exposes Maven resource metadata for registering as a Nexus repository proxy
  */
 @Path("/maven/.meta")
-public class MavenMetadataResource {
+public class RepositoryMetadataResource {
 
     @Inject
     MavenConfig mavenConfig;

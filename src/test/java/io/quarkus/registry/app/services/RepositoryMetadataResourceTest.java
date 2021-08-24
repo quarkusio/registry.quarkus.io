@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
-public class MavenMetadataResourceTest {
+public class RepositoryMetadataResourceTest {
 
     @Inject
     MavenConfig mavenConfig;
