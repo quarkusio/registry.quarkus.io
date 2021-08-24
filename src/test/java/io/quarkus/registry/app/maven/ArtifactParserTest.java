@@ -7,20 +7,26 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.PathSegment;
 
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.Constants;
 import org.assertj.core.api.SoftAssertions;
 import org.jboss.resteasy.specimpl.PathSegmentImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 class ArtifactParserTest {
 
+    @Test
+    void shouldThrowParseError() {
+        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-registry-descriptor/");
+        assertThatIllegalArgumentException().isThrownBy(() -> ArtifactParser.parseCoords(pathSegments));
+    }
 
     @Test
     public void testClassifier() {
-        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-1.13.0.Final.json");
+        List<PathSegment> pathSegments = toSegments(
+                "io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-1.13.0.Final.json");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
         assertThat(artifact.getGroupId()).withFailMessage("Group ID does not match")
                 .isEqualTo("io.quarkus.registry");
@@ -36,7 +42,8 @@ class ArtifactParserTest {
 
     @Test
     public void testSha1() {
-        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-1.13.0.Final.json.sha1");
+        List<PathSegment> pathSegments = toSegments(
+                "io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-1.13.0.Final.json.sha1");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
         assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
@@ -60,7 +67,8 @@ class ArtifactParserTest {
 
     @Test
     public void testVersionedMavenMetadata() {
-        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/maven-metadata.xml");
+        List<PathSegment> pathSegments = toSegments(
+                "io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/maven-metadata.xml");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
         assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");
@@ -70,7 +78,8 @@ class ArtifactParserTest {
 
     @Test
     public void testVersionedSnapshotMavenMetadata() {
-        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-20210331.162601-1.json");
+        List<PathSegment> pathSegments = toSegments(
+                "io/quarkus/registry/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-20210331.162601-1.json");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
         assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-registry-descriptor");
@@ -81,7 +90,8 @@ class ArtifactParserTest {
 
     @Test
     public void testVersionedSnapshotMavenMetadataWithClassifier() {
-        List<PathSegment> pathSegments = toSegments("io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-20210405.152106-1-1.13.0.Final.json");
+        List<PathSegment> pathSegments = toSegments(
+                "io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-20210405.152106-1-1.13.0.Final.json");
         ArtifactCoords artifact = ArtifactParser.parseCoords(pathSegments);
         assertThat(artifact.getGroupId()).isEqualTo("io.quarkus.registry");
         assertThat(artifact.getArtifactId()).isEqualTo("quarkus-non-platform-extensions");

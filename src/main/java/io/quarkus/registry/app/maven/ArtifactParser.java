@@ -16,13 +16,15 @@ public class ArtifactParser {
 
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
-
     public static ArtifactCoords parseCoords(List<PathSegment> pathSegmentList) {
         if (pathSegmentList.isEmpty() || pathSegmentList.size() < 3) {
             throw new IllegalArgumentException("Coordinates are missing");
         }
 
         final String fileName = getFileName(pathSegmentList);
+        if (!fileName.contains(".")) {
+            throw new IllegalArgumentException("File needs an extension");
+        }
         final String version = pathSegmentList.get(pathSegmentList.size() - 2).getPath();
         final String artifactId = pathSegmentList.get(pathSegmentList.size() - 3).getPath();
 
@@ -65,12 +67,17 @@ public class ArtifactParser {
             }
 
             if (fileName.charAt(versionEnd) == '-') {
-                classifier = fileName.substring(versionEnd + 1, typeStart - 1);
+                try {
+                    classifier = fileName.substring(versionEnd + 1, typeStart - 1);
+                } catch (StringIndexOutOfBoundsException e) {
+                    throw new IllegalArgumentException("Classifier not available", e);
+                }
             }
         } else if (fileName.startsWith(MAVEN_METADATA_XML)) {
             type = MAVEN_METADATA_XML;
         } else {
-            throw new IllegalArgumentException("Artifact file name " + fileName + " does not start with the artifactId " + artifactId);
+            throw new IllegalArgumentException(
+                    "Artifact file name " + fileName + " does not start with the artifactId " + artifactId);
         }
 
         final StringBuilder groupId = new StringBuilder();
@@ -88,6 +95,8 @@ public class ArtifactParser {
 
     public static String getChecksumSuffix(List<PathSegment> pathSegmentList, ArtifactCoords parsedCoords) {
         final String fileName = getFileName(pathSegmentList);
-        return fileName.endsWith(parsedCoords.getType()) ? null : fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
+        return fileName.endsWith(parsedCoords.getType()) ?
+                null :
+                fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
     }
 }
