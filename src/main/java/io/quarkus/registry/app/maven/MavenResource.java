@@ -66,8 +66,8 @@ public class MavenResource {
         ArtifactCoords artifactCoords;
         try {
             artifactCoords = ArtifactParser.parseCoords(pathSegments);
-        } catch (IllegalArgumentException iae) {
-            log.debug("Error while parsing coords: " + iae.getMessage());
+        } catch (IllegalArgumentException | StringIndexOutOfBoundsException e) {
+            log.debug("Error while parsing coords from " + uriInfo.getPath(), e);
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         for (ArtifactContentProvider contentProvider : getContentProviders()) {
