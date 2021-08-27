@@ -122,7 +122,10 @@ use the `./update_tag.sh` script after performing a `oc login` in the cluster. T
 
 ### How to register as a Nexus Repository proxy
 
-You can register this as a Nexus repository proxy. Some options need to be set: 
+You can register this as a Nexus repository proxy. You need to be an administrator to perform these operations.
+
+#### Nexus 2.x
+Some options need to be set:
 
 - Set the `Repository Policy` to `Snapshot`;
 - Disable `Download Remote Indexes`;
@@ -132,3 +135,12 @@ You can register this as a Nexus repository proxy. Some options need to be set:
 Here is an example on how it should look like: 
 
 ![image](https://user-images.githubusercontent.com/54133/129068554-1db01f5e-5b57-405b-8386-636449e7d6ae.png)
+
+
+#### Nexus 3.x
+
+- Create a `maven2(proxy)` repository
+- Set the `Version Policy` to `Snapshot`
+- Set the `Remote Storage` URL to `https://registry.quarkus.io/maven`
+
+![image](https://user-images.githubusercontent.com/54133/131173101-989974fd-f01c-4db0-889c-d493835546eb.png)
