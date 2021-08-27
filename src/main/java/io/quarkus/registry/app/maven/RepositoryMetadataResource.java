@@ -32,7 +32,8 @@ public class RepositoryMetadataResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Operation(hidden = true)
     public String handlePrefixesTxt() {
-        return "/" + mavenConfig.getRegistryGroupId().replace('.', '/');
+        return "## repository-prefixes/2.0" + System.lineSeparator()
+                + "/" + mavenConfig.getRegistryGroupId().replace('.', '/');
     }
 
     @GET
