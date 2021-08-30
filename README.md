@@ -127,6 +127,8 @@ You can register this as a Nexus repository proxy. You need to be an administrat
 #### Nexus 2.x
 Some options need to be set:
 
+- Create a `Proxy Repository`
+- Set the `Remote Storage Location` to https://registry.quarkus.io/maven
 - Set the `Repository Policy` to `Snapshot`;
 - Disable `Download Remote Indexes`;
 - Disable `Allow File Browsing`;
