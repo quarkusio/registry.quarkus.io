@@ -136,7 +136,7 @@ Some options need to be set:
 
 Here is an example on how it should look like: 
 
-![image](https://user-images.githubusercontent.com/54133/129068554-1db01f5e-5b57-405b-8386-636449e7d6ae.png)
+![image](https://raw.githubusercontent.com/quarkusio/quarkus/main/docs/src/main/asciidoc/images/registry-nexus-repository.png)
 
 
 #### Nexus 3.x
@@ -145,4 +145,4 @@ Here is an example on how it should look like:
 - Set the `Version Policy` to `Snapshot`
 - Set the `Remote Storage` URL to `https://registry.quarkus.io/maven`
 
-![image](https://user-images.githubusercontent.com/54133/131173101-989974fd-f01c-4db0-889c-d493835546eb.png)
+![image](https://raw.githubusercontent.com/quarkusio/quarkus/main/docs/src/main/asciidoc/images/registry-nexus3-repository.png)
