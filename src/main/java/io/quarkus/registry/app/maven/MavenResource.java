@@ -1,7 +1,5 @@
 package io.quarkus.registry.app.maven;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -10,19 +8,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.app.CacheNames;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
-import org.sonatype.nexus.repository.metadata.model.RepositoryMetadata;
-import org.sonatype.nexus.repository.metadata.model.io.xpp3.RepositoryMetadataXpp3Writer;
 
 /**
  * Exposes a Maven resource for our tooling

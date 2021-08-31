@@ -37,9 +37,12 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     @ConfigProperty(name = "maven.cache.header.cache-control", defaultValue = "no-cache") // Check for etag everytime
     Instance<String> headerCacheControl;
 
+    @ConfigProperty(name = "maven.cache.enabled", defaultValue = "true")
+    Instance<Boolean> enabled;
+    
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
-        if (isMavenGetRequest(containerRequestContext)) {
+        if (isMavenGetRequest(containerRequestContext) && enabled.get()) {
             String path = containerRequestContext.getUriInfo().getPath();
             MavenResponse mavenResponse = mavenCache.getCache().getIfPresent(path);
             if (mavenResponse != null) {
@@ -63,9 +66,14 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
             throws IOException {
         if (isMavenGetRequest(containerRequestContext) && !isCachedResponse(containerResponseContext)
                 && containerResponseContext.getStatus() == 200) {
-            String path = containerRequestContext.getUriInfo().getPath();
-            log.debug("Caching [" + path + "]");
-            mavenCache.getCache().put(path, toMavenResponse(containerResponseContext));
+            
+            MavenResponse mavenResponse = toMavenResponse(containerResponseContext);
+            
+            if (enabled.get()) {
+                String path = containerRequestContext.getUriInfo().getPath();
+                log.debug("Caching [" + path + "]");
+                mavenCache.getCache().put(path, mavenResponse);
+            }
         }
     }
 
