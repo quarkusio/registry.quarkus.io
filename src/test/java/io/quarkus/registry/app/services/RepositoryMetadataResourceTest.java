@@ -37,7 +37,7 @@ public class RepositoryMetadataResourceTest {
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.TEXT_PLAIN))
-                .body(is("/" + mavenConfig.getRegistryGroupId().replace('.', '/')));
+                .body(is("## repository-prefixes/2.0\n/" + mavenConfig.getRegistryGroupId().replace('.', '/')));
     }
 
 }
