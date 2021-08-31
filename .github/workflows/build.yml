@@ -10,6 +10,7 @@ on:
       - '*.adoc'
       - '*.txt'
       - '.github/**'
+      - 'docker-compose.yaml'
 jobs:
   build-jdk11:
     name: "Initial JDK 11 Build"

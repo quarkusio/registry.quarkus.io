@@ -4,6 +4,14 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
+## Running the application
+
+Use Docker Compose to boot a PostgreSQL DB and the latest [Docker Image](https://quay.io/repository/quarkus/registry-app?tab=tags)
+
+```shell
+$ docker-compose up
+```
+
 ## Running the application in dev mode
 
 The application will start a PostgreSQL DB using [DevServices](https://quarkus.io/guides/datasource#dev-services-configuration-free-databases). 
@@ -11,14 +19,16 @@ The application will start a PostgreSQL DB using [DevServices](https://quarkus.i
 Run the following command to start the application (make sure your Docker daemon is running):
 
 ```shell script
-./mvnw clean compile quarkus:dev -Ddebug
+$ ./mvnw clean compile quarkus:dev -Ddebug
 ```
 
 ## Indexing extensions and platforms
 
 Once the application is running, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following in the root of your cloned repo: 
-          
-    jbang publishcatalog@quarkusio --working-directory=. --registry-url=http://localhost:8080 --token=test -sv
+
+```bash          
+$ jbang publishcatalog@quarkusio --working-directory=. --registry-url=http://localhost:8080 --token=test -sv
+```
 
 ## CI Builds
 

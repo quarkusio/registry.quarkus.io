@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  app:
+    image: quay.io/quarkus/registry-app
+    environment:
+      - TOKEN=test
+      - QUARKUS_DATASOURCE_USERNAME=postgresql
+      - QUARKUS_DATASOURCE_PASSWORD=postgresql
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://database:5432/registrydb
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASSWORD=postgresql
+      - POSTGRES_DB=registrydb
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d registrydb -U postgresql"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
