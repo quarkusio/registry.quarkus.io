@@ -66,9 +66,14 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
             throws IOException {
         if (isMavenGetRequest(containerRequestContext) && !isCachedResponse(containerResponseContext)
                 && containerResponseContext.getStatus() == 200) {
-            String path = containerRequestContext.getUriInfo().getPath();
-            log.debug("Caching [" + path + "]");
-            mavenCache.getCache().put(path, toMavenResponse(containerResponseContext));
+            
+            MavenResponse mavenResponse = toMavenResponse(containerResponseContext);
+            
+            if (enabled.get()) {
+                String path = containerRequestContext.getUriInfo().getPath();
+                log.debug("Caching [" + path + "]");
+                mavenCache.getCache().put(path, mavenResponse);
+            }
         }
     }
 
