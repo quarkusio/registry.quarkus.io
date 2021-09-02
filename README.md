@@ -101,9 +101,9 @@ Everytime an extension or platform update is detected, the corresponding YAML fi
 If you would still like to manually trigger the indexing, do the following:
 
 - Clone https://github.com/quarkusio/quarkus-extension-catalog
-- Run the following command (make sure you have [JBang](https://www.jbang.dev/documentation/guide/latest/installation.html) installed): 
+- Run the following command in the cloned repository (make sure you have [JBang](https://www.jbang.dev/documentation/guide/latest/installation.html) installed): 
 ```bash
-jbang publishcatalog@quarkusio --working-directory=. --registry-url=https://registry.quarkus.io --token=$TOKEN -sv` 
+jbang catalog_publish@quarkusio --working-directory=. --registry-url=https://registry.quarkus.io --token=$TOKEN --all` 
 ```
 
 `$TOKEN` is a shared secret known to the registry maintainers.
