@@ -44,7 +44,7 @@ public class MavenConfig {
         this.nonPlatformExtensionCoords = new ArtifactCoords(registryGroupId,
                 Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID,
                 Constants.JSON,
-                Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID);
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION);
     }
 
     public ArtifactCoords getNonPlatformExtensionCoords() {
