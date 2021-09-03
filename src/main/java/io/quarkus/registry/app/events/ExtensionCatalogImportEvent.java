@@ -9,9 +9,12 @@ public class ExtensionCatalogImportEvent implements BaseEvent {
 
     private final ExtensionCatalog extensionCatalog;
 
-    public ExtensionCatalogImportEvent(Platform platform, ExtensionCatalog extensionCatalog) {
+    private final boolean pinned;
+
+    public ExtensionCatalogImportEvent(Platform platform, ExtensionCatalog extensionCatalog, boolean pinned) {
         this.platform = platform;
         this.extensionCatalog = extensionCatalog;
+        this.pinned = pinned;
     }
 
     public Platform getPlatform() {
@@ -22,4 +25,7 @@ public class ExtensionCatalogImportEvent implements BaseEvent {
         return extensionCatalog;
     }
 
+    public boolean isPinned() {
+        return pinned;
+    }
 }

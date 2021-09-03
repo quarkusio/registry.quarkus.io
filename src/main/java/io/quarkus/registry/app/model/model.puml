@@ -17,6 +17,7 @@ class PlatformRelease {
   + String version
   - String versionSortable
   + String quarkusCoreVersion
+  + boolean pinned
   + String upstreamQuarkusCoreVersion
   + List<String> memberBoms
   + Map<String,Object> metadata

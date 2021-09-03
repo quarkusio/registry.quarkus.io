@@ -1,0 +1,1 @@
+ALTER TABLE platform_release ADD COLUMN IF NOT EXISTS pinned bool DEFAULT false

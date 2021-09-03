@@ -58,6 +58,8 @@ public class PlatformRelease extends BaseEntity {
 
     public String upstreamQuarkusCoreVersion;
 
+    public boolean pinned;
+
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
     public List<String> memberBoms = new ArrayList<>();
@@ -72,9 +74,10 @@ public class PlatformRelease extends BaseEntity {
     public PlatformRelease() {
     }
 
-    public PlatformRelease(PlatformStream platformStream, String version) {
+    public PlatformRelease(PlatformStream platformStream, String version, boolean pinned) {
         this.platformStream = platformStream;
         this.version = version;
+        this.pinned = pinned;
     }
 
     @PrePersist

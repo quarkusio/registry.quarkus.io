@@ -37,7 +37,7 @@ public class AdminService {
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
             ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
-            PlatformRelease platformRelease = insertPlatform(event.getPlatform(), extensionCatalog);
+            PlatformRelease platformRelease = insertPlatform(event.getPlatform(), extensionCatalog, event.isPinned());
             for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
                 insertExtensionRelease(extension, platformRelease);
             }
@@ -47,7 +47,7 @@ public class AdminService {
         }
     }
 
-    private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog) {
+    private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog, boolean pinned) {
         Map<String, Object> platformReleaseMetadata = (Map<String, Object>) extensionCatalog.getMetadata().get("platform-release");
         String streamKey = (String) platformReleaseMetadata.get("stream");
         String version = (String) platformReleaseMetadata.get("version");
@@ -58,7 +58,7 @@ public class AdminService {
             return stream;
         });
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
-                .orElseGet(() -> new PlatformRelease(platformStream, version));
+                .orElseGet(() -> new PlatformRelease(platformStream, version, pinned));
         platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
         platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
         platformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
