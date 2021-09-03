@@ -9,7 +9,7 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 Use Docker Compose to boot a PostgreSQL DB and the latest [Docker Image](https://quay.io/repository/quarkus/registry-app?tab=tags)
 
 ```shell
-$ docker-compose up
+docker-compose up
 ```
 
 ## Running the application in dev mode
@@ -19,7 +19,7 @@ The application will start a PostgreSQL DB using [DevServices](https://quarkus.i
 Run the following command to start the application (make sure your Docker daemon is running):
 
 ```shell script
-$ ./mvnw clean compile quarkus:dev -Ddebug
+./mvnw clean compile quarkus:dev -Ddebug
 ```
 
 ## Indexing extensions and platforms
@@ -27,7 +27,7 @@ $ ./mvnw clean compile quarkus:dev -Ddebug
 Once the application is running, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following in the root of your cloned repo: 
 
 ```bash          
-$ jbang publishcatalog@quarkusio --working-directory=. --registry-url=http://localhost:8080 --token=test -sv
+jbang catalog_publish@quarkusio --working-directory=. --registry-url=http://localhost:8080 --token=test --all
 ```
 
 ## CI Builds
