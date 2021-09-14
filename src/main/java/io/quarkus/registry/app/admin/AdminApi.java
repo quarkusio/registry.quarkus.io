@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -58,6 +59,7 @@ public class AdminApi {
     @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     @SecurityRequirement(name = "Authentication")
     public Response addExtensionCatalog(@NotNull @HeaderParam("X-Platform") String platformKey,
+                                        @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
                                         JsonExtensionCatalog catalog) {
         ArtifactCoords bom = catalog.getBom();
         Platform platform = Platform.findByKey(platformKey).orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
@@ -66,7 +68,7 @@ public class AdminApi {
             return Response.status(Response.Status.CONFLICT).build();
         }
         log.infof("Adding catalog %s", catalog);
-        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog);
+        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog, pinned);
         adminService.onExtensionCatalogImport(event);
         return Response.accepted(bom).build();
     }

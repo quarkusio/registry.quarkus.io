@@ -100,6 +100,7 @@ create table platform_release
     version varchar not null,
     version_sortable varchar not null,
     quarkus_core_version varchar not null,
+    pinned bool default false,
     upstream_quarkus_core_version varchar,
     platform_id bigint
         constraint platform_fkey
