@@ -1,0 +1,16 @@
+@startuml
+'https://plantuml.com/deployment-diagram
+
+component app [
+  Registry Application
+  Maven - [aa]
+]
+
+
+database db [
+  PostgreSQL
+]
+
+app -- db
+Maven -- app
+@enduml
