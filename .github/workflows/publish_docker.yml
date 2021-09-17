@@ -8,6 +8,7 @@ on:
       - 'LICENSE.txt'
       - 'deploy-to-openshift.sh'
       - 'docker-compose.yaml'
+      - 'docs/**'
     branches:
       - 'main'
 
