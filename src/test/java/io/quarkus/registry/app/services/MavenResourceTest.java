@@ -94,6 +94,15 @@ public class MavenResourceTest {
     }
 
     @Test
+    void should_return_404_on_inexistent_platforms() {
+        given()
+                .get("/maven/foo/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-10.1.0.CR1.json")
+                .then()
+                .statusCode(404)
+                .header("X-Reason","No platforms found");
+    }
+
+    @Test
     void non_platform_descriptor_should_contain_quarkus_core() {
         given()
                 .get("/maven/foo/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-2.1.3.Final.json")

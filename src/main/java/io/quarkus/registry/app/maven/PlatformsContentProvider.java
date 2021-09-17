@@ -39,6 +39,11 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         var quarkusVersion = artifact.getClassifier();
         PlatformCatalog platformCatalog = registryClient.resolvePlatforms(quarkusVersion);
+        if (platformCatalog.getPlatforms().isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .header("X-Reason", "No platforms found")
+                    .build();
+        }
         StringWriter sw = new StringWriter();
         JsonCatalogMapperHelper.serialize(objectMapper, platformCatalog, sw);
         String result = sw.toString();
