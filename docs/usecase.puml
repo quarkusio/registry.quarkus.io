@@ -2,17 +2,29 @@
 'https://plantuml.com/use-case-diagram
 left to right direction
 
-actor "Quarkus Tooling user" as qtu
-actor "OpenShift Administrator" as oa
+actor "Quarkus Tooling" as qtu
+actor "GitHub Actions Scheduled Job" as job
 
-'rectangle Restaurant {
-'  usecase "Eat Food" as UC1
-'  usecase "Pay for Food" as UC2
-'  usecase "Drink" as UC3
-'}
-'oa --> UC1
-'oa --> UC2
-'oa --> UC3
+rectangle "Quarkus Registry Application" {
+  usecase "Query Platforms" as UC1
+  usecase "Query Non-Platform Extensions" as UC2
+  usecase "Query Registry Configuration" as UC3
+  usecase "Insert new Platforms and Extensions" as UC4
+}
 
+note bottom of qtu
+  - code.quarkus.io
+  - IDE Plugins
+  - Quarkus CLI
+end note
+
+note bottom of job
+  For the community deployment it is triggered from
+  https://github.com/quarkusio/quarkus-extension-catalog
+end note
+qtu --> UC1
+qtu --> UC2
+qtu --> UC3
+job --> UC4
 
 @enduml
