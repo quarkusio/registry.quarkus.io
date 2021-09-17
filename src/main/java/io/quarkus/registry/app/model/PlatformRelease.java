@@ -29,6 +29,7 @@ import org.hibernate.annotations.Type;
                 "where pr.quarkusCoreVersion = ?1 " +
                 "   and (pr.platformStream, pr.versionSortable) in (" +
                 "    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2" +
+                "    where pr2.quarkusCoreVersion = ?1 " +
                 "    group by pr2.platformStream" +
                 "  ) order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc"),
         @NamedQuery(name = "PlatformRelease.findLatest", query = "from PlatformRelease pr " +
