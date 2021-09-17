@@ -1,16 +1,15 @@
 @startuml
 'https://plantuml.com/deployment-diagram
 
-component app [
-  Registry Application
-  Maven - [aa]
-]
-
+[Quarkus Registry] as app
 
 database db [
   PostgreSQL
 ]
 
-app -- db
-Maven -- app
+() Maven - app
+app -> db
+
+note top of Maven: Data is exposed in a Maven 2 Repository layout
+
 @enduml

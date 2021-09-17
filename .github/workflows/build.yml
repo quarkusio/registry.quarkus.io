@@ -11,6 +11,7 @@ on:
       - '*.txt'
       - '.github/**'
       - 'docker-compose.yaml'
+      - 'docs/**'
 jobs:
   build-jdk11:
     name: "Initial JDK 11 Build"

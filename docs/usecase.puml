@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+left to right direction
+
+actor "Quarkus Tooling user" as qtu
+actor "OpenShift Administrator" as oa
+
+'rectangle Restaurant {
+'  usecase "Eat Food" as UC1
+'  usecase "Pay for Food" as UC2
+'  usecase "Drink" as UC3
+'}
+'oa --> UC1
+'oa --> UC2
+'oa --> UC3
+
+
+@enduml
