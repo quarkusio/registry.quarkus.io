@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor "GitHub Actions Scheduled Job" as job
+boundary "Admin REST Endpoint" as rest
+
+loop For each new platform release
+    job -> rest: POST Platform JSON to /admin/v1/extension/catalog
+    note left: Request sends a shared secret
+    activate rest
+    rest --> rest: Validate shared secret
+    rest --> rest: Perform insertions in the DB
+    return 202 (Accepted) or 409 (Conflict) if platform already exists
+end
+
+loop For each new non-platform extension release
+    job -> rest: POST Platform JSON to /admin/v1/extension
+    note left: Request sends a shared secret
+    activate rest
+    rest --> rest: Validate shared secret
+    note left: Request sends a shared secret
+    rest --> rest: Perform insertions in the DB
+    return 202 (Accepted) or 409 (Conflict) if platform already exists
+end
+
+
+@enduml
