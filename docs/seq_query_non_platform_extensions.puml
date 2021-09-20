@@ -1,0 +1,12 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+actor "Quarkus Tooling" as qtu
+boundary "Maven Endpoint" as maven
+
+qtu -> maven: Request Non-Platform Extensions JSON
+maven --> qtu: Return Non-Platform Extensions JSON
+
+@enduml
