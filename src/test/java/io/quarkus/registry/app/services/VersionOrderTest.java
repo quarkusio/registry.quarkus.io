@@ -77,7 +77,7 @@ public class VersionOrderTest {
                 .log().body(true)
                 .header("Content-Type", containsString(MediaType.APPLICATION_JSON))
                 .extract().path("platforms.streams.id");
-        assertThat(ids).containsExactly(List.of("2.0", "2.1"), List.of("2.0"));
+        assertThat(ids).containsExactly(List.of("2.0", "2.1"));
     }
 
     @AfterAll
