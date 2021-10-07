@@ -8,11 +8,13 @@ import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
+import javax.persistence.TypedQuery;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.registry.app.util.Version;
@@ -114,11 +116,17 @@ public class PlatformRelease extends BaseEntity {
 
 
     public static List<PlatformRelease> findLatest(String quarkusCore) {
+        EntityManager entityManager = getEntityManager();
+        TypedQuery<PlatformRelease> query;
         if (quarkusCore != null && !quarkusCore.isBlank()) {
-            return list("#PlatformRelease.findLatestByQuarkusCoreVersion", quarkusCore);
+            query = entityManager.createNamedQuery("PlatformRelease.findLatestByQuarkusCoreVersion", PlatformRelease.class)
+                    .setParameter(1, quarkusCore);
         } else {
-            return list("#PlatformRelease.findLatest");
+            query = entityManager.createNamedQuery("PlatformRelease.findLatest", PlatformRelease.class);
         }
+        // We just want the last 2 releases. See https://github.com/quarkusio/registry.quarkus.io/issues/34
+        query.setMaxResults(2);
+        return query.getResultList();
     }
 
     public static Optional<PlatformRelease> findByPlatformKey(String platformKey, String version) {
