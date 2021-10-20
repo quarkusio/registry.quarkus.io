@@ -57,7 +57,8 @@ public class SecurityOverrideFilter implements ContainerRequestFilter {
                 }
             });
         } else {
-            if ("POST".equalsIgnoreCase(requestContext.getMethod())) {
+            if (!"GET".equalsIgnoreCase(requestContext.getMethod()) &&
+                    !"HEAD".equalsIgnoreCase(requestContext.getMethod())) {
                 requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).build());
             }
         }
