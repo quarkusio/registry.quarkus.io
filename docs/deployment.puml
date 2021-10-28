@@ -1,0 +1,15 @@
+@startuml
+'https://plantuml.com/deployment-diagram
+
+[Quarkus Registry] as app
+
+database db [
+  PostgreSQL
+]
+
+() Maven - app
+() "Admin" - app
+app -> db
+note top of Maven: Data is exposed as a Maven 2 Repository layout
+note top of "Admin": Authenticated Endpoint for Administrative operations
+@enduml
