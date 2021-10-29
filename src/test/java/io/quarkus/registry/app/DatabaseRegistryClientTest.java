@@ -20,4 +20,13 @@ class DatabaseRegistryClientTest {
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     }
+
+    @Test
+    void should_return_unacceptable_on_invalid_accept_headers() {
+        given()
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML)
+                .get("/client/platforms")
+                .then()
+                .statusCode(406);
+    }
 }
