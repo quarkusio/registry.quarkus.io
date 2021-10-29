@@ -8,8 +8,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.quarkus.maven.ArtifactCoords;
@@ -49,6 +51,7 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("platforms")
+    @Produces(MediaType.APPLICATION_JSON)
     public PlatformCatalog resolvePlatforms(@QueryParam("v") String version) {
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest(version);
@@ -72,6 +75,7 @@ public class DatabaseRegistryClient {
 
     @GET
     @Path("non-platform-extensions")
+    @Produces(MediaType.APPLICATION_JSON)
     public ExtensionCatalog resolveNonPlatformExtensions(@QueryParam("v") String quarkusVersion) {
         if (quarkusVersion == null) {
             throw new WebApplicationException(Response.Status.BAD_REQUEST);
