@@ -97,6 +97,12 @@ public class AdminService {
                     newExtension.persist();
                     return newExtension;
                 });
+
+        // Name and description might have changed
+        extension.name = ext.getName();
+        extension.description = ext.getDescription();
+        extension.persist();
+
         return ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseGet(() -> {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
