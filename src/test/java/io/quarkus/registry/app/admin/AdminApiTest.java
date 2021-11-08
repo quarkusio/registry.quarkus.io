@@ -4,7 +4,6 @@ import java.net.HttpURLConnection;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.core.MediaType;
 
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.model.Extension;
@@ -12,11 +11,13 @@ import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.http.Header;
+import io.restassured.http.Headers;
+import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
@@ -80,5 +81,19 @@ class AdminApiTest {
                 .body("extensions[0].name", is("Another Name"),
                         "extensions[0].description", is("Another Description"));
 
+    }
+
+    @Test
+    void validate_input() {
+        given()
+                .header("Token","test")
+                .contentType(ContentType.JSON)
+                .post("/admin/v1/extension/catalog")
+                .then()
+                .log().body(true)
+                .statusCode(400)
+                .contentType(ContentType.JSON)
+                .body("parameter-violations[0].message", is("X-Platform header missing"),
+                        "parameter-violations[1].message", is("Body payload is missing"));
     }
 }

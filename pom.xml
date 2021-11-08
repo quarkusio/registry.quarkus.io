@@ -62,6 +62,10 @@
       <artifactId>quarkus-resteasy-qute</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-yaml-provider</artifactId>
     </dependency>

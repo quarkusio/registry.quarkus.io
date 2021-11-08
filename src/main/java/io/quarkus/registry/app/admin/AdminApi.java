@@ -56,13 +56,15 @@ public class AdminApi {
     @POST
     @Path("/v1/extension/catalog")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
+    @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
     @SecurityRequirement(name = "Authentication")
-    public Response addExtensionCatalog(@NotNull @HeaderParam("X-Platform") String platformKey,
-                                        @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
-                                        JsonExtensionCatalog catalog) {
+    public Response addExtensionCatalog(
+            @NotNull(message = "X-Platform header missing") @HeaderParam("X-Platform") String platformKey,
+            @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
+            @NotNull(message = "Body payload is missing") JsonExtensionCatalog catalog) {
         ArtifactCoords bom = catalog.getBom();
-        Platform platform = Platform.findByKey(platformKey).orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+        Platform platform = Platform.findByKey(platformKey)
+                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         Optional<PlatformRelease> platformRelease = PlatformRelease.findByPlatformKey(platformKey, bom.getVersion());
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
@@ -76,9 +78,9 @@ public class AdminApi {
     @POST
     @Path("/v1/extension")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
+    @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
     @SecurityRequirement(name = "Authentication")
-    public Response addExtension(JsonExtension extension) {
+    public Response addExtension(@NotNull(message = "Body payload is missing") JsonExtension extension) {
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
@@ -96,20 +98,19 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
-    public Response addExtensionCompatibilty(@FormParam("groupId") String groupId,
-                                             @FormParam("artifactId") String artifactId,
-                                             @FormParam("version") String version,
-                                             @FormParam("quarkusCore") String quarkusCore,
-                                             @FormParam("compatible") Boolean compatible) {
-        if (compatible == null) {
-            compatible = Boolean.TRUE;
-        }
+    public Response addExtensionCompatibilty(
+            @NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
+            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
+            @NotNull(message = "version is missing") @FormParam("version") String version,
+            @NotNull(message = "quarkusCore is missing") @FormParam("quarkusCore") String quarkusCore,
+            @DefaultValue("true") @FormParam("compatible") Boolean compatible) {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         log.infof("Extension %s:%s:%s is %s with Quarkus %s", groupId, artifactId, version,
-                  compatible ? "compatible" : "incompatible",
-                  quarkusCore);
-        ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore, compatible);
+                compatible ? "compatible" : "incompatible",
+                quarkusCore);
+        ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore,
+                compatible);
         adminService.onExtensionCompatibilityCreate(event);
         return Response.accepted().build();
     }
@@ -119,10 +120,10 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
-    public Response removeExtensionCompatibilty(@FormParam("groupId") String groupId,
-                                                @FormParam("artifactId") String artifactId,
-                                                @FormParam("version") String version,
-                                                @FormParam("quarkusCore") String quarkusCore) {
+    public Response removeExtensionCompatibilty(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
+            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
+            @NotNull(message = "version is missing") @FormParam("version") String version,
+            @NotNull(message = "quarkusCore is missing") @FormParam("quarkusCore") String quarkusCore) {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
@@ -130,12 +131,12 @@ public class AdminApi {
         adminService.onExtensionCompatibilityDelete(event);
         return Response.accepted().build();
     }
-    
+
     @DELETE
     @Path("/v1/maven/cache")
     @SecurityRequirement(name = "Authentication")
     @MavenCacheClear
-    public Response clearCache(){
+    public Response clearCache() {
         return Response.accepted().build();
     }
 }
