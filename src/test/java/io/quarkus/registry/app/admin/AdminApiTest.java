@@ -13,6 +13,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -90,10 +91,37 @@ class AdminApiTest {
                 .contentType(ContentType.JSON)
                 .post("/admin/v1/extension/catalog")
                 .then()
-                .log().body(true)
                 .statusCode(400)
                 .contentType(ContentType.JSON)
                 .body("parameter-violations[0].message", is("X-Platform header missing"),
                         "parameter-violations[1].message", is("Body payload is missing"));
     }
+
+    @Test
+    void validate_long_input() {
+        given()
+                .header("Token","test")
+                .contentType(ContentType.JSON)
+                .body("{\n"
+                        + "\"artifact\":\"com.redhat.quarkus.A["+ StringUtils.repeat('A', 5308414) + "]A:quarkus-bom::pom:2.2.3.Final-redhat-00114\",\n"
+                        + "\"artifactId\": \"string\",\n"
+                        + "\"description\": \"string\",\n"
+                        + "\"groupId\": \"string\",\n"
+                        + "\"metadata\":\n"
+                        + "\n"
+                        + "{ \"additionalProp1\": \"string\" }\n"
+                        + ",\n"
+                        + "\"name\": \"string\",\n"
+                        + "\"origins\": [\n"
+                        + "\n"
+                        + "{ \"id\": \"string\", \"platform\": true }\n"
+                        + "],\n"
+                        + "\"version\": \"string\"\n"
+                        + "}\n"
+                        + "\n")
+                .post("/admin/v1/extension")
+                .then()
+                .statusCode(400);
+    }
+
 }
