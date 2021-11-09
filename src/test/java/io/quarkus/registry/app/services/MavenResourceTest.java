@@ -65,6 +65,16 @@ public class MavenResourceTest {
     }
 
     @Test
+    void should_return_platforms() {
+        given()
+                .get("/maven/foo/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT.json")
+                .then()
+                .log().all(true)
+                .statusCode(200);
+    }
+
+
+    @Test
     void should_use_custom_descriptor_settings() {
         given()
                 .get("/maven/foo/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-SNAPSHOT.json")
@@ -112,7 +122,6 @@ public class MavenResourceTest {
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
                 .body("quarkus-core-version", is("2.1.3.Final"));
     }
-
 
     @AfterAll
     @Transactional

@@ -9,7 +9,9 @@ public class IllegalStateExceptionMapper implements ExceptionMapper<IllegalState
 
     @Override
     public Response toResponse(IllegalStateException exception) {
-        return Response.status(Response.Status.BAD_REQUEST).build();
+        return Response.status(Response.Status.BAD_REQUEST)
+                .header("X-Reason", exception.getMessage())
+                .build();
     }
 
 }
