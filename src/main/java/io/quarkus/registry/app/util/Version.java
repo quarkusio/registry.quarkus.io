@@ -8,6 +8,19 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 public class Version {
 
     /**
+     * Returns if the version is a valid match
+     *
+     * @param version
+     * @return
+     */
+    public static void validateVersion(String version) {
+        DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
+        if (dav.getMajorVersion() == 0) {
+            throw new IllegalArgumentException("Invalid Version");
+        }
+    }
+
+    /**
      * Order versions based on the qualifier. Final > CR1
      */
     public static final Comparator<String> QUALIFIER_REVERSED_COMPARATOR = ((o1, o2) -> {
@@ -50,9 +63,9 @@ public class Version {
             qualifier = "." + qualifier;
         }
         return String.format("%05d.%05d.%05d%s",
-                             dav.getMajorVersion(),
-                             dav.getMinorVersion(),
-                             dav.getIncrementalVersion(),
-                             qualifier);
+                dav.getMajorVersion(),
+                dav.getMinorVersion(),
+                dav.getIncrementalVersion(),
+                qualifier);
     }
 }
