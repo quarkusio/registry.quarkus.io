@@ -11,9 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.maven.MavenConfig;
@@ -59,6 +57,9 @@ public class DatabaseRegistryClient {
         }
         JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest(version);
+        if (platformReleases.isEmpty()) {
+            return null;
+        }
         platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
         for (PlatformRelease platformRelease : platformReleases) {
             PlatformStream platformStream = platformRelease.platformStream;
@@ -80,7 +81,8 @@ public class DatabaseRegistryClient {
     @GET
     @Path("non-platform-extensions")
     @Produces(MediaType.APPLICATION_JSON)
-    public ExtensionCatalog resolveNonPlatformExtensions(@NotNull(message = "quarkusVersion is missing") @QueryParam("v") String quarkusVersion) {
+    public ExtensionCatalog resolveNonPlatformExtensions(
+            @NotNull(message = "quarkusVersion is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
         ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
         String id = new ArtifactCoords(nonPlatformExtensionCoords.getGroupId(),

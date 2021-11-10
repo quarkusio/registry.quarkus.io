@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
@@ -93,8 +94,8 @@ class AdminApiTest {
                 .then()
                 .statusCode(400)
                 .contentType(ContentType.JSON)
-                .body("parameter-violations[0].message", is("X-Platform header missing"),
-                        "parameter-violations[1].message", is("Body payload is missing"));
+                .body("parameter-violations.message", hasItem("X-Platform header missing"),
+                        "parameter-violations.message", hasItem("Body payload is missing"));
     }
 
     @Test

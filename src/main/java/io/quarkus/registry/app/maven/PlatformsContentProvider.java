@@ -39,8 +39,8 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         var quarkusVersion = artifact.getClassifier();
         PlatformCatalog platformCatalog = registryClient.resolvePlatforms(quarkusVersion);
-        if (platformCatalog.getPlatforms().isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND)
+        if (platformCatalog == null || platformCatalog.getPlatforms().isEmpty()) {
+            return Response.status(Response.Status.NO_CONTENT)
                     .header("X-Reason", "No platforms found")
                     .build();
         }
