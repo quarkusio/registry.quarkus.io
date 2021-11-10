@@ -75,7 +75,6 @@ public class MetadataTest {
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML))
-                .log().body()
                 .body("metadata.version",is("1.0-SNAPSHOT"));
     }
 
@@ -116,7 +115,6 @@ public class MetadataTest {
                         + "/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml.sha1")
                 .then()
                 .statusCode(200)
-                //                .log().body(true)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.TEXT_PLAIN))
                 .body(equalTo(expectedSha1));
     }

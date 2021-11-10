@@ -1,18 +1,12 @@
 package io.quarkus.registry.app.services;
 
-import java.util.Map;
-
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,13 +15,9 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 
 @QuarkusTest
-@QuarkusTestResource(MavenResourceTest.CustomRegistryTestResource.class)
 public class MavenResourceTest {
-    @Inject
-    MavenConfig mavenConfig;
 
     @BeforeAll
     @Transactional
@@ -65,25 +55,17 @@ public class MavenResourceTest {
     }
 
     @Test
-    void should_use_custom_descriptor_settings() {
+    void should_return_platforms() {
         given()
-                .get("/maven/foo/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-SNAPSHOT.json")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT.json")
                 .then()
-                .statusCode(200)
-                .log().body()
-                .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
-                .body("descriptor.artifact", is("foo:quarkus-registry-descriptor::json:1.0-SNAPSHOT"),
-                        "platforms.artifact", is("foo:quarkus-platforms::json:1.0-SNAPSHOT"),
-                        "non-platforms-extensions.artifact", is(nullValue()),
-                        "quarkus-versions.recognized-versions-expression", is("[2.1.0.Final,)"),
-                        "quarkus-versions.exclusive-provider", is(true),
-                        "maven.repository.id", is("custom"));
+                .statusCode(200);
     }
 
     @Test
     void should_return_only_matching_platforms() {
         given()
-                .get("/maven/foo/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-2.1.0.CR1.json")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-2.1.0.CR1.json")
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
@@ -96,23 +78,21 @@ public class MavenResourceTest {
     @Test
     void should_return_404_on_inexistent_platforms() {
         given()
-                .get("/maven/foo/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-10.1.0.CR1.json")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-10.1.0.CR1.json")
                 .then()
                 .statusCode(404)
-                .header("X-Reason","No platforms found");
+                .header("X-Reason", "No platforms found");
     }
 
     @Test
     void non_platform_descriptor_should_contain_quarkus_core() {
         given()
-                .get("/maven/foo/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-2.1.3.Final.json")
+                .get("/maven/io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-2.1.3.Final.json")
                 .then()
                 .statusCode(200)
-                .log().body()
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
                 .body("quarkus-core-version", is("2.1.3.Final"));
     }
-
 
     @AfterAll
     @Transactional
@@ -120,20 +100,4 @@ public class MavenResourceTest {
         PlatformRelease.deleteAll();
         PlatformStream.deleteAll();
     }
-
-    public static class CustomRegistryTestResource implements QuarkusTestResourceLifecycleManager {
-        @Override
-        public Map<String, String> start() {
-            return Map.of("quarkus.registry.groupId", "foo",
-                    "quarkus.registry.non-platform-extensions.support", "false",
-                    "quarkus.registry.quarkus-versions.expression", "[2.1.0.Final,)",
-                    "quarkus.registry.quarkus-versions.exclusive-provider", "true",
-                    "quarkus.registry.id", "custom");
-        }
-
-        @Override public void stop() {
-
-        }
-    }
-
 }
