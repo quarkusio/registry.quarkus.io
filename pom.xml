@@ -19,7 +19,7 @@
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <quarkus.version>2.4.1.Final</quarkus.version>
+    <quarkus.version>2.4.2.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
