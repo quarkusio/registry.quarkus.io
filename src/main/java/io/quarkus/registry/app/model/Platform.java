@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
@@ -19,6 +21,7 @@ import org.hibernate.annotations.Type;
 
 @Entity
 @Cacheable
+@NamedQuery(name = "Platform.findLatestCreatedAt", query = "select max(p.createdAt) from Platform p")
 public class Platform extends BaseEntity {
 
     @NaturalId
@@ -62,4 +65,10 @@ public class Platform extends BaseEntity {
                 .using("platformKey", platformKey)
                 .loadOptional();
     }
+
+    public static Date findLatestCreatedAt() {
+        return getEntityManager().createNamedQuery("Platform.findLatestCreatedAt", Date.class)
+                .getSingleResult();
+    }
+
 }

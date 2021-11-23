@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,6 +17,8 @@ import javax.ws.rs.core.UriInfo;
 import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
+import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
@@ -59,7 +62,6 @@ public class MetadataContentProvider implements ArtifactContentProvider {
                 .build();
     }
 
-    @CacheResult(cacheName = CacheNames.METADATA)
     Metadata generateMetadata(ArtifactCoords artifact) {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());
@@ -68,8 +70,12 @@ public class MetadataContentProvider implements ArtifactContentProvider {
 
         Versioning versioning = new Versioning();
         newMetadata.setVersioning(versioning);
-
-        versioning.updateTimestamp();
+        Date latestCreatedAt = ExtensionRelease.findLatestCreatedAt();
+        if (latestCreatedAt == null) {
+            // If no Extension Release is found, use the latest platform (not the platform release)
+            latestCreatedAt = Platform.findLatestCreatedAt();
+        }
+        versioning.setLastUpdatedTimestamp(latestCreatedAt);
 
         Snapshot snapshot = new Snapshot();
         versioning.setSnapshot(snapshot);

@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
@@ -21,12 +23,15 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 @Entity
-@NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
-        "where ext.platforms is empty " +
-        "and (ext.versionSortable) = (" +
-        "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
-        "    where ext2.extension = ext.extension" +
-        ")")
+@NamedQueries({
+        @NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
+                "where ext.platforms is empty " +
+                "and (ext.versionSortable) = (" +
+                "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
+                "    where ext2.extension = ext.extension" +
+                ")"),
+        @NamedQuery(name = "ExtensionRelease.findLatestCreatedAt", query = "select max(e.createdAt) from ExtensionRelease e")
+})
 public class ExtensionRelease extends BaseEntity {
 
     @NaturalId
@@ -50,7 +55,7 @@ public class ExtensionRelease extends BaseEntity {
     @Column(nullable = false)
     public String quarkusCoreVersion;
 
-    @OneToMany(mappedBy = "extensionRelease", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();
 
     /**
@@ -96,4 +101,8 @@ public class ExtensionRelease extends BaseEntity {
                 .getResultList();
     }
 
+    public static Date findLatestCreatedAt() {
+        return getEntityManager().createNamedQuery("ExtensionRelease.findLatestCreatedAt", Date.class)
+                .getSingleResult();
+    }
 }

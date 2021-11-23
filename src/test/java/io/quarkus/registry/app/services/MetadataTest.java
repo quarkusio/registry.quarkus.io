@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.services;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -10,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.quarkus.registry.app.maven.HashUtil;
 import io.quarkus.registry.app.maven.MavenConfig;
+import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
@@ -69,9 +71,7 @@ public class MetadataTest {
     @Test
     public void should_contain_version() throws Exception {
         given()
-                .get("/maven/"
-                        + mavenConfig.getRegistryGroupId().replace('.', '/')
-                        + "/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML))
@@ -81,9 +81,7 @@ public class MetadataTest {
     @Test
     public void should_have_classifiers() throws Exception {
         InputStream is = given()
-                .get("/maven/" +
-                        mavenConfig.getRegistryGroupId().replace('.', '/')
-                        + "/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML))
@@ -99,9 +97,7 @@ public class MetadataTest {
     @Test
     public void should_match_checksum() throws Exception {
         String metadata = given()
-                .get("/maven/"
-                        + mavenConfig.getRegistryGroupId().replace('.', '/')
-                        + "/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml")
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML))
@@ -110,9 +106,7 @@ public class MetadataTest {
         Thread.sleep(1000);
         String expectedSha1 = HashUtil.sha1(metadata);
         given()
-                .get("/maven/"
-                        + mavenConfig.getRegistryGroupId().replace('.', '/')
-                        + "/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml.sha1")
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/maven-metadata.xml.sha1")
                 .then()
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.TEXT_PLAIN))
