@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
+import io.quarkus.logging.Log;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
@@ -35,7 +36,8 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.jboss.logging.Logger;
+
+import static org.apache.commons.lang3.StringUtils.abbreviate;
 
 @ApplicationScoped
 @Path("/admin")
@@ -48,8 +50,7 @@ import org.jboss.logging.Logger;
 @Tag(name = "Admin", description = "Admin related services")
 public class AdminApi {
 
-    private static final Logger log = Logger.getLogger(AdminApi.class);
-
+    private static final int MAX_ABBREVIATION_WIDTH = 100;
     @Inject
     AdminService adminService;
 
@@ -69,7 +70,7 @@ public class AdminApi {
         if (platformRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        log.infof("Adding catalog %s", catalog);
+        Log.infof("Adding catalog %s", abbreviate(catalog.toString(), MAX_ABBREVIATION_WIDTH));
         ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog, pinned);
         adminService.onExtensionCatalogImport(event);
         return Response.accepted(bom).build();
@@ -87,7 +88,7 @@ public class AdminApi {
         if (extensionRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        log.infof("Adding extension %s", extension);
+        Log.infof("Adding extension %s", abbreviate(extension.toString(), MAX_ABBREVIATION_WIDTH));
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         adminService.onExtensionCreate(event);
         return Response.accepted(bom).build();
@@ -106,9 +107,12 @@ public class AdminApi {
             @DefaultValue("true") @FormParam("compatible") Boolean compatible) {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        log.infof("Extension %s:%s:%s is %s with Quarkus %s", groupId, artifactId, version,
+        Log.infof("Extension %s:%s:%s is %s with Quarkus %s",
+                abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
+                abbreviate(artifactId, MAX_ABBREVIATION_WIDTH),
+                abbreviate(version, MAX_ABBREVIATION_WIDTH),
                 compatible ? "compatible" : "incompatible",
-                quarkusCore);
+                abbreviate(quarkusCore, MAX_ABBREVIATION_WIDTH));
         ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore,
                 compatible);
         adminService.onExtensionCompatibilityCreate(event);
@@ -126,7 +130,11 @@ public class AdminApi {
             @NotNull(message = "quarkusCore is missing") @FormParam("quarkusCore") String quarkusCore) {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s", groupId, artifactId, version, quarkusCore);
+        Log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s",
+                abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
+                abbreviate(artifactId, MAX_ABBREVIATION_WIDTH),
+                abbreviate(version, MAX_ABBREVIATION_WIDTH),
+                abbreviate(quarkusCore, MAX_ABBREVIATION_WIDTH));
         ExtensionCompatibleDeleteEvent event = new ExtensionCompatibleDeleteEvent(extensionRelease, quarkusCore);
         adminService.onExtensionCompatibilityDelete(event);
         return Response.accepted().build();
