@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.UriInfo;
 import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
+import io.quarkus.registry.app.maven.cache.MavenCacheState;
 import io.quarkus.registry.app.model.PlatformRelease;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
@@ -32,6 +34,9 @@ public class MetadataContentProvider implements ArtifactContentProvider {
 
     @Inject
     MavenConfig mavenConfig;
+
+    @Inject
+    MavenCacheState mavenCacheState;
 
     @Override
     public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
@@ -69,7 +74,8 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         Versioning versioning = new Versioning();
         newMetadata.setVersioning(versioning);
 
-        versioning.updateTimestamp();
+        Date lastUpdated = mavenCacheState.getLastUpdate();
+        versioning.setLastUpdatedTimestamp(lastUpdated);
 
         Snapshot snapshot = new Snapshot();
         versioning.setSnapshot(snapshot);
