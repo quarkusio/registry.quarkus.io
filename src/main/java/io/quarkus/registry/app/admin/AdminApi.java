@@ -25,7 +25,7 @@ import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
-import io.quarkus.registry.app.maven.cache.MavenCacheClear;
+import io.quarkus.registry.app.maven.cache.MavenCache;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
@@ -53,6 +53,8 @@ public class AdminApi {
     private static final int MAX_ABBREVIATION_WIDTH = 100;
     @Inject
     AdminService adminService;
+
+    @Inject MavenCache cache;
 
     @POST
     @Path("/v1/extension/catalog")
@@ -143,8 +145,8 @@ public class AdminApi {
     @DELETE
     @Path("/v1/maven/cache")
     @SecurityRequirement(name = "Authentication")
-    @MavenCacheClear
     public Response clearCache() {
+        cache.clear();
         return Response.accepted().build();
     }
 }
