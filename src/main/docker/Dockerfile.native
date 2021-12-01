@@ -7,14 +7,14 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.native -t quarkus/code-with-quarkus .
+# docker build -f src/main/docker/Dockerfile.native -t quarkus/registry-app .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/code-with-quarkus
+# docker run -i --rm -p 8080:8080 quarkus/registry-app
 #
 ###
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5
 WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
