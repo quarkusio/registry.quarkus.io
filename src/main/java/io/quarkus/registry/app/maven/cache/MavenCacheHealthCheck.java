@@ -1,4 +1,4 @@
-package io.quarkus.registry.app.health;
+package io.quarkus.registry.app.maven.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import io.quarkus.registry.app.maven.cache.MavenCache;
@@ -13,7 +13,7 @@ import org.eclipse.microprofile.health.Liveness;
  */
 @Liveness
 @ApplicationScoped
-public class CacheHealthCheck implements HealthCheck {
+public class MavenCacheHealthCheck implements HealthCheck {
 
     @Inject MavenCache mavenCache;
     
