@@ -9,9 +9,11 @@ import javax.inject.Inject;
 
 import io.quarkus.logging.Log;
 import io.quarkus.registry.app.model.DbState;
+import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
+@Startup
 public class MavenCacheState {
 
     @Inject
@@ -19,16 +21,15 @@ public class MavenCacheState {
 
     private Date lastUpdate;
 
+    /**
+     * Check cache state on every 10 seconds
+     */
     @PostConstruct
-    void init() {
-        lastUpdate = DbState.findUpdatedAt();
-    }
-
-    @Scheduled(cron = "{quarkus.registry.cache.cron}")
+    @Scheduled(cron = "{quarkus.registry.cache.cron:*/10 * * * * ?}")
     void checkDbState() {
         Log.debugf("Checking cache state %s", lastUpdate);
         Date updatedAt = DbState.findUpdatedAt();
-        if (!Objects.equals(lastUpdate, updatedAt)) {
+        if (lastUpdate == null || !Objects.equals(lastUpdate, updatedAt)) {
             Log.debugf("Cache changed -> %s", updatedAt);
             lastUpdate = updatedAt;
             cache.clear();
