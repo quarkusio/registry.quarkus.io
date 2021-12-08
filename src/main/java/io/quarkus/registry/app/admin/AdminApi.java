@@ -27,6 +27,7 @@ import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
+import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
 import io.quarkus.registry.app.maven.cache.MavenCache;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -105,14 +106,27 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
     public Response deleteExtension(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
-            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId) {
-        Extension extension = Extension.findByGA(groupId, artifactId)
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        Log.infof("Removing extension %s:%s", abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
-                abbreviate(artifactId, MAX_ABBREVIATION_WIDTH));
-        ExtensionDeleteEvent event = new ExtensionDeleteEvent(extension);
-        adminService.onExtensionDelete(event);
-        return Response.accepted(new ArtifactKey(groupId, artifactId)).build();
+            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
+            @FormParam("version") String version) {
+        if (version != null) {
+            ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
+                    .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+            Log.infof("Removing extension release %s:%s:s",
+                    abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
+                    abbreviate(artifactId, MAX_ABBREVIATION_WIDTH),
+                    abbreviate(version, MAX_ABBREVIATION_WIDTH));
+            ExtensionReleaseDeleteEvent event = new ExtensionReleaseDeleteEvent(extensionRelease);
+            adminService.onExtensionReleaseDelete(event);
+            return Response.accepted(new ArtifactCoords(groupId, artifactId, version)).build();
+        } else {
+            Extension extension = Extension.findByGA(groupId, artifactId)
+                    .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+            Log.infof("Removing extension %s:%s", abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
+                    abbreviate(artifactId, MAX_ABBREVIATION_WIDTH));
+            ExtensionDeleteEvent event = new ExtensionDeleteEvent(extension);
+            adminService.onExtensionDelete(event);
+            return Response.accepted(new ArtifactKey(groupId, artifactId)).build();
+        }
     }
 
     @POST

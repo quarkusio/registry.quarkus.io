@@ -14,6 +14,7 @@ import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
+import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
 import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -88,6 +89,21 @@ public class AdminService {
             // Reattach extension
             extension = Extension.getEntityManager().merge(extension);
             extension.delete();
+            DbState.updateUpdatedAt();
+        } catch (Exception e) {
+            Log.error("Error while deleting extension", e);
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Transactional
+    public void onExtensionReleaseDelete(ExtensionReleaseDeleteEvent event) {
+        // Non-platform extension
+        try {
+            ExtensionRelease extensionRelease = event.getExtensionRelease();
+            // Reattach extension
+            extensionRelease = ExtensionRelease.getEntityManager().merge(extensionRelease);
+            extensionRelease.delete();
             DbState.updateUpdatedAt();
         } catch (Exception e) {
             Log.error("Error while deleting extension", e);
