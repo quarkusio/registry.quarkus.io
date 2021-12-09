@@ -9,12 +9,17 @@ import javax.transaction.Transactional;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformExtension;
+import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -25,18 +30,15 @@ import static org.hamcrest.CoreMatchers.not;
 @QuarkusTest
 class AdminApiTest {
 
-    private static final String GROUP_ID = "foo.bar";
-    private static final String ARTIFACT_ID = "foo-extension";
-
-    @BeforeAll
+    @BeforeEach
     @Transactional
-    static void setUp() {
+    void setUp() {
         {
             Extension extension = new Extension();
             extension.name = "Foo";
             extension.description = "A Foo Extension";
-            extension.groupId = GROUP_ID;
-            extension.artifactId = ARTIFACT_ID;
+            extension.groupId = "foo.bar";
+            extension.artifactId = "foo-extension";
             extension.persistAndFlush();
 
             ExtensionRelease extensionRelease = new ExtensionRelease();
@@ -65,6 +67,44 @@ class AdminApiTest {
             extensionReleaseToBeDeleted2.quarkusCoreVersion = "2.0.0.Final";
             extensionReleaseToBeDeleted2.persistAndFlush();
         }
+        {
+            Platform platform = Platform.findByKey("io.quarkus.platform").get();
+            PlatformStream stream10 = new PlatformStream();
+            stream10.platform = platform;
+            stream10.streamKey = "10.0";
+            stream10.persistAndFlush();
+
+            PlatformRelease release201 = new PlatformRelease();
+            release201.platformStream = stream10;
+            release201.version = "10.0.0.Final";
+            release201.quarkusCoreVersion = "10.0.0.Final";
+            release201.persistAndFlush();
+
+            Extension extensionToBeDeleted = new Extension();
+            extensionToBeDeleted.name = "ToDeleteFromPlatform";
+            extensionToBeDeleted.description = "A Foo Extension to be deleted";
+            extensionToBeDeleted.groupId = "delete-platform-groupId";
+            extensionToBeDeleted.artifactId = "delete-platform-artifactId";
+            extensionToBeDeleted.persist();
+
+            ExtensionRelease extensionReleaseToBeDeleted = new ExtensionRelease();
+            extensionReleaseToBeDeleted.extension = extensionToBeDeleted;
+            extensionReleaseToBeDeleted.version = "1.0.0";
+            extensionReleaseToBeDeleted.quarkusCoreVersion = "2.0.0.Final";
+            extensionReleaseToBeDeleted.persist();
+
+            PlatformExtension platformExtension = new PlatformExtension();
+            platformExtension.extensionRelease = extensionReleaseToBeDeleted;
+            platformExtension.platformRelease = release201;
+            platformExtension.persist();
+
+            ExtensionRelease extensionReleaseToBeDeleted2 = new ExtensionRelease();
+            extensionReleaseToBeDeleted2.extension = extensionToBeDeleted;
+            extensionReleaseToBeDeleted2.version = "1.1.0";
+            extensionReleaseToBeDeleted2.quarkusCoreVersion = "2.0.0.Final";
+            extensionReleaseToBeDeleted2.persistAndFlush();
+        }
+
     }
 
     @Test
@@ -87,12 +127,12 @@ class AdminApiTest {
                         "extensions[0].description", is("A Foo Extension"));
         // Add a new Extension release
         JsonExtension jsonExtension = new JsonExtension();
-        jsonExtension.setGroupId(GROUP_ID);
-        jsonExtension.setArtifactId(ARTIFACT_ID);
+        jsonExtension.setGroupId("foo.bar");
+        jsonExtension.setArtifactId("foo-extension");
         jsonExtension.setVersion("1.0.1");
         jsonExtension.setName("Another Name");
         jsonExtension.setDescription("Another Description");
-        jsonExtension.setArtifact(new ArtifactCoords(GROUP_ID, ARTIFACT_ID, "1.0.1"));
+        jsonExtension.setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"));
         StringWriter sw = new StringWriter();
         JsonCatalogMapperHelper.serialize(jsonExtension, sw);
 
@@ -158,7 +198,7 @@ class AdminApiTest {
 
     @Test
     void delete_extension() {
-        // Delete version
+        // Delete extension version
         given().formParams("groupId", "delete",
                         "artifactId", "me",
                         "version", "1.1.0")
@@ -190,6 +230,39 @@ class AdminApiTest {
                 .contentType(ContentType.JSON)
                 .body("extensions.name", not(hasItem("ToDelete")));
 
+    }
+
+    @Test
+    void should_not_delete_extension_release_from_platform() {
+        // Should not delete an extension release if it belongs to a platform
+        given().formParams("groupId", "delete-platform-groupId",
+                        "artifactId", "delete-platform-artifactId",
+                        "version", "1.0.0")
+                .header("Token", "test")
+                .delete("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE);
+    }
+
+    @Test
+    void should_not_delete_extension_from_platform() {
+        // Should not delete an extension if any release belongs to a platform
+        given().formParams("groupId", "delete-platform-groupId",
+                        "artifactId", "delete-platform-artifactId")
+                .header("Token", "test")
+                .delete("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE);
+    }
+
+    @AfterEach
+    @Transactional
+    void tearDown() {
+        PlatformExtension.deleteAll();
+        ExtensionRelease.deleteAll();
+        Extension.deleteAll();
+        PlatformRelease.deleteAll();
+        PlatformStream.deleteAll();
     }
 
 }
