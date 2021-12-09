@@ -1,98 +1,168 @@
 package io.quarkus.registry.app.admin;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import io.quarkus.registry.app.events.ExtensionCreateEvent;
+import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformExtension;
+import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 import io.quarkus.registry.catalog.json.JsonExtension;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import io.restassured.http.Header;
-import io.restassured.http.Headers;
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 @QuarkusTest
 class AdminApiTest {
 
-    private static final String GROUP_ID = "foo.bar";
-    private static final String ARTIFACT_ID = "foo-extension";
-
-    @BeforeAll
+    @BeforeEach
     @Transactional
-    static void setUp() {
-        Extension extension = new Extension();
-        extension.name = "Foo";
-        extension.description = "A Foo Extension";
-        extension.groupId = GROUP_ID;
-        extension.artifactId = ARTIFACT_ID;
-        extension.persistAndFlush();
+    void setUp() {
+        {
+            Extension extension = new Extension();
+            extension.name = "Foo";
+            extension.description = "A Foo Extension";
+            extension.groupId = "foo.bar";
+            extension.artifactId = "foo-extension";
+            extension.persistAndFlush();
 
-        ExtensionRelease extensionRelease = new ExtensionRelease();
-        extensionRelease.extension = extension;
-        extensionRelease.version = "1.0.0";
-        extensionRelease.quarkusCoreVersion = "2.0.0.Final";
-        extensionRelease.persistAndFlush();
+            ExtensionRelease extensionRelease = new ExtensionRelease();
+            extensionRelease.extension = extension;
+            extensionRelease.version = "1.0.0";
+            extensionRelease.quarkusCoreVersion = "2.0.0.Final";
+            extensionRelease.persistAndFlush();
+        }
+        {
+            Extension extensionToBeDeleted = new Extension();
+            extensionToBeDeleted.name = "ToDelete";
+            extensionToBeDeleted.description = "A Foo Extension to be deleted";
+            extensionToBeDeleted.groupId = "delete";
+            extensionToBeDeleted.artifactId = "me";
+            extensionToBeDeleted.persistAndFlush();
+
+            ExtensionRelease extensionReleaseToBeDeleted = new ExtensionRelease();
+            extensionReleaseToBeDeleted.extension = extensionToBeDeleted;
+            extensionReleaseToBeDeleted.version = "1.0.0";
+            extensionReleaseToBeDeleted.quarkusCoreVersion = "2.0.0.Final";
+            extensionReleaseToBeDeleted.persistAndFlush();
+
+            ExtensionRelease extensionReleaseToBeDeleted2 = new ExtensionRelease();
+            extensionReleaseToBeDeleted2.extension = extensionToBeDeleted;
+            extensionReleaseToBeDeleted2.version = "1.1.0";
+            extensionReleaseToBeDeleted2.quarkusCoreVersion = "2.0.0.Final";
+            extensionReleaseToBeDeleted2.persistAndFlush();
+        }
+        {
+            Platform platform = Platform.findByKey("io.quarkus.platform").get();
+            PlatformStream stream10 = new PlatformStream();
+            stream10.platform = platform;
+            stream10.streamKey = "10.0";
+            stream10.persistAndFlush();
+
+            PlatformRelease release201 = new PlatformRelease();
+            release201.platformStream = stream10;
+            release201.version = "10.0.0.Final";
+            release201.quarkusCoreVersion = "10.0.0.Final";
+            release201.persistAndFlush();
+
+            Extension extensionToBeDeleted = new Extension();
+            extensionToBeDeleted.name = "ToDeleteFromPlatform";
+            extensionToBeDeleted.description = "A Foo Extension to be deleted";
+            extensionToBeDeleted.groupId = "delete-platform-groupId";
+            extensionToBeDeleted.artifactId = "delete-platform-artifactId";
+            extensionToBeDeleted.persist();
+
+            ExtensionRelease extensionReleaseToBeDeleted = new ExtensionRelease();
+            extensionReleaseToBeDeleted.extension = extensionToBeDeleted;
+            extensionReleaseToBeDeleted.version = "1.0.0";
+            extensionReleaseToBeDeleted.quarkusCoreVersion = "2.0.0.Final";
+            extensionReleaseToBeDeleted.persist();
+
+            PlatformExtension platformExtension = new PlatformExtension();
+            platformExtension.extensionRelease = extensionReleaseToBeDeleted;
+            platformExtension.platformRelease = release201;
+            platformExtension.persist();
+
+            ExtensionRelease extensionReleaseToBeDeleted2 = new ExtensionRelease();
+            extensionReleaseToBeDeleted2.extension = extensionToBeDeleted;
+            extensionReleaseToBeDeleted2.version = "1.1.0";
+            extensionReleaseToBeDeleted2.quarkusCoreVersion = "2.0.0.Final";
+            extensionReleaseToBeDeleted2.persistAndFlush();
+        }
+
     }
-
-    @Inject
-    AdminService adminService;
 
     @Test
     void unauthenticated_requests_should_forbid_access() {
         given().body(
                         "{ \"artifact\":\"aaaa\",\"artifactId\": \"string\", \"description\": \"string\", \"groupId\": \"messging\", \"metadata\":   {}, \"name\": \"string\",\"origins\": [   {     \"id\": \"string\",     \"platform\": false   } ], \"version\": \"string\"}")
-                .post("/admin/v1/extensions")
+                .post("/admin/v1/extension")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_FORBIDDEN);
     }
 
     @Test
-    void extension_description_and_name_may_be_updated_between_releases() {
+    void extension_description_and_name_may_be_updated_between_releases() throws IOException {
         given()
                 .get("/client/non-platform-extensions?v=2.0.0.Final")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
                 .body("extensions[0].name", is("Foo"),
                         "extensions[0].description", is("A Foo Extension"));
         // Add a new Extension release
         JsonExtension jsonExtension = new JsonExtension();
-        jsonExtension.setGroupId(GROUP_ID);
-        jsonExtension.setArtifactId(ARTIFACT_ID);
+        jsonExtension.setGroupId("foo.bar");
+        jsonExtension.setArtifactId("foo-extension");
         jsonExtension.setVersion("1.0.1");
         jsonExtension.setName("Another Name");
         jsonExtension.setDescription("Another Description");
-        adminService.onExtensionCreate(new ExtensionCreateEvent(jsonExtension));
+        jsonExtension.setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"));
+        StringWriter sw = new StringWriter();
+        JsonCatalogMapperHelper.serialize(jsonExtension, sw);
+
+        given()
+                .body(sw.toString())
+                .header("Token", "test")
+                .contentType(ContentType.JSON)
+                .post("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED)
+                .contentType(ContentType.JSON);
 
         given()
                 .get("/client/non-platform-extensions?v=2.0.0.Final")
                 .then()
-                .statusCode(200)
+                .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
-                .body("extensions[0].name", is("Another Name"),
-                        "extensions[0].description", is("Another Description"));
+                .body("extensions.name", hasItem("Another Name"),
+                        "extensions.description", hasItem("Another Description"));
 
     }
 
     @Test
     void validate_input() {
         given()
-                .header("Token","test")
+                .header("Token", "test")
                 .contentType(ContentType.JSON)
                 .post("/admin/v1/extension/catalog")
                 .then()
-                .statusCode(400)
+                .statusCode(HttpURLConnection.HTTP_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .body("parameter-violations.message", hasItem("X-Platform header missing"),
                         "parameter-violations.message", hasItem("Body payload is missing"));
@@ -101,10 +171,11 @@ class AdminApiTest {
     @Test
     void validate_long_input() {
         given()
-                .header("Token","test")
+                .header("Token", "test")
                 .contentType(ContentType.JSON)
                 .body("{\n"
-                        + "\"artifact\":\"com.redhat.quarkus.A["+ StringUtils.repeat('A', 5308414) + "]A:quarkus-bom::pom:2.2.3.Final-redhat-00114\",\n"
+                        + "\"artifact\":\"com.redhat.quarkus.A[" + StringUtils.repeat('A', 5308414)
+                        + "]A:quarkus-bom::pom:2.2.3.Final-redhat-00114\",\n"
                         + "\"artifactId\": \"string\",\n"
                         + "\"description\": \"string\",\n"
                         + "\"groupId\": \"string\",\n"
@@ -122,7 +193,76 @@ class AdminApiTest {
                         + "\n")
                 .post("/admin/v1/extension")
                 .then()
-                .statusCode(400);
+                .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+    }
+
+    @Test
+    void delete_extension() {
+        // Delete extension version
+        given().formParams("groupId", "delete",
+                        "artifactId", "me",
+                        "version", "1.1.0")
+                .header("Token", "test")
+                .delete("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/non-platform-extensions?v=2.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("extensions.version", not(hasItem("1.1.0")),
+                        "extensions.name", hasItem("ToDelete"));
+
+        // Delete extension
+        given().formParams("groupId", "delete",
+                        "artifactId", "me")
+                .header("Token", "test")
+                .delete("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/non-platform-extensions?v=2.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("extensions.name", not(hasItem("ToDelete")));
+
+    }
+
+    @Test
+    void should_not_delete_extension_release_from_platform() {
+        // Should not delete an extension release if it belongs to a platform
+        given().formParams("groupId", "delete-platform-groupId",
+                        "artifactId", "delete-platform-artifactId",
+                        "version", "1.0.0")
+                .header("Token", "test")
+                .delete("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE);
+    }
+
+    @Test
+    void should_not_delete_extension_from_platform() {
+        // Should not delete an extension if any release belongs to a platform
+        given().formParams("groupId", "delete-platform-groupId",
+                        "artifactId", "delete-platform-artifactId")
+                .header("Token", "test")
+                .delete("/admin/v1/extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE);
+    }
+
+    @AfterEach
+    @Transactional
+    void tearDown() {
+        PlatformExtension.deleteAll();
+        ExtensionRelease.deleteAll();
+        Extension.deleteAll();
+        PlatformRelease.deleteAll();
+        PlatformStream.deleteAll();
     }
 
 }

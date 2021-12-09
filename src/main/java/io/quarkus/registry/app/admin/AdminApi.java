@@ -21,11 +21,15 @@ import javax.ws.rs.core.Response;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import io.quarkus.logging.Log;
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.ArtifactKey;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
+import io.quarkus.registry.app.events.ExtensionDeleteEvent;
+import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
 import io.quarkus.registry.app.maven.cache.MavenCache;
+import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
@@ -94,6 +98,51 @@ public class AdminApi {
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         adminService.onExtensionCreate(event);
         return Response.accepted(bom).build();
+    }
+
+    @DELETE
+    @Path("/v1/extension")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @SecurityRequirement(name = "Authentication")
+    public Response deleteExtension(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
+            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
+            @FormParam("version") String version) {
+        if (version != null) {
+            ArtifactCoords entity = new ArtifactCoords(groupId, artifactId, version);
+            ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
+                    .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+            // If an extension release belongs to a platform, do not remove
+            if (!extensionRelease.platforms.isEmpty()) {
+                return Response.status(Response.Status.NOT_ACCEPTABLE)
+                        .entity(entity)
+                        .build();
+            } else {
+                Log.infof("Removing extension release %s:%s:s",
+                        abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
+                        abbreviate(artifactId, MAX_ABBREVIATION_WIDTH),
+                        abbreviate(version, MAX_ABBREVIATION_WIDTH));
+                ExtensionReleaseDeleteEvent event = new ExtensionReleaseDeleteEvent(extensionRelease);
+                adminService.onExtensionReleaseDelete(event);
+                return Response.accepted(entity).build();
+            }
+        } else {
+            ArtifactKey entity = new ArtifactKey(groupId, artifactId);
+            Extension extension = Extension.findByGA(groupId, artifactId)
+                    .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
+            Log.infof("Removing extension %s:%s", abbreviate(groupId, MAX_ABBREVIATION_WIDTH),
+                    abbreviate(artifactId, MAX_ABBREVIATION_WIDTH));
+            // If any extension release belongs to a platform, do not delete it
+            if (extension.releases.stream().anyMatch(extensionRelease -> !extensionRelease.platforms.isEmpty())) {
+                return Response.status(Response.Status.NOT_ACCEPTABLE)
+                        .entity(entity)
+                        .build();
+            } else {
+                ExtensionDeleteEvent event = new ExtensionDeleteEvent(extension);
+                adminService.onExtensionDelete(event);
+                return Response.accepted(entity).build();
+            }
+        }
     }
 
     @POST
