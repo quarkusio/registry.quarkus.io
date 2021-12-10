@@ -33,6 +33,8 @@ class AdminApiTest {
     @BeforeEach
     @Transactional
     void setUp() {
+        // Make sure database is cleaned before inserting new data
+        cleanUpDatabase();
         {
             Extension extension = new Extension();
             extension.name = "Foo";
@@ -104,7 +106,6 @@ class AdminApiTest {
             extensionReleaseToBeDeleted2.quarkusCoreVersion = "2.0.0.Final";
             extensionReleaseToBeDeleted2.persistAndFlush();
         }
-
     }
 
     @Test
@@ -136,6 +137,7 @@ class AdminApiTest {
         StringWriter sw = new StringWriter();
         JsonCatalogMapperHelper.serialize(jsonExtension, sw);
 
+        // Update extension
         given()
                 .body(sw.toString())
                 .header("Token", "test")
@@ -257,7 +259,7 @@ class AdminApiTest {
 
     @AfterEach
     @Transactional
-    void tearDown() {
+    void cleanUpDatabase() {
         PlatformExtension.deleteAll();
         ExtensionRelease.deleteAll();
         Extension.deleteAll();
