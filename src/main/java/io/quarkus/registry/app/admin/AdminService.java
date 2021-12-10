@@ -26,6 +26,8 @@ import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
 
+import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
+
 /**
  * Administrative operations on the database
  */
@@ -139,18 +141,17 @@ public class AdminService {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
                     newExtensionRelease.version = version;
                     newExtensionRelease.extension = extension;
-                    String quarkusCore = (String) ext.getMetadata()
-                            .get(io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE);
+                    String quarkusCore = (String) ext.getMetadata().get(MD_BUILT_WITH_QUARKUS_CORE);
                     // Some extensions were published using the full GAV
-                    if (quarkusCore != null && quarkusCore.contains(":")) {
+                    if (quarkusCore == null) {
+                        // Cannot determine Quarkus version
+                        quarkusCore = "0.0.0";
+                    } else if (quarkusCore.contains(":")) {
                         try {
                             quarkusCore = ArtifactCoords.fromString(quarkusCore).getVersion();
                         } catch (IllegalArgumentException iae) {
                             // ignore
                         }
-                    } else {
-                        // Cannot determine Quarkus version
-                        quarkusCore = "0.0.0";
                     }
                     newExtensionRelease.quarkusCoreVersion = quarkusCore;
                     // Many-to-many

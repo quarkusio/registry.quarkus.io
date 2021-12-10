@@ -14,7 +14,7 @@ import org.flywaydb.core.api.migration.Context;
 /**
  * Update the quarkus_core_version_sortable column with the quarkus_core_version data
  */
-public class V7__Update_Quarkus_Core_Version_Sortable extends BaseJavaMigration {
+public class V8__Update_Quarkus_Core_Version_Sortable extends BaseJavaMigration {
 
     @Override
     public void migrate(Context context) throws Exception {
@@ -39,7 +39,7 @@ public class V7__Update_Quarkus_Core_Version_Sortable extends BaseJavaMigration 
                     stmt.setString(1, sortable);
                     stmt.setString(2, original);
                     int rows = stmt.executeUpdate();
-                    Log.infof("%s rows updated from %s to %s%n", rows, original, sortable);
+                    Log.debugf("%s rows updated from %s to %s%n", rows, original, sortable);
                 }
             }
         }
