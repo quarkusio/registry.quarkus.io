@@ -118,7 +118,7 @@ class DatabaseRegistryClientTest {
                 .get("/client/non-platform-extensions?v=2.0.0.Final")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
-                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.1.0"));
+                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.0.0"));
     }
 
     @AfterEach
