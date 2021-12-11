@@ -1,26 +1,37 @@
 package io.quarkus.registry.app;
 
+import java.net.HttpURLConnection;
+
 import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.registry.app.model.Extension;
+import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 class DatabaseRegistryClientTest {
 
-    @BeforeAll
+    @BeforeEach
     @Transactional
-    static void setUp() {
+    void setUp() {
+        cleanUpDatabase();
         {
             Platform platform = Platform.findByKey("io.quarkus.platform").get();
             PlatformStream stream20 = new PlatformStream();
@@ -50,6 +61,27 @@ class DatabaseRegistryClientTest {
             release210CR1.version = "2.1.0.CR1";
             release210CR1.quarkusCoreVersion = release210CR1.version;
             release210CR1.persistAndFlush();
+
+            Extension extension = new Extension();
+            extension.name = "Foo";
+            extension.description = "A Foo Extension";
+            extension.groupId = "foo.bar";
+            extension.artifactId = "foo-extension";
+            extension.persist();
+            {
+                ExtensionRelease extensionRelease = new ExtensionRelease();
+                extensionRelease.extension = extension;
+                extensionRelease.version = "1.0.0";
+                extensionRelease.quarkusCoreVersion = "2.0.0.Final";
+                extensionRelease.persist();
+            }
+            {
+                ExtensionRelease extensionRelease = new ExtensionRelease();
+                extensionRelease.extension = extension;
+                extensionRelease.version = "1.1.0";
+                extensionRelease.quarkusCoreVersion = "2.1.0.Final";
+                extensionRelease.persist();
+            }
         }
     }
 
@@ -58,7 +90,7 @@ class DatabaseRegistryClientTest {
         given()
                 .get("/client/platforms?v=1.1.0")
                 .then()
-                .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+                .statusCode(HttpURLConnection.HTTP_NO_CONTENT);
     }
 
     @Test
@@ -67,7 +99,7 @@ class DatabaseRegistryClientTest {
                 .accept("application/json;custom=aaaaaaaaaaaaaaaaaa;charset=utf-7")
                 .get("/client/platforms")
                 .then()
-                .statusCode(Response.Status.OK.getStatusCode())
+                .statusCode(HttpURLConnection.HTTP_OK)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
     }
 
@@ -77,12 +109,24 @@ class DatabaseRegistryClientTest {
                 .accept(MediaType.APPLICATION_XML)
                 .get("/client/platforms")
                 .then()
-                .statusCode(Response.Status.NOT_ACCEPTABLE.getStatusCode());
+                .statusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE);
     }
 
-    @AfterAll
+    @Test
+    void should_return_only_extensions_matching_at_least_the_requested_quarkus_core() {
+        given()
+                .get("/client/non-platform-extensions?v=2.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.0.0"));
+    }
+
+    @AfterEach
     @Transactional
-    static void tearDown() {
+    void cleanUpDatabase() {
+        PlatformExtension.deleteAll();
+        ExtensionRelease.deleteAll();
+        Extension.deleteAll();
         PlatformRelease.deleteAll();
         PlatformStream.deleteAll();
     }

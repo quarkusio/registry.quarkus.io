@@ -23,10 +23,12 @@ import org.hibernate.annotations.Type;
 @Entity
 @NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
         "where ext.platforms is empty " +
+        "and ext.quarkusCoreVersionSortable <= :quarkusCore " +
         "and (ext.versionSortable) = (" +
         "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
-        "    where ext2.extension = ext.extension" +
-        ")")
+        "    where ext2.extension = ext.extension " +
+        "    and ext2.quarkusCoreVersionSortable <= :quarkusCore" +
+        ") ")
 public class ExtensionRelease extends BaseEntity {
 
     @NaturalId
@@ -50,7 +52,10 @@ public class ExtensionRelease extends BaseEntity {
     @Column(nullable = false)
     public String quarkusCoreVersion;
 
-    @OneToMany(mappedBy = "extensionRelease", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    @Column(nullable = false)
+    public String quarkusCoreVersionSortable;
+
+    @OneToMany(mappedBy = "extensionRelease", cascade = { CascadeType.PERSIST, CascadeType.REMOVE }, orphanRemoval = true)
     public List<PlatformExtension> platforms = new ArrayList<>();
 
     /**
@@ -59,6 +64,7 @@ public class ExtensionRelease extends BaseEntity {
     @PrePersist
     void updateSemVer() {
         this.versionSortable = Version.toSortable(version);
+        this.quarkusCoreVersionSortable = Version.toSortable(quarkusCoreVersion);
     }
 
     @Override
@@ -93,6 +99,7 @@ public class ExtensionRelease extends BaseEntity {
 
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
         return getEntityManager().createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
+                .setParameter("quarkusCore", Version.toSortable(quarkusCore))
                 .getResultList();
     }
 
