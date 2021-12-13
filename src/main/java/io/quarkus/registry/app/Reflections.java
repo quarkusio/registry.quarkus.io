@@ -30,6 +30,6 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
         io.quarkus.registry.config.json.JsonRegistryNonPlatformExtensionsConfig.class,
         io.quarkus.registry.config.json.JsonRegistryPlatformsConfig.class,
         io.quarkus.registry.config.json.JsonRegistryQuarkusVersionsConfig.class
-})
+}, classNames = "com.github.benmanes.caffeine.cache.SSSMS")
 public class Reflections {
 }
