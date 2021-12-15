@@ -7,7 +7,6 @@ import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -43,7 +42,8 @@ import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.catalog.ExtensionCatalog;
+import io.quarkus.registry.catalog.ExtensionCatalogImpl;
+import io.quarkus.registry.catalog.ExtensionImpl;
 
 @ApplicationScoped
 @Path("/admin")
@@ -67,7 +67,7 @@ public class AdminApi {
     public Response addExtensionCatalog(
             @NotNull(message = "X-Platform header missing") @HeaderParam("X-Platform") String platformKey,
             @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
-            @NotNull(message = "Body payload is missing") ExtensionCatalog catalog) {
+            @NotNull(message = "Body payload is missing") ExtensionCatalogImpl.Builder catalog) {
         ArtifactCoords bom = catalog.getBom();
         Platform platform = Platform.findByKey(platformKey)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
@@ -87,7 +87,7 @@ public class AdminApi {
     @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
     @SecurityRequirement(name = "Authentication")
     public Response addExtension(
-            @NotEmpty(message = "Body payload is missing") io.quarkus.registry.catalog.Extension extension) {
+            @NotNull(message = "Body payload is missing") io.quarkus.registry.catalog.ExtensionImpl.Builder extension) {
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());
