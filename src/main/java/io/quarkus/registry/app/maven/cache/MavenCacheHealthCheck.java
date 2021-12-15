@@ -1,12 +1,13 @@
 package io.quarkus.registry.app.maven.cache;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import io.quarkus.registry.app.maven.cache.MavenCache;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
+
+import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Check the cache
@@ -15,8 +16,9 @@ import org.eclipse.microprofile.health.Liveness;
 @ApplicationScoped
 public class MavenCacheHealthCheck implements HealthCheck {
 
-    @Inject MavenCache mavenCache;
-    
+    @Inject
+    MavenCache mavenCache;
+
     @Override
     public HealthCheckResponse call() {
         Cache cache = mavenCache.getCache();
@@ -33,5 +35,5 @@ public class MavenCacheHealthCheck implements HealthCheck {
                 .withData("miss rate", String.valueOf(cache.stats().missRate()))
                 .up().build();
     }
-    
+
 }

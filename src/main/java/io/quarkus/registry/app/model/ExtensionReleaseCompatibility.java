@@ -14,9 +14,9 @@ import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@NamedQuery(name = "ExtensionReleaseCompatibility.findCompatibility",
-        query = "select e.extensionRelease.id as id, e.compatible as compatible from ExtensionReleaseCompatibility e " +
-                "where e.quarkusCoreVersion = :quarkusCore")
+@NamedQuery(name = "ExtensionReleaseCompatibility.findCompatibility", query = "select e.extensionRelease.id as id, e.compatible as compatible from ExtensionReleaseCompatibility e "
+        +
+        "where e.quarkusCoreVersion = :quarkusCore")
 public class ExtensionReleaseCompatibility extends BaseEntity {
 
     @NaturalId
@@ -30,7 +30,8 @@ public class ExtensionReleaseCompatibility extends BaseEntity {
     @Column(nullable = false)
     public boolean compatible;
 
-    public static Optional<ExtensionReleaseCompatibility> findByNaturalKey(ExtensionRelease extensionRelease, String quarkusCore) {
+    public static Optional<ExtensionReleaseCompatibility> findByNaturalKey(ExtensionRelease extensionRelease,
+            String quarkusCore) {
         Session session = getEntityManager().unwrap(Session.class);
         return session.byNaturalId(ExtensionReleaseCompatibility.class)
                 .using("extensionRelease", extensionRelease)
@@ -45,8 +46,7 @@ public class ExtensionReleaseCompatibility extends BaseEntity {
                 .collect(
                         Collectors.toMap(
                                 tuple -> tuple.get("id", Long.class),
-                                tuple -> tuple.get("compatible", Boolean.class)
-                        ));
+                                tuple -> tuple.get("compatible", Boolean.class)));
     }
 
 }

@@ -10,13 +10,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.DatabaseRegistryClient;
+import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.PlatformCatalog;
-import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 
 /**
- * Lists the available platforms and their recommended versions, indicating which platform is the recommended default for new projects
+ * Lists the available platforms and their recommended versions, indicating which platform is the recommended default for new
+ * projects
  */
 @Singleton
 public class PlatformsContentProvider implements ArtifactContentProvider {
@@ -45,7 +47,7 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
                     .build();
         }
         StringWriter sw = new StringWriter();
-        JsonCatalogMapperHelper.serialize(objectMapper, platformCatalog, sw);
+        CatalogMapperHelper.serialize(objectMapper, platformCatalog, sw);
         String result = sw.toString();
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
         String contentType = MediaType.APPLICATION_JSON;

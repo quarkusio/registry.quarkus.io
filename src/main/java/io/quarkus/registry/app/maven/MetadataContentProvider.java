@@ -2,7 +2,6 @@ package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -14,16 +13,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import io.quarkus.cache.CacheResult;
-import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.app.CacheNames;
-import io.quarkus.registry.app.maven.cache.MavenCacheState;
-import io.quarkus.registry.app.model.PlatformRelease;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
+
+import io.quarkus.cache.CacheResult;
+import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.CacheNames;
+import io.quarkus.registry.app.maven.cache.MavenCacheState;
+import io.quarkus.registry.app.model.PlatformRelease;
 
 @Singleton
 public class MetadataContentProvider implements ArtifactContentProvider {
@@ -90,7 +90,7 @@ public class MetadataContentProvider implements ArtifactContentProvider {
     }
 
     private static void addSnapshotVersion(Versioning versioning, Snapshot snapshot, final String baseVersion,
-                                           String extension, List<String> classifiers) {
+            String extension, List<String> classifiers) {
         final String version = baseVersion + snapshot.getTimestamp() + "-" + snapshot.getBuildNumber();
         for (String classifier : classifiers) {
             final SnapshotVersion sv = new SnapshotVersion();

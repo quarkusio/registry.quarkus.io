@@ -8,10 +8,11 @@ import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
+
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 /**
  * Categories an extension belongs to

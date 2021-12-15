@@ -1,5 +1,7 @@
 package io.quarkus.registry.app.admin;
 
+import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,8 +28,6 @@ import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
 
-import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
-
 /**
  * Administrative operations on the database
  */
@@ -49,6 +49,7 @@ public class AdminService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog, boolean pinned) {
         Map<String, Object> platformReleaseMetadata = (Map<String, Object>) extensionCatalog.getMetadata()
                 .get("platform-release");
@@ -175,11 +176,11 @@ public class AdminService {
     public void onExtensionCompatibilityCreate(ExtensionCompatibilityCreateEvent event) {
         ExtensionReleaseCompatibility extensionReleaseCompatibility = ExtensionReleaseCompatibility.findByNaturalKey(
                 event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
-            ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
-            newEntity.extensionRelease = event.getExtensionRelease();
-            newEntity.quarkusCoreVersion = event.getQuarkusCore();
-            return newEntity;
-        });
+                    ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
+                    newEntity.extensionRelease = event.getExtensionRelease();
+                    newEntity.quarkusCoreVersion = event.getQuarkusCore();
+                    return newEntity;
+                });
         extensionReleaseCompatibility.compatible = event.isCompatible();
         extensionReleaseCompatibility.persistAndFlush();
         DbState.updateUpdatedAt();

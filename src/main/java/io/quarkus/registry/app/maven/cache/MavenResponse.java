@@ -1,7 +1,7 @@
 package io.quarkus.registry.app.maven.cache;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * the response from a maven call
@@ -9,12 +9,12 @@ import java.util.HashMap;
 public class MavenResponse {
     private int status;
     private Object response;
-    private Map<String,String> headers = new HashMap<>();
-    
-    public MavenResponse(){
-        
+    private Map<String, String> headers = new HashMap<>();
+
+    public MavenResponse() {
+
     }
-    
+
     public MavenResponse(int status, Object response) {
         this.status = status;
         this.response = response;
@@ -44,7 +44,7 @@ public class MavenResponse {
         this.headers = headers;
     }
 
-    public void addHeader(String key, String value){
+    public void addHeader(String key, String value) {
         headers.put(key, value);
     }
 }

@@ -1,11 +1,17 @@
 package io.quarkus.registry.app;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
+
 import java.net.HttpURLConnection;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -14,16 +20,6 @@ import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
-import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
 class DatabaseRegistryClientTest {

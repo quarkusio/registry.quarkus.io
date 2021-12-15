@@ -7,7 +7,8 @@ import javax.ws.rs.ext.Provider;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.jaxrs.yaml.JacksonYAMLProvider;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
-import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
+
+import io.quarkus.registry.catalog.CatalogMapperHelper;
 
 /**
  * This initializes the JacksonYAMLProvider with my custom YAMLMapper.
@@ -20,7 +21,7 @@ public class YAMLProvider extends JacksonYAMLProvider {
     private static final YAMLMapper mapper = new YAMLMapper();
 
     static {
-        JsonCatalogMapperHelper.initMapper(mapper);
+        CatalogMapperHelper.initMapper(mapper);
     }
 
     public YAMLProvider() {

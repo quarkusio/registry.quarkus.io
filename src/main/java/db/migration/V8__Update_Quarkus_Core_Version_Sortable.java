@@ -6,10 +6,11 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.quarkus.logging.Log;
-import io.quarkus.registry.app.util.Version;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
+
+import io.quarkus.logging.Log;
+import io.quarkus.registry.app.util.Version;
 
 /**
  * Update the quarkus_core_version_sortable column with the quarkus_core_version data

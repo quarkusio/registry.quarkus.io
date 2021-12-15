@@ -37,8 +37,8 @@ public class ACMEResource {
     public Response challenge(@PathParam("type") String type, @PathParam("token") String token) {
         logger.infof("Requested Token: %s", token);
         return Response.ok(acmeThumbprint
-                                   .map(s -> token + "." + s)
-                                   .orElseGet(() -> acmeContents.orElseThrow(NotFoundException::new)))
+                .map(s -> token + "." + s)
+                .orElseGet(() -> acmeContents.orElseThrow(NotFoundException::new)))
                 .header("Connection", "close")
                 .build();
     }

@@ -1,10 +1,15 @@
 package io.quarkus.registry.app.admin;
 
+import static org.apache.commons.lang3.StringUtils.abbreviate;
+
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -18,7 +23,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
+
 import io.quarkus.logging.Log;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.maven.ArtifactKey;
@@ -33,24 +45,15 @@ import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.catalog.json.JsonExtension;
-import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-
-import static org.apache.commons.lang3.StringUtils.abbreviate;
+import io.quarkus.registry.catalog.CatalogMapperHelper;
+import io.quarkus.registry.catalog.ExtensionCatalog;
+import io.quarkus.registry.catalog.ExtensionCatalogImpl;
+import io.quarkus.registry.catalog.ExtensionImpl;
 
 @ApplicationScoped
 @Path("/admin")
 @RolesAllowed("admin")
-@SecurityScheme(securitySchemeName = "Authentication",
-        description = "Admin token",
-        type = SecuritySchemeType.APIKEY,
-        apiKeyName = "TOKEN",
-        in = SecuritySchemeIn.HEADER)
+@SecurityScheme(securitySchemeName = "Authentication", description = "Admin token", type = SecuritySchemeType.APIKEY, apiKeyName = "TOKEN", in = SecuritySchemeIn.HEADER)
 @Tag(name = "Admin", description = "Admin related services")
 public class AdminApi {
 
@@ -58,7 +61,8 @@ public class AdminApi {
     @Inject
     AdminService adminService;
 
-    @Inject MavenCache cache;
+    @Inject
+    MavenCache cache;
 
     @POST
     @Path("/v1/extension/catalog")
@@ -68,7 +72,10 @@ public class AdminApi {
     public Response addExtensionCatalog(
             @NotNull(message = "X-Platform header missing") @HeaderParam("X-Platform") String platformKey,
             @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
-            @NotNull(message = "Body payload is missing") JsonExtensionCatalog catalog) {
+            @NotEmpty(message = "Body payload is missing") String payload) throws IOException {
+        // TODO: Move the Catalog as the body payload type
+        ExtensionCatalog catalog = CatalogMapperHelper.deserialize(new StringReader(payload),
+                ExtensionCatalogImpl.Builder.class).build();
         ArtifactCoords bom = catalog.getBom();
         Platform platform = Platform.findByKey(platformKey)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
@@ -87,7 +94,10 @@ public class AdminApi {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
     @SecurityRequirement(name = "Authentication")
-    public Response addExtension(@NotNull(message = "Body payload is missing") JsonExtension extension) {
+    public Response addExtension(
+            @NotEmpty(message = "Body payload is missing") String payload) throws IOException {
+        io.quarkus.registry.catalog.Extension extension = CatalogMapperHelper.deserialize(new StringReader(payload),
+                ExtensionImpl.Builder.class).build();
         ArtifactCoords bom = extension.getArtifact();
         Optional<ExtensionRelease> extensionRelease = ExtensionRelease
                 .findByGAV(bom.getGroupId(), bom.getArtifactId(), bom.getVersion());

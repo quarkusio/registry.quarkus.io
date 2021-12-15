@@ -16,11 +16,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.TypedQuery;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
-import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
+
+import io.quarkiverse.hibernate.types.json.JsonTypes;
+import io.quarkus.registry.app.util.Version;
 
 @Entity
 @NamedQueries({
@@ -113,7 +114,6 @@ public class PlatformRelease extends BaseEntity {
                 .using("version", version)
                 .loadOptional();
     }
-
 
     public static List<PlatformRelease> findLatest(String quarkusCore) {
         EntityManager entityManager = getEntityManager();

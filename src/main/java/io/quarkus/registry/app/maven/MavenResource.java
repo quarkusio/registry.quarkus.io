@@ -12,9 +12,10 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import io.quarkus.maven.ArtifactCoords;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
+
+import io.quarkus.maven.ArtifactCoords;
 
 /**
  * Exposes a Maven resource for our tooling
