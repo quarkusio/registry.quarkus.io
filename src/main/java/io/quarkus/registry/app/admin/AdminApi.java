@@ -1,5 +1,7 @@
 package io.quarkus.registry.app.admin;
 
+import static org.apache.commons.lang3.StringUtils.abbreviate;
+
 import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
@@ -19,7 +21,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
+
 import io.quarkus.logging.Log;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.maven.ArtifactKey;
@@ -35,13 +44,6 @@ import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.ExtensionCatalog;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-
-import static org.apache.commons.lang3.StringUtils.abbreviate;
 
 @ApplicationScoped
 @Path("/admin")
