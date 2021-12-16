@@ -2,7 +2,9 @@ package io.quarkus.registry.app;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -13,6 +15,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
@@ -21,18 +25,12 @@ import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
-import io.quarkus.registry.app.model.mapper.PlatformMapper;
 import io.quarkus.registry.app.util.Version;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
-import io.quarkus.registry.catalog.json.JsonExtension;
-import io.quarkus.registry.catalog.json.JsonExtensionCatalog;
-import io.quarkus.registry.catalog.json.JsonPlatform;
-import io.quarkus.registry.catalog.json.JsonPlatformCatalog;
-import io.quarkus.registry.catalog.json.JsonPlatformStream;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import io.quarkus.registry.catalog.PlatformReleaseVersion;
 
 /**
  * This class will query the database for the requested information
@@ -41,9 +39,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @Path("/client")
 @Tag(name = "Client", description = "Client related services")
 public class DatabaseRegistryClient {
-
-    @Inject
-    PlatformMapper platformMapper;
 
     @Inject
     MavenConfig mavenConfig;
@@ -55,27 +50,31 @@ public class DatabaseRegistryClient {
         if (version != null && !version.isBlank()) {
             Version.validateVersion(version);
         }
-        JsonPlatformCatalog catalog = new JsonPlatformCatalog();
         List<PlatformRelease> platformReleases = PlatformRelease.findLatest(version);
         if (platformReleases.isEmpty()) {
             return null;
         }
+        PlatformCatalog.Mutable catalog = PlatformCatalog.builder();
         platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
         for (PlatformRelease platformRelease : platformReleases) {
             PlatformStream platformStream = platformRelease.platformStream;
             Platform platform = platformStream.platform;
 
-            JsonPlatformStream jsonPlatformStream = platformMapper.toJsonPlatformStream(platformStream);
-            jsonPlatformStream.addRelease(platformMapper.toJsonPlatformRelease(platformRelease));
+            io.quarkus.registry.catalog.PlatformStream.Mutable clientPlatformStream = toClientPlatformStream(platformStream);
+            clientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
 
-            JsonPlatform jsonPlatform = (JsonPlatform) catalog.getPlatform(platform.platformKey);
-            if (jsonPlatform == null) {
-                jsonPlatform = platformMapper.toJsonPlatform(platform);
-                catalog.addPlatform(jsonPlatform);
+            io.quarkus.registry.catalog.Platform clientPlatform = catalog.getPlatform(platform.platformKey);
+            if (clientPlatform == null) {
+                catalog.addPlatform(toClientPlatform(platform)
+                        .addStream(clientPlatformStream.build())
+                        .build());
+            } else {
+                catalog.addPlatform(clientPlatform.mutable()
+                        .addStream(clientPlatformStream.build())
+                        .build());
             }
-            jsonPlatform.addStream(jsonPlatformStream);
         }
-        return catalog;
+        return catalog.build();
     }
 
     @GET
@@ -91,14 +90,14 @@ public class DatabaseRegistryClient {
                 nonPlatformExtensionCoords.getType(),
                 nonPlatformExtensionCoords.getVersion()).toString();
 
-        final JsonExtensionCatalog catalog = new JsonExtensionCatalog();
+        final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
         catalog.setId(id);
         catalog.setBom(ArtifactCoords.pom("io.quarkus.platform", "quarkus-bom", quarkusVersion));
         catalog.setQuarkusCoreVersion(quarkusVersion);
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
         Map<Long, Boolean> compatiblityMap = ExtensionReleaseCompatibility.findCompatibleMap(quarkusVersion);
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
-            JsonExtension extension = toJsonExtension(extensionRelease, catalog);
+            Extension.Mutable extension = toClientExtension(extensionRelease, catalog);
             // Add compatibility info
             Boolean compatibility;
 
@@ -119,24 +118,57 @@ public class DatabaseRegistryClient {
                 compatibility = compatiblityMap.get(extensionRelease.id);
             }
             extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
-            catalog.addExtension(extension);
+            catalog.addExtension(extension.build());
         }
         // Add all categories
         List<Category> categories = Category.listAll();
-        categories.stream().map(platformMapper::toJsonCategory).forEach(catalog::addCategory);
-        return catalog;
+        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        return catalog.build();
     }
 
-    private JsonExtension toJsonExtension(ExtensionRelease extensionRelease, ExtensionOrigin extensionOrigin) {
-        JsonExtension e = new JsonExtension();
-        e.setGroupId(extensionRelease.extension.groupId);
-        e.setArtifactId(extensionRelease.extension.artifactId);
-        e.setVersion(extensionRelease.version);
-        e.setName(extensionRelease.extension.name);
-        e.setDescription(extensionRelease.extension.description);
-        e.setOrigins(Collections.singletonList(extensionOrigin));
-        e.setMetadata(extensionRelease.metadata);
-        return e;
+    private Extension.Mutable toClientExtension(ExtensionRelease extensionRelease, ExtensionOrigin extensionOrigin) {
+        return Extension.builder()
+                .setGroupId(extensionRelease.extension.groupId)
+                .setArtifactId(extensionRelease.extension.artifactId)
+                .setVersion(extensionRelease.version)
+                .setName(extensionRelease.extension.name)
+                .setDescription(extensionRelease.extension.description)
+                .setOrigins(Collections.singletonList(extensionOrigin))
+                .setMetadata(extensionRelease.metadata);
+    }
+
+    private io.quarkus.registry.catalog.Category toClientCategory(Category category) {
+        return io.quarkus.registry.catalog.Category.builder()
+                .setId(category.name.toLowerCase(Locale.ROOT).replace(' ', '-'))
+                .setName(category.name)
+                .setDescription(category.description)
+                .setMetadata(category.metadata)
+                .build();
+    }
+
+    private io.quarkus.registry.catalog.Platform.Mutable toClientPlatform(Platform platform) {
+        return io.quarkus.registry.catalog.Platform.builder()
+                .setPlatformKey(platform.platformKey)
+                .setName(platform.name)
+                .setMetadata(platform.metadata);
+    }
+
+    private io.quarkus.registry.catalog.PlatformStream.Mutable toClientPlatformStream(PlatformStream platformStream) {
+        return io.quarkus.registry.catalog.PlatformStream.builder()
+                .setId(platformStream.streamKey)
+                .setName(platformStream.name)
+                .setMetadata(platformStream.metadata);
+    }
+
+    private io.quarkus.registry.catalog.PlatformRelease toClientPlatformRelease(PlatformRelease platformRelease) {
+        return io.quarkus.registry.catalog.PlatformRelease.builder()
+                .setMemberBoms(platformRelease.memberBoms.stream().map(ArtifactCoords::fromString).collect(
+                        Collectors.toList()))
+                .setVersion(PlatformReleaseVersion.fromString(platformRelease.version))
+                .setMetadata(platformRelease.metadata)
+                .setUpstreamQuarkusCoreVersion(platformRelease.upstreamQuarkusCoreVersion)
+                .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion)
+                .build();
     }
 
     private enum CoreCompatibility {

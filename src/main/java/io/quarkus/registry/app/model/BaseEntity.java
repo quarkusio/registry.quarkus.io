@@ -10,11 +10,12 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.TypeDef;
+
 import io.quarkiverse.hibernate.types.json.JsonBinaryType;
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.TypeDef;
 
 /**
  * The base class for all entities

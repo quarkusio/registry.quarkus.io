@@ -1,10 +1,20 @@
 package io.quarkus.registry.app.admin;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 
 import javax.transaction.Transactional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.model.Extension;
@@ -13,19 +23,9 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
-import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
-import io.quarkus.registry.catalog.json.JsonExtension;
+import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 
 @QuarkusTest
 class AdminApiTest {
@@ -111,7 +111,7 @@ class AdminApiTest {
     @Test
     void unauthenticated_requests_should_forbid_access() {
         given().body(
-                        "{ \"artifact\":\"aaaa\",\"artifactId\": \"string\", \"description\": \"string\", \"groupId\": \"messging\", \"metadata\":   {}, \"name\": \"string\",\"origins\": [   {     \"id\": \"string\",     \"platform\": false   } ], \"version\": \"string\"}")
+                "{ \"artifact\":\"aaaa\",\"artifactId\": \"string\", \"description\": \"string\", \"groupId\": \"messging\", \"metadata\":   {}, \"name\": \"string\",\"origins\": [   {     \"id\": \"string\",     \"platform\": false   } ], \"version\": \"string\"}")
                 .post("/admin/v1/extension")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_FORBIDDEN);
@@ -127,15 +127,16 @@ class AdminApiTest {
                 .body("extensions[0].name", is("Foo"),
                         "extensions[0].description", is("A Foo Extension"));
         // Add a new Extension release
-        JsonExtension jsonExtension = new JsonExtension();
-        jsonExtension.setGroupId("foo.bar");
-        jsonExtension.setArtifactId("foo-extension");
-        jsonExtension.setVersion("1.0.1");
-        jsonExtension.setName("Another Name");
-        jsonExtension.setDescription("Another Description");
-        jsonExtension.setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"));
+        io.quarkus.registry.catalog.Extension extension = io.quarkus.registry.catalog.Extension.builder()
+                .setGroupId("foo.bar")
+                .setArtifactId("foo-extension")
+                .setVersion("1.0.1")
+                .setName("Another Name")
+                .setDescription("Another Description")
+                .setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"))
+                .build();
         StringWriter sw = new StringWriter();
-        JsonCatalogMapperHelper.serialize(jsonExtension, sw);
+        CatalogMapperHelper.serialize(extension, sw);
 
         // Update extension
         given()
@@ -202,8 +203,8 @@ class AdminApiTest {
     void delete_extension() {
         // Delete extension version
         given().formParams("groupId", "delete",
-                        "artifactId", "me",
-                        "version", "1.1.0")
+                "artifactId", "me",
+                "version", "1.1.0")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -219,7 +220,7 @@ class AdminApiTest {
 
         // Delete extension
         given().formParams("groupId", "delete",
-                        "artifactId", "me")
+                "artifactId", "me")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -238,8 +239,8 @@ class AdminApiTest {
     void should_not_delete_extension_release_from_platform() {
         // Should not delete an extension release if it belongs to a platform
         given().formParams("groupId", "delete-platform-groupId",
-                        "artifactId", "delete-platform-artifactId",
-                        "version", "1.0.0")
+                "artifactId", "delete-platform-artifactId",
+                "version", "1.0.0")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -250,7 +251,7 @@ class AdminApiTest {
     void should_not_delete_extension_from_platform() {
         // Should not delete an extension if any release belongs to a platform
         given().formParams("groupId", "delete-platform-groupId",
-                        "artifactId", "delete-platform-artifactId")
+                "artifactId", "delete-platform-artifactId")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()

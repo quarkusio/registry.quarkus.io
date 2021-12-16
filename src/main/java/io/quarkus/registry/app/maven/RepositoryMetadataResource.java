@@ -12,11 +12,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.quarkus.cache.CacheResult;
-import io.quarkus.registry.app.CacheNames;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.sonatype.nexus.repository.metadata.model.RepositoryMetadata;
 import org.sonatype.nexus.repository.metadata.model.io.xpp3.RepositoryMetadataXpp3Writer;
+
+import io.quarkus.cache.CacheResult;
+import io.quarkus.registry.app.CacheNames;
 
 /**
  * Exposes Maven resource metadata for registering as a Nexus repository proxy

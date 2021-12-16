@@ -6,9 +6,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
+
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 @Entity
 public class PlatformExtension extends BaseEntity {

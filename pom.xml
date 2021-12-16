@@ -18,9 +18,10 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
-    <mapstruct.version>1.4.2.Final</mapstruct.version>
-    <quarkus.version>2.5.2.Final</quarkus.version>
+    <quarkus.version>2.6.0.Final</quarkus.version>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
+    <formatter.plugin.version>2.17.1</formatter.plugin.version>
+    <impsort.plugin.version>1.6.2</impsort.plugin.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -39,11 +40,6 @@
       <groupId>org.sonatype.nexus</groupId>
       <artifactId>nexus-repository-metadata-model</artifactId>
       <version>2.14.20-02</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mapstruct</groupId>
-      <artifactId>mapstruct</artifactId>
-      <version>${mapstruct.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.hibernatetypes</groupId>
@@ -134,6 +130,48 @@
     </resources>
     <plugins>
       <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <version>${formatter.plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-ide-config</artifactId>
+            <version>${quarkus.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <configFile>eclipse-format.xml</configFile>
+          <lineEnding>LF</lineEnding>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>net.revelc.code</groupId>
+        <artifactId>impsort-maven-plugin</artifactId>
+        <version>${impsort.plugin.version}</version>
+        <configuration>
+          <groups>java.,javax.,org.,com.</groups>
+          <staticGroups>*</staticGroups>
+          <removeUnused>true</removeUnused>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sort-imports</id>
+            <goals>
+              <goal>sort</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <configuration>
           <propertiesEncoding>UTF-8</propertiesEncoding>
@@ -170,13 +208,6 @@
         <configuration>
           <source>11</source>
           <target>11</target>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.mapstruct</groupId>
-              <artifactId>mapstruct-processor</artifactId>
-              <version>${mapstruct.version}</version>
-            </path>
-          </annotationProcessorPaths>
         </configuration>
       </plugin>
     </plugins>

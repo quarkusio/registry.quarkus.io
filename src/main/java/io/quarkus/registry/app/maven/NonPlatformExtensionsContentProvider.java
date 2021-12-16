@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.DatabaseRegistryClient;
+import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.ExtensionCatalog;
-import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 
 @Singleton
 public class NonPlatformExtensionsContentProvider implements ArtifactContentProvider {
@@ -38,7 +39,7 @@ public class NonPlatformExtensionsContentProvider implements ArtifactContentProv
         ExtensionCatalog catalog = registryClient.resolveNonPlatformExtensions(quarkusVersion);
 
         StringWriter sw = new StringWriter();
-        JsonCatalogMapperHelper.serialize(objectMapper, catalog, sw);
+        CatalogMapperHelper.serialize(objectMapper, catalog, sw);
         String result = sw.toString();
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
         String contentType = MediaType.APPLICATION_JSON;

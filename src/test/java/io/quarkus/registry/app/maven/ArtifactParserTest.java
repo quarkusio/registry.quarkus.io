@@ -1,19 +1,20 @@
 package io.quarkus.registry.app.maven;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.PathSegment;
 
-import io.quarkus.maven.ArtifactCoords;
 import org.assertj.core.api.SoftAssertions;
 import org.jboss.resteasy.specimpl.PathSegmentImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import io.quarkus.maven.ArtifactCoords;
 
 class ArtifactParserTest {
 

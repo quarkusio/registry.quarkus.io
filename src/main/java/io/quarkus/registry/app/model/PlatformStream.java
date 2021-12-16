@@ -13,11 +13,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.PrePersist;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
-import io.quarkus.registry.app.util.Version;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
+
+import io.quarkiverse.hibernate.types.json.JsonTypes;
+import io.quarkus.registry.app.util.Version;
 
 @Entity
 public class PlatformStream extends BaseEntity {
@@ -63,8 +64,10 @@ public class PlatformStream extends BaseEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         PlatformStream that = (PlatformStream) o;
         return platform.equals(that.platform) && streamKey.equals(that.streamKey);
     }

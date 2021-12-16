@@ -95,8 +95,7 @@ public class ArtifactParser {
 
     public static String getChecksumSuffix(List<PathSegment> pathSegmentList, ArtifactCoords parsedCoords) {
         final String fileName = getFileName(pathSegmentList);
-        return fileName.endsWith(parsedCoords.getType()) ?
-                null :
-                fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
+        return fileName.endsWith(parsedCoords.getType()) ? null
+                : fileName.substring(fileName.lastIndexOf(parsedCoords.getType()) + parsedCoords.getType().length());
     }
 }

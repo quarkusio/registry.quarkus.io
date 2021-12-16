@@ -13,15 +13,14 @@ import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.CacheNames;
+import io.quarkus.registry.config.RegistriesConfigMapperHelper;
 import io.quarkus.registry.config.RegistryConfig;
-import io.quarkus.registry.config.json.JsonRegistryConfig;
-import io.quarkus.registry.config.json.JsonRegistryDescriptorConfig;
-import io.quarkus.registry.config.json.JsonRegistryMavenConfig;
-import io.quarkus.registry.config.json.JsonRegistryMavenRepoConfig;
-import io.quarkus.registry.config.json.JsonRegistryNonPlatformExtensionsConfig;
-import io.quarkus.registry.config.json.JsonRegistryPlatformsConfig;
-import io.quarkus.registry.config.json.JsonRegistryQuarkusVersionsConfig;
-import io.quarkus.registry.config.json.RegistriesConfigMapperHelper;
+import io.quarkus.registry.config.RegistryDescriptorConfig;
+import io.quarkus.registry.config.RegistryMavenConfig;
+import io.quarkus.registry.config.RegistryMavenRepoConfig;
+import io.quarkus.registry.config.RegistryNonPlatformExtensionsConfig;
+import io.quarkus.registry.config.RegistryPlatformsConfig;
+import io.quarkus.registry.config.RegistryQuarkusVersionsConfig;
 
 @Singleton
 public class RegistryDescriptorContentProvider implements ArtifactContentProvider {
@@ -57,42 +56,43 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
 
     @CacheResult(cacheName = CacheNames.DESCRIPTOR)
     RegistryConfig getRegistryConfig(UriInfo uriInfo) {
-        final JsonRegistryConfig qer = new JsonRegistryConfig();
+        final RegistryConfig.Mutable qer = RegistryConfig.builder();
         qer.setId(mavenConfig.getRegistryId());
 
-        final JsonRegistryDescriptorConfig descriptor = new JsonRegistryDescriptorConfig();
-        qer.setDescriptor(descriptor);
+        final RegistryDescriptorConfig.Mutable descriptor = RegistryDescriptorConfig.builder();
         descriptor.setArtifact(
                 new ArtifactCoords(mavenConfig.getRegistryGroupId(),
                         Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID, null,
                         Constants.JSON, Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+        qer.setDescriptor(descriptor.build());
 
-        final JsonRegistryMavenConfig registryMavenConfig = new JsonRegistryMavenConfig();
-        qer.setMaven(registryMavenConfig);
+        final RegistryMavenConfig.Mutable registryMavenConfig = RegistryMavenConfig.builder();
 
-        final JsonRegistryPlatformsConfig platformsConfig = new JsonRegistryPlatformsConfig();
-        qer.setPlatforms(platformsConfig);
+        final RegistryPlatformsConfig.Mutable platformsConfig = RegistryPlatformsConfig.builder();
         platformsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
                 Constants.DEFAULT_REGISTRY_PLATFORMS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
                 Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+        qer.setPlatforms(platformsConfig.build());
 
         if (mavenConfig.supportsNonPlatforms()) {
-            final JsonRegistryNonPlatformExtensionsConfig nonPlatformExtensionsConfig = new JsonRegistryNonPlatformExtensionsConfig();
-            qer.setNonPlatformExtensions(nonPlatformExtensionsConfig);
+            final RegistryNonPlatformExtensionsConfig.Mutable nonPlatformExtensionsConfig = RegistryNonPlatformExtensionsConfig
+                    .builder();
             nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
                     Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
                     Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+            qer.setNonPlatformExtensions(nonPlatformExtensionsConfig.build());
         }
         if (mavenConfig.getQuarkusVersionsExpression().isPresent()) {
-            final JsonRegistryQuarkusVersionsConfig quarkusVersionsConfig = new JsonRegistryQuarkusVersionsConfig();
+            final RegistryQuarkusVersionsConfig.Mutable quarkusVersionsConfig = RegistryQuarkusVersionsConfig.builder();
             quarkusVersionsConfig.setRecognizedVersionsExpression(mavenConfig.getQuarkusVersionsExpression().orElse(null));
             quarkusVersionsConfig.setExclusiveProvider(mavenConfig.getQuarkusVersionsExclusiveProvider().orElse(false));
-            qer.setQuarkusVersions(quarkusVersionsConfig);
+            qer.setQuarkusVersions(quarkusVersionsConfig.build());
         }
-        final JsonRegistryMavenRepoConfig mavenRepo = new JsonRegistryMavenRepoConfig();
-        registryMavenConfig.setRepository(mavenRepo);
+        final RegistryMavenRepoConfig.Mutable mavenRepo = RegistryMavenRepoConfig.builder();
         mavenRepo.setId(mavenConfig.getRegistryId());
         mavenRepo.setUrl(mavenConfig.getRegistryUrl());
-        return qer;
+        registryMavenConfig.setRepository(mavenRepo.build());
+        qer.setMaven(registryMavenConfig.build());
+        return qer.build();
     }
 }

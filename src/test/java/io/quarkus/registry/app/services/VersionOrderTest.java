@@ -1,21 +1,22 @@
 package io.quarkus.registry.app.services;
 
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+
 import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
 
-import io.quarkus.registry.app.model.Platform;
-import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.PlatformStream;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
+import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class VersionOrderTest {

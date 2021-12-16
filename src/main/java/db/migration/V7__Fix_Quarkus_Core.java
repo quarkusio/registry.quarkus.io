@@ -1,16 +1,18 @@
 package db.migration;
 
+import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.catalog.json.JsonCatalogMapperHelper;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 
-import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.catalog.CatalogMapperHelper;
 
 /**
  * Quarkus core version column in ExtensionRelease table was always being set to 0.0.0.0
@@ -37,7 +39,7 @@ public class V7__Fix_Quarkus_Core extends BaseJavaMigration {
     }
 
     private String extractQuarkusCore(String json) throws Exception {
-        JsonNode jsonNode = JsonCatalogMapperHelper.mapper().readTree(json);
+        JsonNode jsonNode = CatalogMapperHelper.mapper().readTree(json);
         String quarkusCore = jsonNode.path(MD_BUILT_WITH_QUARKUS_CORE).textValue();
         // Some extensions were published using the full GAV
         if (quarkusCore == null) {

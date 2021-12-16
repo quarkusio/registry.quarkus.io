@@ -1,19 +1,20 @@
 package io.quarkus.registry.app.services;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+
 import java.util.Map;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.junit.jupiter.api.Test;
+
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 
 @QuarkusTest
 @QuarkusTestResource(value = CustomGroupMavenResourceTest.CustomRegistryTestResource.class, restrictToAnnotatedClass = true)
@@ -42,8 +43,7 @@ public class CustomGroupMavenResourceTest {
                     "quarkus.registry.non-platform-extensions.support", "false",
                     "quarkus.registry.quarkus-versions.expression", "[2.1.0.Final,)",
                     "quarkus.registry.quarkus-versions.exclusive-provider", "true",
-                    "quarkus.registry.id", "custom"
-            );
+                    "quarkus.registry.id", "custom");
         }
 
         @Override

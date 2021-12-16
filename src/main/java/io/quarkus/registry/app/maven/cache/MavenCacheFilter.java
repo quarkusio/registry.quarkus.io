@@ -29,7 +29,8 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
 
     private static final Logger log = Logger.getLogger(MavenCacheFilter.class);
 
-    @Inject MavenCache mavenCache;
+    @Inject
+    MavenCache mavenCache;
 
     @ConfigProperty(name = "maven.cache.path", defaultValue = "/maven")
     Instance<String> pathToCache;
@@ -39,7 +40,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
 
     @ConfigProperty(name = "maven.cache.enabled", defaultValue = "true")
     Instance<Boolean> enabled;
-    
+
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         if (isMavenGetRequest(containerRequestContext) && enabled.get()) {
@@ -66,9 +67,9 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
             throws IOException {
         if (isMavenGetRequest(containerRequestContext) && !isCachedResponse(containerResponseContext)
                 && containerResponseContext.getStatus() == 200) {
-            
+
             MavenResponse mavenResponse = toMavenResponse(containerResponseContext);
-            
+
             if (enabled.get()) {
                 String path = containerRequestContext.getUriInfo().getPath();
                 log.debug("Caching [" + path + "]");

@@ -12,10 +12,11 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
+
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 @Entity
 @Cacheable
