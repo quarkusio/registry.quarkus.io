@@ -8,6 +8,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.fasterxml.jackson.jaxrs.yaml.JacksonYAMLProvider;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 
+import io.quarkus.registry.app.jackson.ExtensionCatalogMixin;
+import io.quarkus.registry.app.jackson.ExtensionMixin;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 
 /**
@@ -22,6 +24,8 @@ public class YAMLProvider extends JacksonYAMLProvider {
 
     static {
         CatalogMapperHelper.initMapper(mapper);
+        mapper.addMixIn(io.quarkus.registry.catalog.ExtensionCatalog.class, ExtensionCatalogMixin.class);
+        mapper.addMixIn(io.quarkus.registry.catalog.Extension.class, ExtensionMixin.class);
     }
 
     public YAMLProvider() {
