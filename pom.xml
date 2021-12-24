@@ -18,7 +18,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
-    <quarkus.version>2.6.0.Final</quarkus.version>
+    <quarkus.version>2.6.1.Final</quarkus.version>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
     <formatter.plugin.version>2.17.1</formatter.plugin.version>
     <impsort.plugin.version>1.6.2</impsort.plugin.version>
