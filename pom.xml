@@ -19,6 +19,7 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
+    <quarkus-logging-sentry.version>1.0.2</quarkus-logging-sentry.version>
     <quarkus.version>2.6.2.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
@@ -99,6 +100,11 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.loggingsentry</groupId>
+      <artifactId>quarkus-logging-sentry</artifactId>
+      <version>${quarkus-logging-sentry.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
