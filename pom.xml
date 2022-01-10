@@ -1,27 +1,25 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jboss</groupId>
     <artifactId>jboss-parent</artifactId>
     <version>39</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <groupId>io.quarkus.registry</groupId>
   <artifactId>quarkus-registry-app</artifactId>
   <version>${revision}</version>
   <properties>
-    <version.compiler.plugin>3.8.1</version.compiler.plugin>
+    <formatter.plugin.version>2.17.1</formatter.plugin.version>
+    <impsort.plugin.version>1.6.2</impsort.plugin.version>
+    <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
+    <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
-    <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
-    <quarkus.version>2.6.1.Final</quarkus.version>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
-    <formatter.plugin.version>2.17.1</formatter.plugin.version>
-    <impsort.plugin.version>1.6.2</impsort.plugin.version>
+    <quarkus.version>2.6.2.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
   <dependencyManagement>
@@ -121,8 +119,8 @@
   <build>
     <resources>
       <resource>
-        <directory>src/main/resources</directory>
         <filtering>true</filtering>
+        <directory>src/main/resources</directory>
         <excludes>
           <exclude>**/favicon.ico</exclude>
         </excludes>
@@ -133,6 +131,14 @@
         <groupId>net.revelc.code.formatter</groupId>
         <artifactId>formatter-maven-plugin</artifactId>
         <version>${formatter.plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
         <dependencies>
           <dependency>
             <groupId>io.quarkus</groupId>
@@ -144,24 +150,11 @@
           <configFile>eclipse-format.xml</configFile>
           <lineEnding>LF</lineEnding>
         </configuration>
-        <executions>
-          <execution>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>format</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>net.revelc.code</groupId>
         <artifactId>impsort-maven-plugin</artifactId>
         <version>${impsort.plugin.version}</version>
-        <configuration>
-          <groups>java.,javax.,org.,com.</groups>
-          <staticGroups>*</staticGroups>
-          <removeUnused>true</removeUnused>
-        </configuration>
         <executions>
           <execution>
             <id>sort-imports</id>
@@ -170,6 +163,11 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <groups>java.,javax.,org.,com.</groups>
+          <staticGroups>*</staticGroups>
+          <removeUnused>true</removeUnused>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
@@ -197,13 +195,11 @@
         <configuration>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-            <!--suppress UnresolvedMavenProperty -->
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>11</source>
@@ -234,7 +230,6 @@
                   <systemPropertyVariables>
                     <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                     <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                    <!--suppress UnresolvedMavenProperty -->
                     <maven.home>${maven.home}</maven.home>
                   </systemPropertyVariables>
                 </configuration>
