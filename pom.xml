@@ -20,6 +20,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
     <quarkus-logging-sentry.version>1.0.2</quarkus-logging-sentry.version>
+    <quarkus-logging-splunk.version>2.1.0</quarkus-logging-splunk.version>
     <quarkus.version>2.6.2.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
   </properties>
@@ -105,6 +106,11 @@
       <groupId>io.quarkiverse.loggingsentry</groupId>
       <artifactId>quarkus-logging-sentry</artifactId>
       <version>${quarkus-logging-sentry.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.logging.splunk</groupId>
+      <artifactId>quarkus-logging-splunk</artifactId>
+      <version>${quarkus-logging-splunk.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
