@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
+import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
@@ -77,6 +78,12 @@ class DatabaseRegistryClientTest {
                 extensionRelease.version = "1.1.0";
                 extensionRelease.quarkusCoreVersion = "2.1.0.Final";
                 extensionRelease.persist();
+
+                ExtensionReleaseCompatibility erc = new ExtensionReleaseCompatibility();
+                erc.extensionRelease = extensionRelease;
+                erc.quarkusCoreVersion = "2.0.0.Final";
+                erc.compatible = true;
+                erc.persist();
             }
         }
     }
@@ -109,18 +116,19 @@ class DatabaseRegistryClientTest {
     }
 
     @Test
-    void should_return_only_extensions_matching_at_least_the_requested_quarkus_core() {
+    void should_return_only_extensions_matching_compatible_quarkus_core() {
         given()
                 .get("/client/non-platform-extensions?v=2.0.0.Final")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
-                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.0.0"));
+                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.1.0"));
     }
 
     @AfterEach
     @Transactional
     void cleanUpDatabase() {
         PlatformExtension.deleteAll();
+        ExtensionReleaseCompatibility.deleteAll();
         ExtensionRelease.deleteAll();
         Extension.deleteAll();
         PlatformRelease.deleteAll();

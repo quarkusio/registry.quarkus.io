@@ -24,11 +24,15 @@ import io.quarkus.registry.app.util.Version;
 @Entity
 @NamedQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = "from ExtensionRelease ext " +
         "where ext.platforms is empty " +
-        "and ext.quarkusCoreVersionSortable <= :quarkusCore " +
         "and (ext.versionSortable) = (" +
         "    select max(ext2.versionSortable) from ExtensionRelease ext2" +
         "    where ext2.extension = ext.extension " +
-        "    and ext2.quarkusCoreVersionSortable <= :quarkusCore" +
+        "    and (" +
+        "           (ext2.quarkusCoreVersionSortable <= :quarkusCoreSortable) " +
+        "        or ((select erc.compatible " +
+        "             from ExtensionReleaseCompatibility erc " +
+        "               where erc.extensionRelease = ext2 and erc.quarkusCoreVersion = :quarkusCore) is true)" +
+        "        )" +
         ") ")
 public class ExtensionRelease extends BaseEntity {
 
@@ -100,7 +104,8 @@ public class ExtensionRelease extends BaseEntity {
 
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
         return getEntityManager().createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
-                .setParameter("quarkusCore", Version.toSortable(quarkusCore))
+                .setParameter("quarkusCoreSortable", Version.toSortable(quarkusCore))
+                .setParameter("quarkusCore", quarkusCore)
                 .getResultList();
     }
 
