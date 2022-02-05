@@ -66,6 +66,8 @@ objects:
                   value: ${QUARKUS_REGISTRY_GROUPID}
                 - name: QUARKUS_REGISTRY_MAVEN_REPO_URL
                   value: ${QUARKUS_REGISTRY_MAVEN_REPO_URL}
+                - name: QUARKUS_REGISTRY_CACHE_CRON
+                  value: ${QUARKUS_REGISTRY_CACHE_CRON}
                 - name: QUARKUS_DATASOURCE_USERNAME
                   valueFrom:
                     secretKeyRef:
@@ -81,8 +83,15 @@ objects:
                 - name: TOKEN
                   valueFrom:
                     secretKeyRef:
-                      name: quarkus-registry-token
-                      key: token
+                      name: secrets
+                      key: access-token
+                - name: QUARKUS_LOG_SENTRY_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      name: secrets
+                      key: sentry-dsn
+                      optional: true
+
       triggers:
         - type: ConfigChange
   - kind: Service
@@ -108,6 +117,7 @@ parameters:
   - name: QUARKUS_REGISTRY_ID
   - name: QUARKUS_REGISTRY_GROUPID
   - name: QUARKUS_REGISTRY_MAVEN_REPO_URL
+  - name: QUARKUS_REGISTRY_CACHE_CRON
   - name: IMAGE
     value: quay.io/quarkus/registry-app
     required: true
