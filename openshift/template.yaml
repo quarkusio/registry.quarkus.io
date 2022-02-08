@@ -54,17 +54,17 @@ objects:
                   cpu: ${CPU_LIMIT}
                   memory: ${MEMORY_LIMIT}
               env:
-                - name: REGISTRY_DATASOURCE_HOST
+                - name: REGISTRY_DB_HOST
                   valueFrom:
                     secretKeyRef:
                       name: registry-db
                       key: db.host
-                - name: REGISTRY_DATASOURCE_PORT
+                - name: REGISTRY_DB_PORT
                   valueFrom:
                     secretKeyRef:
                       name: registry-db
                       key: db.port
-                - name: REGISTRY_DATASOURCE_NAME
+                - name: REGISTRY_DB_NAME
                   valueFrom:
                     secretKeyRef:
                       name: registry-db
