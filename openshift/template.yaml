@@ -53,24 +53,21 @@ objects:
                 limits:
                   cpu: ${CPU_LIMIT}
                   memory: ${MEMORY_LIMIT}
-              envFrom:
-                - configMapRef:
-                    name: registry-quarkus
               env:
                 - name: REGISTRY_DATASOURCE_HOST
                   valueFrom:
                     secretKeyRef:
-                      name: registry-quarkus-redhat-rds
+                      name: registry-db
                       key: db.host
                 - name: REGISTRY_DATASOURCE_PORT
                   valueFrom:
                     secretKeyRef:
-                      name: registry-quarkus-redhat-rds
+                      name: registry-db
                       key: db.port
                 - name: REGISTRY_DATASOURCE_NAME
                   valueFrom:
                     secretKeyRef:
-                      name: registry-quarkus-redhat-rds
+                      name: registry-db
                       key: db.name
                 - name: QUARKUS_DATASOURCE_JDBC_URL
                   value: 'jdbc:postgresql://${REGISTRY_DB_HOST}:${REGISTRY_DB_PORT}/${REGISTRY_DB_NAME}?ssl=true&sslmode=verify-full&sslrootcert=/etc/rds-certs/rds-cacert'
@@ -95,6 +92,20 @@ objects:
                       name: secrets
                       key: sentry-dsn
                       optional: true
+                - name: QUARKUS_REGISTRY_ID
+                  value: ${QUARKUS_REGISTRY_ID}
+                - name: QUARKUS_REGISTRY_GROUPID
+                  value: ${QUARKUS_REGISTRY_GROUPID}
+                - name: QUARKUS_REGISTRY_MAVEN_REPO_URL
+                  value: ${QUARKUS_REGISTRY_MAVEN_REPO_URL}
+                - name: QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXPRESSION
+                  value: ${QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXPRESSION}
+                - name: QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXCLUSIVE_PROVIDER
+                  value: ${QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXCLUSIVE_PROVIDER}
+                - name: QUARKUS_REGISTRY_NON_PLATFORM_EXTENSIONS_SUPPORT
+                  value: ${QUARKUS_REGISTRY_NON_PLATFORM_EXTENSIONS_SUPPORT}
+                - name: QUARKUS_REGISTRY_CACHE_CRON
+                  value: ${QUARKUS_REGISTRY_CACHE_CRON}
       triggers:
         - type: ConfigChange
   - kind: Service
@@ -114,6 +125,13 @@ objects:
       sessionAffinity: None
       type: ClusterIP
 parameters:
+  - name: QUARKUS_REGISTRY_ID
+  - name: QUARKUS_REGISTRY_GROUPID
+  - name: QUARKUS_REGISTRY_MAVEN_REPO_URL
+  - name: QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXPRESSION
+  - name: QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXCLUSIVE_PROVIDER
+  - name: QUARKUS_REGISTRY_NON_PLATFORM_EXTENSIONS_SUPPORT
+  - name: QUARKUS_REGISTRY_CACHE_CRON
   - name: IMAGE
     value: quay.io/quarkus/registry-app
     required: true
