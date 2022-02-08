@@ -74,12 +74,12 @@ objects:
                 - name: QUARKUS_DATASOURCE_USERNAME
                   valueFrom:
                     secretKeyRef:
-                      name: registry-quarkus-redhat-rds
+                      name: registry-db
                       key: db.user
                 - name: QUARKUS_DATASOURCE_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: registry-quarkus-redhat-rds
+                      name: registry-db
                       key: db.password
                 - name: TOKEN
                   valueFrom:
