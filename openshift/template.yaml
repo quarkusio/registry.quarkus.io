@@ -57,6 +57,23 @@ objects:
                 - configMapRef:
                     name: registry-quarkus
               env:
+                - name: REGISTRY_DATASOURCE_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: registry-quarkus-redhat-rds
+                      key: db.host
+                - name: REGISTRY_DATASOURCE_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: registry-quarkus-redhat-rds
+                      key: db.port
+                - name: REGISTRY_DATASOURCE_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: registry-quarkus-redhat-rds
+                      key: db.name
+                - name: QUARKUS_DATASOURCE_JDBC_URL
+                  value: 'jdbc:postgresql://${REGISTRY_DB_HOST}:${REGISTRY_DB_PORT}/${REGISTRY_DB_NAME}?ssl=true&sslmode=verify-full&sslrootcert=/etc/rds-certs/rds-cacert'
                 - name: QUARKUS_DATASOURCE_USERNAME
                   valueFrom:
                     secretKeyRef:
