@@ -70,7 +70,7 @@ objects:
                       name: registry-db
                       key: db.name
                 - name: QUARKUS_DATASOURCE_JDBC_URL
-                  value: 'jdbc:postgresql://${REGISTRY_DB_HOST}:${REGISTRY_DB_PORT}/${REGISTRY_DB_NAME}?ssl=true&sslmode=verify-full&sslrootcert=/etc/rds-certs/rds-cacert'
+                  value: 'jdbc:postgresql://${REGISTRY_DB_HOST}:${REGISTRY_DB_PORT}/${REGISTRY_DB_NAME}'
                 - name: QUARKUS_DATASOURCE_USERNAME
                   valueFrom:
                     secretKeyRef:
