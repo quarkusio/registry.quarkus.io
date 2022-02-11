@@ -1,5 +1,7 @@
 ## Stage 1 : build with maven builder image
 FROM quay.io/quarkus/ubi-quarkus-native-image:22.0-java11 AS build
+ARG MAVEN_BUILD_EXTRA_ARGS=
+RUN echo "$MAVEN_BUILD_EXTRA_ARGS"
 COPY --chown=quarkus:quarkus mvnw /code/mvnw
 COPY --chown=quarkus:quarkus .mvn /code/.mvn
 COPY --chown=quarkus:quarkus pom.xml /code/
@@ -7,7 +9,7 @@ USER quarkus
 WORKDIR /code
 RUN ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
 COPY src /code/src
-RUN ./mvnw -ntp package -Pnative -DskipTests
+RUN ./mvnw -ntp package -Pnative -DskipTests $MAVEN_BUILD_EXTRA_ARGS
 
 ## Stage 2 : create the docker final image
 FROM quay.io/quarkus/quarkus-micro-image:1.0
