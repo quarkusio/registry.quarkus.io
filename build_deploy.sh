@@ -7,7 +7,7 @@ GIT_REV_SHORT=$(git rev-parse --short=7 HEAD)
 IMAGE=${IMAGE-"quay.io/app-sre/registry-quarkus-redhat-app"}
 IMAGE_TAG=${IMAGE_TAG-$GIT_REV_SHORT}
 
-docker build --compress -f src/main/docker/Dockerfile.multistage --build-arg MAVEN_BUILD_EXTRA_ARGS="-Dgit.commit.id=$GIT_REV" -t "${IMAGE}:${IMAGE_TAG}" .
+docker build --compress -f src/main/docker/Dockerfile.multistage --build-arg MAVEN_BUILD_EXTRA_ARGS="-Dgit.commit.id=$GIT_REV -DbuildNumber=$GIT_REV_SHORT" -t "${IMAGE}:${IMAGE_TAG}" .
 
 if [[ -n "$QUAY_USER" && -n "$QUAY_TOKEN" ]]; then
     DOCKER_CONF="$PWD/.docker"
