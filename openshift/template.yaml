@@ -86,12 +86,6 @@ objects:
                     secretKeyRef:
                       name: secrets
                       key: access-token
-                - name: QUARKUS_LOG_SENTRY_DSN
-                  valueFrom:
-                    secretKeyRef:
-                      name: secrets
-                      key: sentry-dsn
-                      optional: true
                 - name: QUARKUS_REGISTRY_ID
                   value: ${QUARKUS_REGISTRY_ID}
                 - name: QUARKUS_REGISTRY_GROUPID
@@ -108,6 +102,16 @@ objects:
                   value: ${QUARKUS_REGISTRY_CACHE_CRON}
                 - name: QUARKUS_DEFAULT_PLATFORM
                   value: ${QUARKUS_DEFAULT_PLATFORM}
+                - name: QUARKUS_LOG_SENTRY
+                  value: ${QUARKUS_LOG_SENTRY}
+                - name: QUARKUS_LOG_SENTRY_ENVIRONMENT
+                  value: ${QUARKUS_REGISTRY_ENVIRONMENT}
+                - name: QUARKUS_LOG_SENTRY_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      name: secrets
+                      key: sentry-dsn
+                      optional: true
       triggers:
         - type: ConfigChange
   - kind: Service
@@ -134,7 +138,10 @@ parameters:
   - name: QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXCLUSIVE_PROVIDER
   - name: QUARKUS_REGISTRY_NON_PLATFORM_EXTENSIONS_SUPPORT
   - name: QUARKUS_REGISTRY_CACHE_CRON
+  - name: QUARKUS_REGISTRY_ENVIRONMENT
   - name: QUARKUS_DEFAULT_PLATFORM
+  - name: QUARKUS_LOG_SENTRY
+    value: "false"
   - name: IMAGE
     value: quay.io/quarkus/registry-app
     required: true
