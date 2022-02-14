@@ -39,4 +39,12 @@ public class R__Define_Default_Platform extends BaseJavaMigration {
             stmt.executeUpdate();
         }
     }
+
+    /**
+     * Always execute this migration
+     */
+    @Override
+    public Integer getChecksum() {
+        return (int) System.currentTimeMillis();
+    }
 }
