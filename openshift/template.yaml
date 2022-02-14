@@ -106,6 +106,8 @@ objects:
                   value: ${QUARKUS_REGISTRY_NON_PLATFORM_EXTENSIONS_SUPPORT}
                 - name: QUARKUS_REGISTRY_CACHE_CRON
                   value: ${QUARKUS_REGISTRY_CACHE_CRON}
+                - name: QUARKUS_DEFAULT_PLATFORM
+                  value: ${QUARKUS_DEFAULT_PLATFORM}
       triggers:
         - type: ConfigChange
   - kind: Service
@@ -132,6 +134,7 @@ parameters:
   - name: QUARKUS_REGISTRY_QUARKUS_VERSIONS_EXCLUSIVE_PROVIDER
   - name: QUARKUS_REGISTRY_NON_PLATFORM_EXTENSIONS_SUPPORT
   - name: QUARKUS_REGISTRY_CACHE_CRON
+  - name: QUARKUS_DEFAULT_PLATFORM
   - name: IMAGE
     value: quay.io/quarkus/registry-app
     required: true
