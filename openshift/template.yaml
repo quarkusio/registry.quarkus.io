@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: quarkus-registry
+  name: registry-quarkus
 objects:
   - apiVersion: v1
     kind: DeploymentConfig
     metadata:
-      name: quarkus-registry
+      name: registry-quarkus
     spec:
       replicas: ${{REPLICAS}}
       selector:
-        service: quarkus-registry
+        service: registry-quarkus
       strategy:
         rollingParams:
           intervalSeconds: 1
@@ -22,7 +22,7 @@ objects:
       template:
         metadata:
           labels:
-            service: quarkus-registry
+            service: registry-quarkus
         spec:
           serviceAccount: ${SERVICE_ACCOUNT}
           serviceAccountName: ${SERVICE_ACCOUNT}
@@ -112,8 +112,8 @@ objects:
     apiVersion: v1
     metadata:
       labels:
-        service: quarkus-registry
-      name: quarkus-registry
+        service: registry-quarkus
+      name: registry-quarkus
     spec:
       ports:
         - name: '8080'
@@ -121,7 +121,7 @@ objects:
           protocol: TCP
           targetPort: 8080
       selector:
-        service: quarkus-registry
+        service: registry-quarkus
       sessionAffinity: None
       type: ClusterIP
 parameters:
