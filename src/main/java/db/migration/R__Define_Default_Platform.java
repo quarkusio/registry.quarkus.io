@@ -41,10 +41,12 @@ public class R__Define_Default_Platform extends BaseJavaMigration {
     }
 
     /**
-     * Always execute this migration
+     * Execute the migration only if the platform changes
      */
     @Override
     public Integer getChecksum() {
-        return (int) System.currentTimeMillis();
+        String defaultPlatform = ConfigProvider.getConfig().getOptionalValue("QUARKUS_DEFAULT_PLATFORM",
+                String.class).orElse(null);
+        return defaultPlatform == null ? null : defaultPlatform.hashCode();
     }
 }
