@@ -278,7 +278,6 @@ class AdminApiTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
-                .log().body()
                 .body("platforms[0].streams", hasSize(2),
                         "platforms[0].current-stream-id", is("10.0"));
 
@@ -294,7 +293,6 @@ class AdminApiTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
-                .log().body()
                 .body("platforms[0].streams", hasSize(1),
                         "platforms[0].current-stream-id", is("9.0"));
 
