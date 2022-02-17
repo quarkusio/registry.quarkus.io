@@ -36,7 +36,7 @@ public class NonPlatformExtensionsContentProvider implements ArtifactContentProv
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
         String quarkusVersion = artifact.getClassifier();
-        ExtensionCatalog catalog = registryClient.resolveNonPlatformExtensions(quarkusVersion);
+        ExtensionCatalog catalog = registryClient.resolveNonPlatformExtensionsCatalog(quarkusVersion);
 
         StringWriter sw = new StringWriter();
         CatalogMapperHelper.serialize(objectMapper, catalog, sw);

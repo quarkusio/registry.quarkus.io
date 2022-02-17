@@ -2,6 +2,7 @@ package io.quarkus.registry.app;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.net.HttpURLConnection;
 
@@ -21,6 +22,7 @@ import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 
 @QuarkusTest
 class DatabaseRegistryClientTest {
@@ -122,6 +124,18 @@ class DatabaseRegistryClientTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.1.0"));
+    }
+
+    @Test
+    void should_return_all_platforms_with_current_stream_id() {
+        given()
+                .get("/client/platforms/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms", hasSize(1),
+                        "platforms[0].streams", hasSize(2),
+                        "platforms[0].current-stream-id", is("2.0"));
     }
 
     @AfterEach
