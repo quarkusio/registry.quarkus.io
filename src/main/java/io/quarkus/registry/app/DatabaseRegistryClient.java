@@ -44,9 +44,17 @@ public class DatabaseRegistryClient {
     MavenConfig mavenConfig;
 
     @GET
-    @Path("platforms")
+    @Path("/platforms/all")
     @Produces(MediaType.APPLICATION_JSON)
-    public PlatformCatalog resolvePlatforms(@QueryParam("v") String version) {
+    public PlatformCatalog resolveAllPlatforms() {
+        List<PlatformRelease> platformReleases = PlatformRelease.findAll().list();
+        return toPlatformCatalog(platformReleases);
+    }
+
+    @GET
+    @Path("/platforms")
+    @Produces(MediaType.APPLICATION_JSON)
+    public PlatformCatalog resolveCurrentPlatformsCatalog(@QueryParam("v") String version) {
         if (version != null && !version.isBlank()) {
             Version.validateVersion(version);
         }
@@ -54,33 +62,13 @@ public class DatabaseRegistryClient {
         if (platformReleases.isEmpty()) {
             return null;
         }
-        PlatformCatalog.Mutable catalog = PlatformCatalog.builder();
-        platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
-        for (PlatformRelease platformRelease : platformReleases) {
-            PlatformStream platformStream = platformRelease.platformStream;
-            Platform platform = platformStream.platform;
-
-            io.quarkus.registry.catalog.PlatformStream.Mutable clientPlatformStream = toClientPlatformStream(platformStream);
-            clientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
-
-            io.quarkus.registry.catalog.Platform clientPlatform = catalog.getPlatform(platform.platformKey);
-            if (clientPlatform == null) {
-                catalog.addPlatform(toClientPlatform(platform)
-                        .addStream(clientPlatformStream.build())
-                        .build());
-            } else {
-                catalog.addPlatform(clientPlatform.mutable()
-                        .addStream(clientPlatformStream.build())
-                        .build());
-            }
-        }
-        return catalog.build();
+        return toPlatformCatalog(platformReleases);
     }
 
     @GET
-    @Path("non-platform-extensions")
+    @Path("/non-platform-extensions")
     @Produces(MediaType.APPLICATION_JSON)
-    public ExtensionCatalog resolveNonPlatformExtensions(
+    public ExtensionCatalog resolveNonPlatformExtensionsCatalog(
             @NotNull(message = "quarkusVersion is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
         ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
@@ -123,6 +111,30 @@ public class DatabaseRegistryClient {
         // Add all categories
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        return catalog.build();
+    }
+
+    private PlatformCatalog toPlatformCatalog(List<PlatformRelease> platformReleases) {
+        PlatformCatalog.Mutable catalog = PlatformCatalog.builder();
+        platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
+        for (PlatformRelease platformRelease : platformReleases) {
+            PlatformStream platformStream = platformRelease.platformStream;
+            Platform platform = platformStream.platform;
+
+            io.quarkus.registry.catalog.PlatformStream.Mutable clientPlatformStream = toClientPlatformStream(platformStream);
+            clientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
+
+            io.quarkus.registry.catalog.Platform clientPlatform = catalog.getPlatform(platform.platformKey);
+            io.quarkus.registry.catalog.PlatformStream stream = clientPlatformStream.build();
+            io.quarkus.registry.catalog.Platform.Mutable thisClientPlatform;
+            if (clientPlatform == null) {
+                thisClientPlatform = toClientPlatform(platform);
+                thisClientPlatform.getMetadata().put("current-stream-id", stream.getId());
+            } else {
+                thisClientPlatform = clientPlatform.mutable();
+            }
+            catalog.addPlatform(thisClientPlatform.addStream(stream).build());
+        }
         return catalog.build();
     }
 
