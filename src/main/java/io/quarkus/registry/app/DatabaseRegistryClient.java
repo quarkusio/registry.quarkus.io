@@ -125,19 +125,18 @@ public class DatabaseRegistryClient {
             clientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
 
             io.quarkus.registry.catalog.Platform clientPlatform = catalog.getPlatform(platform.platformKey);
-            io.quarkus.registry.catalog.PlatformStream stream = clientPlatformStream.build();
             io.quarkus.registry.catalog.Platform.Mutable thisClientPlatform;
             if (clientPlatform == null) {
                 thisClientPlatform = toClientPlatform(platform);
                 Map<String, Object> platformMetadata = thisClientPlatform.getMetadata();
-                platformMetadata.put("current-stream-id", stream.getId());
-                if (all) {
-                    platformMetadata.put("unlisted", platformStream.unlisted);
-                }
+                platformMetadata.put("current-stream-id", clientPlatformStream.getId());
             } else {
                 thisClientPlatform = clientPlatform.mutable();
             }
-            catalog.addPlatform(thisClientPlatform.addStream(stream).build());
+            if (all) {
+                clientPlatformStream.getMetadata().put("unlisted", platformStream.unlisted);
+            }
+            catalog.addPlatform(thisClientPlatform.addStream(clientPlatformStream.build()).build());
         }
         return catalog.build();
     }
