@@ -33,11 +33,13 @@ import io.quarkus.registry.app.util.Version;
                 "   and (pr.platformStream, pr.versionSortable) in (" +
                 "    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2" +
                 "    where pr2.quarkusCoreVersion = ?1 " +
+                "    and pr2.platformStream.unlisted = false " +
                 "    group by pr2.platformStream" +
                 "  ) order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc"),
         @NamedQuery(name = "PlatformRelease.findLatest", query = "from PlatformRelease pr " +
                 "where (pr.platformStream, pr.versionSortable) in (" +
                 "    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2" +
+                "    where pr2.platformStream.unlisted = false " +
                 "    group by pr2.platformStream" +
                 ") order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc")
 })

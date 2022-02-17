@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -75,6 +76,17 @@ class AdminApiTest {
             stream10.platform = platform;
             stream10.streamKey = "10.0";
             stream10.persistAndFlush();
+
+            PlatformStream stream9 = new PlatformStream();
+            stream9.platform = platform;
+            stream9.streamKey = "9.0";
+            stream9.persistAndFlush();
+
+            PlatformRelease release9 = new PlatformRelease();
+            release9.platformStream = stream9;
+            release9.version = "9.0.0.Final";
+            release9.quarkusCoreVersion = "9.0.0.Final";
+            release9.persistAndFlush();
 
             PlatformRelease release201 = new PlatformRelease();
             release201.platformStream = stream10;
@@ -256,6 +268,36 @@ class AdminApiTest {
                 .delete("/admin/v1/extension")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_NOT_ACCEPTABLE);
+    }
+
+    @Test
+    void should_honor_unlisted_platform_stream_flag() {
+
+        given()
+                .get("/client/platforms")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .log().body()
+                .body("platforms[0].streams", hasSize(2),
+                        "platforms[0].current-stream-id", is("10.0"));
+
+        // Setting unlisted=true to 10.0 stream
+        given().formParam("unlisted", "true")
+                .header("Token", "test")
+                .patch("/admin/v1/stream/io.quarkus.platform/10.0")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/platforms")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .log().body()
+                .body("platforms[0].streams", hasSize(1),
+                        "platforms[0].current-stream-id", is("9.0"));
+
     }
 
     @AfterEach
