@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.panache.common.Sort;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -47,7 +48,7 @@ public class DatabaseRegistryClient {
     @Path("/platforms/all")
     @Produces(MediaType.APPLICATION_JSON)
     public PlatformCatalog resolveAllPlatforms() {
-        List<PlatformRelease> platformReleases = PlatformRelease.findAll().list();
+        List<PlatformRelease> platformReleases = PlatformRelease.findAll(Sort.descending("versionSortable")).list();
         return toPlatformCatalog(platformReleases, true);
     }
 
