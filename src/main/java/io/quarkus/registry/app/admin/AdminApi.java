@@ -7,14 +7,18 @@ import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -38,10 +42,12 @@ import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
 import io.quarkus.registry.app.maven.cache.MavenCache;
+import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 
 @ApplicationScoped
@@ -195,6 +201,31 @@ public class AdminApi {
     @SecurityRequirement(name = "Authentication")
     public Response clearCache() {
         cache.clear();
+        return Response.accepted().build();
+    }
+
+    /**
+     * Patches the PlatformStream (eg. set unlisted = true)
+     */
+    @PATCH
+    @Path("/v1/stream/{platformKey}/{streamKey}")
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    public Response patchPlatformStream(
+            @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
+            @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
+            @FormParam("unlisted") boolean unlisted) {
+        Platform platform = Platform.findByKey(platformKey)
+                .orElseThrow(() -> new NotFoundException("Platform not found"));
+        PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
+                .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
+        stream.unlisted = unlisted;
+        try {
+            stream.persist();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
         return Response.accepted().build();
     }
 }

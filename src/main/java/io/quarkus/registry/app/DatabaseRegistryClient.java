@@ -48,7 +48,7 @@ public class DatabaseRegistryClient {
     @Produces(MediaType.APPLICATION_JSON)
     public PlatformCatalog resolveAllPlatforms() {
         List<PlatformRelease> platformReleases = PlatformRelease.findAll().list();
-        return toPlatformCatalog(platformReleases);
+        return toPlatformCatalog(platformReleases, true);
     }
 
     @GET
@@ -62,7 +62,7 @@ public class DatabaseRegistryClient {
         if (platformReleases.isEmpty()) {
             return null;
         }
-        return toPlatformCatalog(platformReleases);
+        return toPlatformCatalog(platformReleases, false);
     }
 
     @GET
@@ -114,7 +114,7 @@ public class DatabaseRegistryClient {
         return catalog.build();
     }
 
-    private PlatformCatalog toPlatformCatalog(List<PlatformRelease> platformReleases) {
+    private PlatformCatalog toPlatformCatalog(List<PlatformRelease> platformReleases, boolean all) {
         PlatformCatalog.Mutable catalog = PlatformCatalog.builder();
         platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
         for (PlatformRelease platformRelease : platformReleases) {
@@ -129,7 +129,11 @@ public class DatabaseRegistryClient {
             io.quarkus.registry.catalog.Platform.Mutable thisClientPlatform;
             if (clientPlatform == null) {
                 thisClientPlatform = toClientPlatform(platform);
-                thisClientPlatform.getMetadata().put("current-stream-id", stream.getId());
+                Map<String, Object> platformMetadata = thisClientPlatform.getMetadata();
+                platformMetadata.put("current-stream-id", stream.getId());
+                if (all) {
+                    platformMetadata.put("unlisted", platformStream.unlisted);
+                }
             } else {
                 thisClientPlatform = clientPlatform.mutable();
             }
