@@ -11,19 +11,22 @@
   <artifactId>quarkus-registry-app</artifactId>
   <version>${revision}</version>
   <properties>
+    <assertj.version>3.22.0</assertj.version>
     <formatter.plugin.version>2.17.1</formatter.plugin.version>
     <impsort.plugin.version>1.6.2</impsort.plugin.version>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
-    <maven.compiler.parameters>true</maven.compiler.parameters>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <assertj.version>3.22.0</assertj.version>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
     <quarkus-logging-sentry.version>1.0.2</quarkus-logging-sentry.version>
     <quarkus-logging-splunk.version>2.1.0</quarkus-logging-splunk.version>
     <quarkus.version>2.7.1.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
+
+    <!-- Set Java version -->
+    <maven.compiler.parameters>true</maven.compiler.parameters>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -254,6 +257,7 @@
       </build>
       <properties>
         <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.builder-image>quay.io/quarkus/ubi-quarkus-native-image:22.0-java${maven.compiler.release}</quarkus.native.builder-image>
       </properties>
     </profile>
   </profiles>
