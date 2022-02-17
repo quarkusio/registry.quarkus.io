@@ -122,22 +122,28 @@ public class DatabaseRegistryClient {
             PlatformStream platformStream = platformRelease.platformStream;
             Platform platform = platformStream.platform;
 
-            io.quarkus.registry.catalog.PlatformStream.Mutable clientPlatformStream = toClientPlatformStream(platformStream);
-            clientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
-
             io.quarkus.registry.catalog.Platform clientPlatform = catalog.getPlatform(platform.platformKey);
-            io.quarkus.registry.catalog.Platform.Mutable thisClientPlatform;
+            io.quarkus.registry.catalog.Platform.Mutable mutableClientPlatform;
+
             if (clientPlatform == null) {
-                thisClientPlatform = toClientPlatform(platform);
-                Map<String, Object> platformMetadata = thisClientPlatform.getMetadata();
-                platformMetadata.put("current-stream-id", clientPlatformStream.getId());
+                mutableClientPlatform = toClientPlatform(platform);
+                mutableClientPlatform.getMetadata().put("current-stream-id", platformStream.streamKey);
             } else {
-                thisClientPlatform = clientPlatform.mutable();
+                mutableClientPlatform = clientPlatform.mutable();
             }
+            io.quarkus.registry.catalog.PlatformStream clientPlatformStream = mutableClientPlatform
+                    .getStream(platformStream.streamKey);
+            io.quarkus.registry.catalog.PlatformStream.Mutable mutableClientPlatformStream;
+            if (clientPlatformStream == null) {
+                mutableClientPlatformStream = toClientPlatformStream(platformStream);
+            } else {
+                mutableClientPlatformStream = clientPlatformStream.mutable();
+            }
+            mutableClientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
             if (all) {
-                clientPlatformStream.getMetadata().put("unlisted", platformStream.unlisted);
+                mutableClientPlatformStream.getMetadata().put("unlisted", platformStream.unlisted);
             }
-            catalog.addPlatform(thisClientPlatform.addStream(clientPlatformStream.build()).build());
+            catalog.addPlatform(mutableClientPlatform.addStream(mutableClientPlatformStream.build()).build());
         }
         return catalog.build();
     }
