@@ -12,6 +12,7 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
@@ -53,6 +54,7 @@ public class MavenResource {
 
     @GET
     @Path("{path:.+}")
+    @Operation(hidden = true)
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
             @Context UriInfo uriInfo) {
