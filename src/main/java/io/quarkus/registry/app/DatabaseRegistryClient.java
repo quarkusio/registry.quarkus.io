@@ -15,6 +15,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import io.quarkus.maven.ArtifactCoords;
@@ -47,6 +48,7 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/platforms/all")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "List all platform releases from the database")
     public PlatformCatalog resolveAllPlatforms() {
         List<PlatformRelease> platformReleases = PlatformRelease.findAll(Sort.descending("versionSortable")).list();
         return toPlatformCatalog(platformReleases, true);
@@ -55,6 +57,7 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/platforms")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "List only the 2 latest platform releases")
     public PlatformCatalog resolveCurrentPlatformsCatalog(@QueryParam("v") String version) {
         if (version != null && !version.isBlank()) {
             Version.validateVersion(version);
@@ -69,8 +72,9 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/non-platform-extensions")
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "List all non-platform extensions compatible with a given Quarkus version")
     public ExtensionCatalog resolveNonPlatformExtensionsCatalog(
-            @NotNull(message = "quarkusVersion is missing") @QueryParam("v") String quarkusVersion) {
+            @NotNull(message = "The Quarkus version (v) is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
         ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
         String id = new ArtifactCoords(nonPlatformExtensionCoords.getGroupId(),
@@ -84,7 +88,7 @@ public class DatabaseRegistryClient {
         catalog.setBom(ArtifactCoords.pom("io.quarkus.platform", "quarkus-bom", quarkusVersion));
         catalog.setQuarkusCoreVersion(quarkusVersion);
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
-        Map<Long, Boolean> compatiblityMap = ExtensionReleaseCompatibility.findCompatibleMap(quarkusVersion);
+        Map<Long, Boolean> compatibleMap = ExtensionReleaseCompatibility.findCompatibleMap(quarkusVersion);
         for (ExtensionRelease extensionRelease : nonPlatformExtensions) {
             Extension.Mutable extension = toClientExtension(extensionRelease, catalog);
             // Add compatibility info
@@ -104,7 +108,7 @@ public class DatabaseRegistryClient {
             if (quarkusVersion.equals(extensionQuarkusCore)) {
                 compatibility = Boolean.TRUE;
             } else {
-                compatibility = compatiblityMap.get(extensionRelease.id);
+                compatibility = compatibleMap.get(extensionRelease.id);
             }
             extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
             catalog.addExtension(extension.build());
