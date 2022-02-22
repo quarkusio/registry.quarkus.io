@@ -106,7 +106,7 @@ public class AdminApi {
         if (extensionRelease.isPresent()) {
             return Response.status(Response.Status.CONFLICT).build();
         }
-        Log.infof("Adding extension %s", abbreviate(extension.toString(), MAX_ABBREVIATION_WIDTH));
+        Log.infof("Adding extension %s", abbreviate(String.valueOf(extension.getArtifact()), MAX_ABBREVIATION_WIDTH));
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         adminService.onExtensionCreate(event);
         return Response.accepted(bom).build();
