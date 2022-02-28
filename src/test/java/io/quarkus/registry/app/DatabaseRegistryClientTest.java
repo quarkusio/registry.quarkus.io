@@ -1,6 +1,7 @@
 package io.quarkus.registry.app;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
@@ -135,7 +136,8 @@ class DatabaseRegistryClientTest {
                 .contentType(ContentType.JSON)
                 .body("platforms", hasSize(1),
                         "platforms[0].streams", hasSize(2),
-                        "platforms[0].current-stream-id", is("2.0"));
+                        "platforms[0].streams.id", hasItems("2.1", "2.0"),
+                        "platforms[0].current-stream-id", is("2.1"));
     }
 
     @AfterEach
