@@ -88,7 +88,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
             return true;
         }
 
-        // Secondly Check Last Modified    
+        // Secondly Check Last Modified
         String givenLastModified = containerRequestContext.getHeaderString(IF_MODIFIED_SINCE);
         String cachedLastModified = cachedResponse.getHeaders().get(LAST_MODIFIED);
         return givenLastModified != null && givenLastModified.equals(cachedLastModified);

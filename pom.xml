@@ -19,7 +19,7 @@
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
     <quarkus-logging-sentry.version>1.0.2</quarkus-logging-sentry.version>
     <quarkus-logging-splunk.version>2.1.0</quarkus-logging-splunk.version>
-    <quarkus.version>2.7.2.Final</quarkus.version>
+    <quarkus.version>2.7.3.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
 
     <!-- Set Java version -->
