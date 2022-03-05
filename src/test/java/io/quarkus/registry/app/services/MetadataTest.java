@@ -107,8 +107,6 @@ public class MetadataTest {
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_XML))
                 .extract().body().asString();
-        // Wait a bit before requesting again
-        Thread.sleep(1000);
         String expectedSha1 = HashUtil.sha1(metadata);
         given()
                 .get("/maven/"
