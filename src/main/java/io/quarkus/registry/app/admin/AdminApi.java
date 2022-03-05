@@ -36,6 +36,7 @@ import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import io.quarkus.logging.Log;
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.maven.ArtifactKey;
+import io.quarkus.registry.app.events.ExtensionCatalogDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
@@ -90,6 +91,23 @@ public class AdminApi {
         ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog, pinned);
         adminService.onExtensionCatalogImport(event);
         return Response.accepted(bom).build();
+    }
+
+    @DELETE
+    @Path("/v1/extension/catalog")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @SecurityRequirement(name = "Authentication")
+    @Operation(summary = "Deletes an extension catalog (platform) from the database")
+    @Transactional
+    public Response deleteExtensionCatalog(
+            @NotNull(message = "platformKey is missing") @FormParam("platformKey") String platformKey,
+            @NotNull(message = "version is missing") @FormParam("version") String version) {
+        PlatformRelease platformRelease = PlatformRelease.findByPlatformKey(platformKey, version)
+                .orElseThrow(() -> new NotFoundException("No Platform Release found"));
+        ExtensionCatalogDeleteEvent event = new ExtensionCatalogDeleteEvent(platformRelease);
+        adminService.onExtensionCatalogDelete(event);
+        return Response.accepted().build();
     }
 
     @POST

@@ -11,6 +11,7 @@ import javax.transaction.Transactional;
 
 import io.quarkus.logging.Log;
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.app.events.ExtensionCatalogDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
@@ -95,6 +96,20 @@ public class AdminService {
             DbState.updateUpdatedAt();
         } catch (Exception e) {
             Log.error("Error while deleting extension", e);
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Transactional
+    public void onExtensionCatalogDelete(ExtensionCatalogDeleteEvent event) {
+        try {
+            PlatformRelease platformRelease = event.getPlatformRelease();
+            // Reattach platform release
+            platformRelease = PlatformRelease.getEntityManager().merge(platformRelease);
+            platformRelease.delete();
+            DbState.updateUpdatedAt();
+        } catch (Exception e) {
+            Log.error("Error while deleting extension catalog", e);
             throw new IllegalStateException(e);
         }
     }

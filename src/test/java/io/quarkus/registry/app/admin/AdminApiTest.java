@@ -298,6 +298,25 @@ class AdminApiTest {
 
     }
 
+    @Test
+    void delete_extension_catalog() {
+        // Delete extension version
+        given().formParams("platformKey", "io.quarkus.platform",
+                "version", "10.0.0.Final")
+                .header("Token", "test")
+                .delete("/admin/v1/extension/catalog")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/platforms/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms[0].streams", hasSize(1),
+                        "platforms[0].current-stream-id", is("9.0"));
+    }
+
     @AfterEach
     @Transactional
     void cleanUpDatabase() {
