@@ -255,4 +255,31 @@ public class AdminApi {
         }
         return Response.accepted().build();
     }
+
+    @PATCH
+    @Path("/v1/extension/catalog/{platformKey}/{streamKey}/{version}")
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    @Operation(summary = "Patches a PlatformRelease", description = "Invoke this endpoint when the platform release needs to be set to unlisted")
+    public Response patchPlatformRelease(
+            @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
+            @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
+            @NotNull(message = "version is missing") @PathParam("version") String version,
+            @FormParam("unlisted") boolean unlisted) {
+        Platform platform = Platform.findByKey(platformKey)
+                .orElseThrow(() -> new NotFoundException("Platform not found"));
+        PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
+                .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
+        PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(stream, version)
+                .orElseThrow(() -> new NotFoundException("Platform Release not found"));
+        // Perform changes and persist
+        platformRelease.unlisted = unlisted;
+        try {
+            stream.persist();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
+        return Response.accepted().build();
+    }
 }
