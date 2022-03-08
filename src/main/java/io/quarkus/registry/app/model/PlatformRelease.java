@@ -25,30 +25,37 @@ import io.quarkus.registry.app.util.Version;
 
 @Entity
 @NamedQueries({
-        @NamedQuery(name = "PlatformRelease.findByPlatformKey", query = "select pr from PlatformRelease pr where pr.platformStream.platform.platformKey = ?1 and pr.version = ?2"),
+        @NamedQuery(name = "PlatformRelease.findByPlatformKey", query = """
+                select pr from PlatformRelease pr
+                where pr.platformStream.platform.platformKey = ?1 and pr.version = ?2
+                """),
         @NamedQuery(name = "PlatformRelease.findQuarkusCores", query = """
                 select pr.version from PlatformRelease pr
-                where pr.platformStream.platform.isDefault is true
+                where pr.platformStream.platform.isDefault = true
                 order by pr.versionSortable
                 """),
         @NamedQuery(name = "PlatformRelease.findLatestByQuarkusCoreVersion", query = """
                 select pr from PlatformRelease pr
                 where pr.quarkusCoreVersion = ?1
+                and pr.unlisted = false
                 and (pr.platformStream, pr.versionSortable) in (
                     select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
                         where pr2.quarkusCoreVersion = ?1
                         and pr2.platformStream.unlisted = false
+                        and pr2.unlisted = false
                         group by pr2.platformStream
                 )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """),
         @NamedQuery(name = "PlatformRelease.findLatest", query = """
                   select pr from PlatformRelease pr
-                  where (pr.platformStream, pr.versionSortable) in
+                  where pr.unlisted = false
+                  and (pr.platformStream, pr.versionSortable) in
                       (
                        select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
-                           where pr2.platformStream.unlisted is false
-                               group by pr2.platformStream
+                           where pr2.platformStream.unlisted = false
+                           and pr2.unlisted = false
+                           group by pr2.platformStream
                       )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """)
@@ -75,6 +82,8 @@ public class PlatformRelease extends BaseEntity {
     public String upstreamQuarkusCoreVersion;
 
     public boolean pinned;
+
+    public boolean unlisted;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")

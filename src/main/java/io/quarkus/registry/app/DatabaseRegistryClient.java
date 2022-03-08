@@ -145,7 +145,12 @@ public class DatabaseRegistryClient {
             } else {
                 mutableClientPlatformStream = clientPlatformStream.mutable();
             }
-            mutableClientPlatformStream.addRelease(toClientPlatformRelease(platformRelease));
+            io.quarkus.registry.catalog.PlatformRelease.Mutable mutablePlatformRelease = toClientPlatformRelease(
+                    platformRelease);
+            if (all) {
+                mutablePlatformRelease.getMetadata().put("unlisted", platformRelease.unlisted);
+            }
+            mutableClientPlatformStream.addRelease(mutablePlatformRelease.build());
             if (all) {
                 mutableClientPlatformStream.getMetadata().put("unlisted", platformStream.unlisted);
             }
@@ -188,15 +193,14 @@ public class DatabaseRegistryClient {
                 .setMetadata(platformStream.metadata);
     }
 
-    private io.quarkus.registry.catalog.PlatformRelease toClientPlatformRelease(PlatformRelease platformRelease) {
+    private io.quarkus.registry.catalog.PlatformRelease.Mutable toClientPlatformRelease(PlatformRelease platformRelease) {
         return io.quarkus.registry.catalog.PlatformRelease.builder()
                 .setMemberBoms(platformRelease.memberBoms.stream().map(ArtifactCoords::fromString).collect(
                         Collectors.toList()))
                 .setVersion(PlatformReleaseVersion.fromString(platformRelease.version))
                 .setMetadata(platformRelease.metadata)
                 .setUpstreamQuarkusCoreVersion(platformRelease.upstreamQuarkusCoreVersion)
-                .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion)
-                .build();
+                .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion);
     }
 
     private enum CoreCompatibility {

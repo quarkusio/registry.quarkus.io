@@ -1,8 +1,10 @@
 package io.quarkus.registry.app;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.net.HttpURLConnection;
@@ -62,6 +64,13 @@ class DatabaseRegistryClientTest {
             release210CR1.quarkusCoreVersion = release210CR1.version;
             release210CR1.persistAndFlush();
 
+            PlatformRelease release210Final = new PlatformRelease();
+            release210Final.platformStream = stream21;
+            release210Final.version = "2.1.0.Final";
+            release210Final.quarkusCoreVersion = release210Final.version;
+            release210Final.unlisted = true;
+            release210Final.persistAndFlush();
+
             Extension extension = new Extension();
             extension.name = "Foo";
             extension.description = "A Foo Extension";
@@ -100,7 +109,7 @@ class DatabaseRegistryClientTest {
     }
 
     @Test
-    void should_return_application_json_as_response_type() throws Exception {
+    void should_return_application_json_as_response_type() {
         given()
                 .accept("application/json;custom=aaaaaaaaaaaaaaaaaa;charset=utf-7")
                 .get("/client/platforms")
@@ -138,6 +147,20 @@ class DatabaseRegistryClientTest {
                         "platforms[0].streams", hasSize(2),
                         "platforms[0].streams.id", hasItems("2.1", "2.0"),
                         "platforms[0].current-stream-id", is("2.1"));
+    }
+
+    @Test
+    void should_not_return_unlisted_platforms() {
+        given()
+                .get("/client/platforms")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms", hasSize(1),
+                        "platforms[0].streams", hasSize(2),
+                        "platforms[0].streams.id", hasItems("2.1", "2.0"),
+                        "platforms[0].streams[1].releases", not(hasItem("2.1.0.Final")));
+
     }
 
     @AfterEach
