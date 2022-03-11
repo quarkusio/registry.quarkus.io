@@ -3,7 +3,7 @@ name: Deploy to OpenShift
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [ "build" ]
+    workflows: [ "publish" ]
     types:
       - completed
 
