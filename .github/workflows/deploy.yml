@@ -1,0 +1,28 @@
+name: Deploy to OpenShift
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [ "build" ]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.3.4
+
+      - name: Authenticate and set context
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Update ImageStream
+        run: |
+          ./update_tag.sh
