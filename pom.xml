@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.sonatype.nexus</groupId>
       <artifactId>nexus-repository-metadata-model</artifactId>
-      <version>2.14.21-02</version>
+      <version>2.15.0-04</version>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.hibernatetypes</groupId>
