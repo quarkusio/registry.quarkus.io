@@ -122,7 +122,7 @@ public class DatabaseRegistryClient {
     private PlatformCatalog toPlatformCatalog(List<PlatformRelease> platformReleases, boolean all) {
         PlatformCatalog.Mutable catalog = PlatformCatalog.builder();
         if (!all) {
-            platformReleases.sort((o1, o2) -> Version.QUALIFIER_REVERSED_COMPARATOR.compare(o1.version, o2.version));
+            platformReleases.sort((o1, o2) -> Version.RELEASE_IMPORTANCE_COMPARATOR.compare(o1.version, o2.version));
         }
         for (PlatformRelease platformRelease : platformReleases) {
             PlatformStream platformStream = platformRelease.platformStream;
