@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -30,13 +30,13 @@ class VersionTest {
 
     @Test
     void sortByReleaseImportance() {
-        List<String> versions = new ArrayList<>(List.of(
+        List<String> versions = Arrays.asList(
                 "2.7.5.Final-redhat-00001",
                 "2.3.9.CR3",
                 "2.5.0.CR1",
                 "2.4.0.CR2",
                 "2.4.0.Final",
-                "2.2.5.SP1-redhat-00001"));
+                "2.2.5.SP1-redhat-00001");
         versions.sort(Version.RELEASE_IMPORTANCE_COMPARATOR);
         assertThat(versions).containsExactly(
                 "2.7.5.Final-redhat-00001",
