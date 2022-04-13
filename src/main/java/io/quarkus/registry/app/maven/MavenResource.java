@@ -42,13 +42,17 @@ public class MavenResource {
     @Inject
     NonPlatformExtensionsContentProvider nonPlatformExtensionsContentProvider;
 
+    @Inject
+    PlatformCatalogContentProvider platformCatalogContentProvider;
+
     private ArtifactContentProvider[] getContentProviders() {
         return new ArtifactContentProvider[] {
                 pomContentProvider,
                 metadataContentProvider,
                 registryDescriptorContentProvider,
                 platformsContentProvider,
-                nonPlatformExtensionsContentProvider
+                nonPlatformExtensionsContentProvider,
+                platformCatalogContentProvider
         };
     }
 

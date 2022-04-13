@@ -19,12 +19,15 @@ import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.TypedQuery;
 
+import io.quarkus.maven.ArtifactCoords;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.registry.app.util.Version;
+
+import static io.quarkus.panache.common.Parameters.with;
 
 @Entity
 @NamedQueries({
@@ -81,7 +84,20 @@ import io.quarkus.registry.app.util.Version;
                       )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """),
-
+        @NamedQuery(name = "PlatformRelease.findByArtifactCoordinates", query = """
+                select pr from PlatformRelease pr
+                where pr.platformStream.platform.groupId = :groupId
+                and pr.platformStream.platform.artifactId = :artifactId
+                and pr.version = :version
+                and pr.unlisted = false
+                """),
+        @NamedQuery(name = "PlatformRelease.countArtifactCoordinates", query = """
+                select count(pr) from PlatformRelease pr
+                where pr.platformStream.platform.groupId = :groupId
+                and pr.platformStream.platform.artifactId = :artifactId
+                and pr.version = :version
+                and pr.unlisted = false
+                """)
 })
 public class PlatformRelease extends BaseEntity {
 
@@ -213,4 +229,19 @@ public class PlatformRelease extends BaseEntity {
                 .getResultList();
     }
 
+    public static boolean artifactCoordinatesExist(ArtifactCoords artifact) {
+        return count("#PlatformRelease.countArtifactCoordinates",
+                with("groupId", artifact.getGroupId())
+                        .and("artifactId", artifact.getArtifactId())
+                        .and("version", artifact.getVersion()))
+                == 1;
+    }
+
+    public static Optional<PlatformRelease> findByArtifactCoordinates(ArtifactCoords artifact) {
+        return find("#PlatformRelease.findByArtifactCoordinates",
+                with("groupId", artifact.getGroupId())
+                        .and("artifactId", artifact.getArtifactId())
+                        .and("version", artifact.getVersion()))
+                .firstResultOptional();
+    }
 }

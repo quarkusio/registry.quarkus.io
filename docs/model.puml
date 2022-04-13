@@ -2,6 +2,8 @@
 class Platform {
   + String platformKey
   + String name
+  + String groupId
+  + String artifactId
   + Map<String,Object> metadata
   + boolean isDefault
 }
@@ -40,6 +42,7 @@ class Extension {
 class ExtensionRelease {
   + String version
   - String versionSortable
+  - String quarkusCoreVersionSortable
   + Map<String,Object> metadata
   + String quarkusCore
 }
