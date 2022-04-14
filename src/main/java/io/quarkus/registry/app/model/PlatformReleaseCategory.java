@@ -1,13 +1,17 @@
 package io.quarkus.registry.app.model;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
-import java.util.Map;
+
+import org.hibernate.Session;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Type;
+
+import io.quarkiverse.hibernate.types.json.JsonTypes;
 
 /**
  * Many-to-Many relationship with {@link PlatformRelease} and {@link Category}
@@ -25,4 +29,13 @@ public class PlatformReleaseCategory extends BaseEntity {
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
     public Map<String, Object> metadata;
+
+    public static Optional<PlatformReleaseCategory> findByNaturalKey(PlatformRelease platformRelease, Category category) {
+        Session session = getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(PlatformReleaseCategory.class)
+                .using("platformRelease", platformRelease)
+                .using("category", category)
+                .loadOptional();
+    }
+
 }

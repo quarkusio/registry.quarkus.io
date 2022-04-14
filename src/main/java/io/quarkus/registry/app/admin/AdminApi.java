@@ -2,6 +2,7 @@ package io.quarkus.registry.app.admin;
 
 import static org.apache.commons.lang3.StringUtils.abbreviate;
 
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
@@ -9,6 +10,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -33,6 +35,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 
 import io.quarkus.logging.Log;
@@ -46,11 +50,14 @@ import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
 import io.quarkus.registry.app.maven.cache.MavenCache;
+import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 
@@ -71,6 +78,9 @@ public class AdminApi {
 
     @Inject
     MavenCache cache;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @POST
     @Path("/v1/extension/catalog")
@@ -261,7 +271,7 @@ public class AdminApi {
     }
 
     @PATCH
-    @Path("/v1/extension/catalog/{platformKey}/{streamKey}/{version}")
+    @Path("/v1/platform-release/{platformKey}/{streamKey}/{version}")
     @SecurityRequirement(name = "Authentication")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
@@ -275,7 +285,16 @@ public class AdminApi {
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
             @NotNull(message = "version is missing") @PathParam("version") String version,
             @FormParam("unlisted") boolean unlisted,
-            @FormParam("pinned") boolean pinned) {
+            @FormParam("pinned") boolean pinned,
+            @FormParam("metadata") String metadataJson) {
+        Map<String, Object> metadata = null;
+        if (metadataJson != null) {
+            try {
+                metadata = objectMapper.readValue(metadataJson, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new BadRequestException("Invalid metadata JSON", e);
+            }
+        }
         Platform platform = Platform.findByKey(platformKey)
                 .orElseThrow(() -> new NotFoundException("Platform not found"));
         PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
@@ -285,8 +304,99 @@ public class AdminApi {
         // Perform changes and persist
         platformRelease.unlisted = unlisted;
         platformRelease.pinned = pinned;
+        if (metadata != null) {
+            platformRelease.metadata = metadata;
+        }
         try {
-            stream.persist();
+            platformRelease.persist();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
+        return Response.accepted().build();
+    }
+
+    @PATCH
+    @Path("/v1/platform-release/{platformKey}/{streamKey}/{version}/category/{categoryKey}")
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    @Operation(summary = "Patches a PlatformReleaseCategory", description = "Invoke this endpoint when the platform release needs to be set to unlisted")
+    public Response patchPlatformReleaseCategory(
+            @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
+            @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
+            @NotNull(message = "version is missing") @PathParam("version") String version,
+            @NotNull(message = "categoryKey is missing") @PathParam("categoryKey") String categoryKey,
+            @FormParam("metadata") String metadataJson) {
+        Map<String, Object> metadata;
+        if (metadataJson != null) {
+            try {
+                metadata = objectMapper.readValue(metadataJson, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new BadRequestException("Invalid metadata JSON", e);
+            }
+        } else {
+            // Since metadata is the only parameter, return NO_CONTENT
+            return Response.noContent().build();
+        }
+        Platform platform = Platform.findByKey(platformKey)
+                .orElseThrow(() -> new NotFoundException("Platform not found"));
+        PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
+                .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
+        PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(stream, version)
+                .orElseThrow(() -> new NotFoundException("Platform Release not found"));
+        Category category = Category.findByKey(categoryKey)
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+        PlatformReleaseCategory prc = PlatformReleaseCategory.findByNaturalKey(platformRelease, category)
+                .orElseThrow(() -> new NotFoundException("Platform Release Category not found"));
+        // Perform changes and persist
+        prc.metadata = metadata;
+        try {
+            prc.persist();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
+        return Response.accepted().build();
+    }
+
+    @PATCH
+    @Path("/v1/platform-release/{platformKey}/{streamKey}/{version}/extension/{extensionGroupId}/{extensionArtifactId}/{extensionVersion}")
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    @Operation(summary = "Patches a PlatformExtension", description = "Invoke this endpoint to patch a PlatformExtension")
+    public Response patchPlatformExtension(
+            @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
+            @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
+            @NotNull(message = "version is missing") @PathParam("version") String version,
+            @NotNull(message = "extensionGroupId is missing") @PathParam("extensionGroupId") String extensionGroupId,
+            @NotNull(message = "extensionArtifactId is missing") @PathParam("extensionArtifactId") String extensionArtifactId,
+            @NotNull(message = "extensionVersion is missing") @PathParam("extensionVersion") String extensionVersion,
+            @FormParam("metadata") String metadataJson) {
+        Map<String, Object> metadata;
+        if (metadataJson != null) {
+            try {
+                metadata = objectMapper.readValue(metadataJson, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new BadRequestException("Invalid metadata JSON", e);
+            }
+        } else {
+            // Since metadata is the only parameter, return NO_CONTENT
+            return Response.noContent().build();
+        }
+        Platform platform = Platform.findByKey(platformKey)
+                .orElseThrow(() -> new NotFoundException("Platform not found"));
+        PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
+                .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
+        PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(stream, version)
+                .orElseThrow(() -> new NotFoundException("Platform Release not found"));
+        ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(extensionGroupId, extensionArtifactId, extensionVersion)
+                .orElseThrow(() -> new NotFoundException("Extension Release not found"));
+        PlatformExtension platformExtension = PlatformExtension.findByNaturalKey(platformRelease, extensionRelease)
+                .orElseThrow(() -> new NotFoundException("Platform Extension not found"));
+        // Perform changes and persist
+        platformExtension.metadata = metadata;
+        try {
+            platformExtension.persist();
         } finally {
             DbState.updateUpdatedAt();
         }

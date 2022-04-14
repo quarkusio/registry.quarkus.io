@@ -3137,7 +3137,7 @@
   }, {
     "id" : "messaging",
     "name" : "Messaging",
-    "description" : "Send and receives message to various messaging systems (AMQP, KAfka etc)",
+    "description" : "Send and receives message to various messaging systems (AMQP, Kafka etc)",
     "metadata" : {
       "pinned" : [ "io.quarkus:quarkus-smallrye-reactive-messaging", "io.quarkus:quarkus-smallrye-reactive-messaging-amqp", "io.quarkus:quarkus-smallrye-reactive-messaging-kafka", "io.quarkus:quarkus-smallrye-reactive-messaging-mqtt", "io.quarkus:quarkus-smallrye-reactive-messaging-rabbitmq" ]
     }

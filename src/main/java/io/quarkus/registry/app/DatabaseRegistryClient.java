@@ -262,7 +262,7 @@ public class DatabaseRegistryClient {
 
     private io.quarkus.registry.catalog.Category toClientCategory(Category category) {
         return io.quarkus.registry.catalog.Category.builder()
-                .setId(category.name.toLowerCase(Locale.ROOT).replace(' ', '-'))
+                .setId(category.categoryKey)
                 .setName(category.name)
                 .setDescription(category.description)
                 .setMetadata(category.metadata)

@@ -1,5 +1,16 @@
 package io.quarkus.registry.app.maven;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.List;
+
+import javax.inject.Singleton;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
@@ -8,16 +19,6 @@ import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
-
-import javax.inject.Singleton;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
 
 @Singleton
 public class PlatformCatalogContentProvider implements ArtifactContentProvider {
@@ -55,34 +56,29 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
         ExtensionCatalog expected = ExtensionCatalog.builder()
                 .setId(id)
                 //TODO: This information is not stored in the DB
-                .setBom(new ArtifactCoords(platform.groupId, "quarkus-bom", "pom",platformRelease.version))
+                .setBom(new ArtifactCoords(platform.groupId, "quarkus-bom", "pom", platformRelease.version))
                 .setPlatform(true)
                 .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion)
                 .setMetadata(platformRelease.metadata)
                 .setUpstreamQuarkusCoreVersion(platformRelease.upstreamQuarkusCoreVersion)
                 .setCategories(
-                        platformRelease.categories.stream().map(prc ->
-                                    io.quarkus.registry.catalog.Category.builder()
-                                            .setId(prc.category.getCategoryId())
-                                            .setName(prc.category.name)
-                                            .setMetadata(prc.metadata)
-                                            .setDescription(prc.category.description)
-                                            .build()
-                                ).toList())
+                        platformRelease.categories.stream().map(prc -> io.quarkus.registry.catalog.Category.builder()
+                                .setId(prc.category.categoryKey)
+                                .setName(prc.category.name)
+                                .setMetadata(prc.metadata)
+                                .setDescription(prc.category.description)
+                                .build()).toList())
                 .setExtensions(
-                        platformRelease.extensions.stream().map(pe ->
-                                        Extension.builder()
-                                                .setName(pe.extensionRelease.extension.name)
-                                                .setDescription(pe.extensionRelease.extension.description)
-                                                .setGroupId(pe.extensionRelease.extension.groupId)
-                                                .setArtifactId(pe.extensionRelease.extension.artifactId)
-                                                .setVersion(pe.extensionRelease.version)
-                                                .setMetadata(pe.metadata)
-                                                //TODO: This information is not stored in the DB
-                                                .setOrigins(List.of(ExtensionOrigin.builder().setId(id).build()))
-                                                .build()
-                                ).toList()
-                )
+                        platformRelease.extensions.stream().map(pe -> Extension.builder()
+                                .setName(pe.extensionRelease.extension.name)
+                                .setDescription(pe.extensionRelease.extension.description)
+                                .setGroupId(pe.extensionRelease.extension.groupId)
+                                .setArtifactId(pe.extensionRelease.extension.artifactId)
+                                .setVersion(pe.extensionRelease.version)
+                                .setMetadata(pe.metadata)
+                                //TODO: This information is not stored in the DB
+                                .setOrigins(List.of(ExtensionOrigin.builder().setId(id).build()))
+                                .build()).toList())
                 .build();
         return toString(expected);
     }

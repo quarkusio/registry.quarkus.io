@@ -1,11 +1,13 @@
 package io.quarkus.registry.app.model;
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
@@ -25,4 +27,14 @@ public class PlatformExtension extends BaseEntity {
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
     public Map<String, Object> metadata;
+
+    public static Optional<PlatformExtension> findByNaturalKey(PlatformRelease platformRelease,
+            ExtensionRelease extensionRelease) {
+        Session session = getEntityManager().unwrap(Session.class);
+        return session.byNaturalId(PlatformExtension.class)
+                .using("platformRelease", platformRelease)
+                .using("extensionRelease", extensionRelease)
+                .loadOptional();
+    }
+
 }
