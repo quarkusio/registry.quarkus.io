@@ -32,6 +32,10 @@ class PlatformExtension {
   + Map<String,Object> metadata
 }
 
+class PlatformReleaseCategory {
+  + Map<String,Object> metadata
+}
+
 class Extension {
   + String groupId
   + String artifactId
@@ -58,13 +62,16 @@ class ExtensionReleaseCompatibility {
   + boolean compatible
 }
 
-note right of PlatformRelease::memberBoms
-  This is stored as a JSON array
+note left of PlatformRelease::memberBoms
+  Stored as a JSON array
 end note
 
-Platform         *-- PlatformStream
-PlatformStream   *-- PlatformRelease
-PlatformRelease  *-- PlatformExtension
+Category o-- PlatformReleaseCategory
+
+Platform                *-- PlatformStream
+PlatformStream          *-- PlatformRelease
+PlatformRelease         *-- PlatformExtension
+PlatformRelease         *-- PlatformReleaseCategory
 
 Extension        *-- ExtensionRelease
 ExtensionRelease o-- PlatformExtension
