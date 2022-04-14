@@ -4,6 +4,8 @@ import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -42,6 +44,18 @@ public class AdminService {
             for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
                 insertExtensionRelease(extension, platformRelease);
             }
+            //Add Categories
+            for (io.quarkus.registry.catalog.Category category : extensionCatalog.getCategories()) {
+                Optional<Category> categoryOptional = Category.findByName(category.getName());
+                categoryOptional.ifPresent( c -> {
+                    PlatformReleaseCategory prc = new PlatformReleaseCategory();
+                    prc.platformRelease = platformRelease;
+                    prc.category = c;
+                    prc.metadata = category.getMetadata();
+                    platformRelease.categories.add(prc);
+                    prc.persist();
+                } );
+            }
             DbState.updateUpdatedAt();
         } catch (Exception e) {
             Log.error("Error while inserting platform", e);
@@ -63,12 +77,12 @@ public class AdminService {
         });
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
                 .orElseGet(() -> new PlatformRelease(platformStream, version, pinned));
-        platformRelease.pinned = pinned;
         platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
         platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
         platformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
                 .map(PlatformArtifacts::ensureBomArtifact)
                 .map(ArtifactCoords::toString).toList());
+        platformRelease.metadata = extensionCatalog.getMetadata();
         platformRelease.persistAndFlush();
         return platformRelease;
     }

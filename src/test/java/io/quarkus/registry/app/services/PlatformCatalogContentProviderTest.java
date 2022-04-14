@@ -57,8 +57,8 @@ public class PlatformCatalogContentProviderTest {
                 .extract().asString();
 
         ExtensionCatalog result = CatalogMapperHelper.deserialize(new StringReader(resultStr), ExtensionCatalogImpl.Builder.class).build();
-        assertThat(result).usingRecursiveComparison().ignoringCollectionOrder()
-                .ignoringFields("metadata")
+        assertThat(result).usingRecursiveComparison()
+                .ignoringCollectionOrder()
                 .isEqualTo(expected);
     }
 

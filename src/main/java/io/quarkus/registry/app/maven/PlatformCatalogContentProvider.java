@@ -2,11 +2,12 @@ package io.quarkus.registry.app.maven;
 
 import io.quarkus.maven.ArtifactCoords;
 import io.quarkus.registry.app.model.Category;
-import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
+import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
+import io.quarkus.registry.catalog.ExtensionOrigin;
 
 import javax.inject.Singleton;
 import javax.ws.rs.NotFoundException;
@@ -17,8 +18,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 @Singleton
 public class PlatformCatalogContentProvider implements ArtifactContentProvider {
@@ -50,17 +49,39 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
                 .orElseThrow(() -> new NotFoundException("Platform release requested not found"));
         Platform platform = platformRelease.platformStream.platform;
         List<Category> categories = Category.listAll();
+        //TODO: This information is not stored in the DB
+        String id = new ArtifactCoords(platform.groupId, platform.artifactId, platformRelease.version, "json",
+                platformRelease.version).toString();
         ExtensionCatalog expected = ExtensionCatalog.builder()
-                .setId(new ArtifactCoords(platform.groupId, platform.artifactId, platformRelease.version, "json",platformRelease.version).toString())
+                .setId(id)
+                //TODO: This information is not stored in the DB
                 .setBom(new ArtifactCoords(platform.groupId, "quarkus-bom", "pom",platformRelease.version))
                 .setPlatform(true)
                 .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion)
                 .setMetadata(platformRelease.metadata)
                 .setUpstreamQuarkusCoreVersion(platformRelease.upstreamQuarkusCoreVersion)
                 .setCategories(
-                        categories.stream().map(cat -> io.quarkus.registry.catalog.Category.builder()
-                                .setId(cat.name.toLowerCase(Locale.ROOT).replace(' ','-')).setName(cat.name).setMetadata(cat.metadata).setDescription(cat.description).build())
-                                .collect(Collectors.toList())
+                        platformRelease.categories.stream().map(prc ->
+                                    io.quarkus.registry.catalog.Category.builder()
+                                            .setId(prc.category.getCategoryId())
+                                            .setName(prc.category.name)
+                                            .setMetadata(prc.metadata)
+                                            .setDescription(prc.category.description)
+                                            .build()
+                                ).toList())
+                .setExtensions(
+                        platformRelease.extensions.stream().map(pe ->
+                                        Extension.builder()
+                                                .setName(pe.extensionRelease.extension.name)
+                                                .setDescription(pe.extensionRelease.extension.description)
+                                                .setGroupId(pe.extensionRelease.extension.groupId)
+                                                .setArtifactId(pe.extensionRelease.extension.artifactId)
+                                                .setVersion(pe.extensionRelease.version)
+                                                .setMetadata(pe.metadata)
+                                                //TODO: This information is not stored in the DB
+                                                .setOrigins(List.of(ExtensionOrigin.builder().setId(id).build()))
+                                                .build()
+                                ).toList()
                 )
                 .build();
         return toString(expected);
