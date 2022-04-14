@@ -52,6 +52,7 @@ class ExtensionRelease {
 }
 
 class Category {
+  + String categoryKey
   + String name
   + String description
   + Map<String,Object> metadata

@@ -5,7 +5,6 @@ import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -46,15 +45,15 @@ public class AdminService {
             }
             //Add Categories
             for (io.quarkus.registry.catalog.Category category : extensionCatalog.getCategories()) {
-                Optional<Category> categoryOptional = Category.findByName(category.getName());
-                categoryOptional.ifPresent( c -> {
+                Optional<Category> categoryOptional = Category.findByKey(category.getId());
+                categoryOptional.ifPresent(c -> {
                     PlatformReleaseCategory prc = new PlatformReleaseCategory();
                     prc.platformRelease = platformRelease;
                     prc.category = c;
                     prc.metadata = category.getMetadata();
                     platformRelease.categories.add(prc);
                     prc.persist();
-                } );
+                });
             }
             DbState.updateUpdatedAt();
         } catch (Exception e) {
