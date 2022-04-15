@@ -10,11 +10,12 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class RepositoryMetadataResourceTest {
+public class RepositoryMetadataResourceTest extends BaseTest {
 
     @Inject
     MavenConfig mavenConfig;

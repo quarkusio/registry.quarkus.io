@@ -14,11 +14,11 @@ import java.util.Map;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
+import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
@@ -30,13 +30,11 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-class AdminApiTest {
+class AdminApiTest extends BaseTest {
 
     @BeforeEach
     @Transactional
     void setUp() {
-        // Make sure database is cleaned before inserting new data
-        cleanUpDatabase();
         {
             Extension extension = new Extension();
             extension.name = "Foo";
@@ -357,15 +355,4 @@ class AdminApiTest {
                         "extensions.description", hasItem("Another Description"));
 
     }
-
-    @AfterEach
-    @Transactional
-    void cleanUpDatabase() {
-        PlatformExtension.deleteAll();
-        ExtensionRelease.deleteAll();
-        Extension.deleteAll();
-        PlatformRelease.deleteAll();
-        PlatformStream.deleteAll();
-    }
-
 }
