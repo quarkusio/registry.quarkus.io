@@ -9,21 +9,21 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class VersionOrderTest {
+public class VersionOrderTest extends BaseTest {
 
-    @BeforeAll
+    @BeforeEach
     @Transactional
-    static void setUp() {
+    void setUp() {
         {
             Platform platform = Platform.findByKey("io.quarkus.platform").get();
             PlatformStream stream20 = new PlatformStream();
@@ -79,12 +79,4 @@ public class VersionOrderTest {
                 .extract().path("platforms.streams.id");
         assertThat(ids).containsExactly(List.of("2.0", "2.1"), List.of("2.0"));
     }
-
-    @AfterAll
-    @Transactional
-    static void tearDown() {
-        PlatformRelease.deleteAll();
-        PlatformStream.deleteAll();
-    }
-
 }

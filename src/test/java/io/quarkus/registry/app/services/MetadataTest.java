@@ -17,10 +17,10 @@ import javax.ws.rs.core.MediaType;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.app.maven.HashUtil;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Platform;
@@ -29,14 +29,14 @@ import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class MetadataTest {
+public class MetadataTest extends BaseTest {
 
     @Inject
     MavenConfig mavenConfig;
 
-    @BeforeAll
+    @BeforeEach
     @Transactional
-    static void setUp() {
+    void setUp() {
         Platform platform = Platform.findByKey("io.quarkus.platform").get();
         PlatformStream stream20 = new PlatformStream();
         stream20.platform = platform;
@@ -116,12 +116,5 @@ public class MetadataTest {
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.TEXT_PLAIN))
                 .body(equalTo(expectedSha1));
-    }
-
-    @AfterAll
-    @Transactional
-    static void tearDown() {
-        PlatformRelease.deleteAll();
-        PlatformStream.deleteAll();
     }
 }

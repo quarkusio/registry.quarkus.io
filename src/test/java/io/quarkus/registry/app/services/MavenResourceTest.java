@@ -10,10 +10,10 @@ import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
@@ -21,11 +21,11 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-public class MavenResourceTest {
+public class MavenResourceTest extends BaseTest {
 
-    @BeforeAll
+    @BeforeEach
     @Transactional
-    static void setUp() {
+    void setUp() {
         {
             Platform platform = Platform.findByKey("io.quarkus.platform").get();
 
@@ -152,12 +152,5 @@ public class MavenResourceTest {
                 .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-0.23.2.json")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
-    }
-
-    @AfterAll
-    @Transactional
-    static void tearDown() {
-        PlatformRelease.deleteAll();
-        PlatformStream.deleteAll();
     }
 }

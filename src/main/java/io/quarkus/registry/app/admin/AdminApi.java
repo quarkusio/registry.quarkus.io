@@ -102,6 +102,7 @@ public class AdminApi {
         Log.infof("Adding catalog %s", abbreviate(catalog.toString(), MAX_ABBREVIATION_WIDTH));
         ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog, pinned);
         adminService.onExtensionCatalogImport(event);
+        cache.clear();
         return Response.accepted(bom).build();
     }
 
@@ -119,6 +120,7 @@ public class AdminApi {
                 .orElseThrow(() -> new NotFoundException("No Platform Release found"));
         ExtensionCatalogDeleteEvent event = new ExtensionCatalogDeleteEvent(platformRelease);
         adminService.onExtensionCatalogDelete(event);
+        cache.clear();
         return Response.accepted().build();
     }
 
@@ -139,6 +141,7 @@ public class AdminApi {
         Log.infof("Adding extension %s", abbreviate(String.valueOf(extension.getArtifact()), MAX_ABBREVIATION_WIDTH));
         ExtensionCreateEvent event = new ExtensionCreateEvent(extension);
         adminService.onExtensionCreate(event);
+        cache.clear();
         return Response.accepted(bom).build();
     }
 
@@ -167,6 +170,7 @@ public class AdminApi {
                         abbreviate(version, MAX_ABBREVIATION_WIDTH));
                 ExtensionReleaseDeleteEvent event = new ExtensionReleaseDeleteEvent(extensionRelease);
                 adminService.onExtensionReleaseDelete(event);
+                cache.clear();
                 return Response.accepted(entity).build();
             }
         } else {
@@ -183,6 +187,7 @@ public class AdminApi {
             } else {
                 ExtensionDeleteEvent event = new ExtensionDeleteEvent(extension);
                 adminService.onExtensionDelete(event);
+                cache.clear();
                 return Response.accepted(entity).build();
             }
         }
@@ -211,6 +216,7 @@ public class AdminApi {
         ExtensionCompatibilityCreateEvent event = new ExtensionCompatibilityCreateEvent(extensionRelease, quarkusCore,
                 compatible);
         adminService.onExtensionCompatibilityCreate(event);
+        cache.clear();
         return Response.accepted().build();
     }
 
@@ -233,6 +239,7 @@ public class AdminApi {
                 abbreviate(quarkusCore, MAX_ABBREVIATION_WIDTH));
         ExtensionCompatibleDeleteEvent event = new ExtensionCompatibleDeleteEvent(extensionRelease, quarkusCore);
         adminService.onExtensionCompatibilityDelete(event);
+        cache.clear();
         return Response.accepted().build();
     }
 
@@ -263,7 +270,8 @@ public class AdminApi {
         stream.unlisted = unlisted;
         stream.pinned = pinned;
         try {
-            stream.persist();
+            stream.persistAndFlush();
+            cache.clear();
         } finally {
             DbState.updateUpdatedAt();
         }
@@ -308,7 +316,8 @@ public class AdminApi {
             platformRelease.metadata = metadata;
         }
         try {
-            platformRelease.persist();
+            platformRelease.persistAndFlush();
+            cache.clear();
         } finally {
             DbState.updateUpdatedAt();
         }
@@ -351,7 +360,8 @@ public class AdminApi {
         // Perform changes and persist
         prc.metadata = metadata;
         try {
-            prc.persist();
+            prc.persistAndFlush();
+            cache.clear();
         } finally {
             DbState.updateUpdatedAt();
         }
@@ -396,7 +406,8 @@ public class AdminApi {
         // Perform changes and persist
         platformExtension.metadata = metadata;
         try {
-            platformExtension.persist();
+            platformExtension.persistAndFlush();
+            cache.clear();
         } finally {
             DbState.updateUpdatedAt();
         }

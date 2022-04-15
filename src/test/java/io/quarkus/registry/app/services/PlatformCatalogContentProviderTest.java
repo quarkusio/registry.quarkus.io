@@ -5,22 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.HttpURLConnection;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.registry.app.model.Extension;
-import io.quarkus.registry.app.model.ExtensionRelease;
-import io.quarkus.registry.app.model.PlatformExtension;
-import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.PlatformReleaseCategory;
-import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionCatalogImpl;
@@ -31,7 +23,7 @@ import io.restassured.http.ContentType;
  * Tests if the {@link ExtensionCatalog} content is generated correctly
  */
 @QuarkusTest
-public class PlatformCatalogContentProviderTest {
+public class PlatformCatalogContentProviderTest extends BaseTest {
 
     @Test
     void should_return_catalog() throws Exception {
@@ -62,27 +54,15 @@ public class PlatformCatalogContentProviderTest {
                 id.getArtifactId(),
                 id.getVersion());
         // Test the maven endpoint
-        String resultStr = given()
+        InputStream resultStream = given()
                 .get(url)
                 .then()
                 .statusCode(200)
+                .log().all()
                 .contentType(MediaType.APPLICATION_JSON)
-                .extract().asString();
+                .extract().asInputStream();
 
-        ExtensionCatalog result = CatalogMapperHelper
-                .deserialize(new StringReader(resultStr), ExtensionCatalogImpl.Builder.class).build();
+        ExtensionCatalog result = CatalogMapperHelper.deserialize(resultStream, ExtensionCatalogImpl.Builder.class).build();
         assertThat(result).usingRecursiveComparison().isEqualTo(expected);
     }
-
-    @AfterAll
-    @Transactional
-    static void tearDown() {
-        PlatformReleaseCategory.deleteAll();
-        PlatformExtension.deleteAll();
-        ExtensionRelease.deleteAll();
-        Extension.deleteAll();
-        PlatformRelease.deleteAll();
-        PlatformStream.deleteAll();
-    }
-
 }
