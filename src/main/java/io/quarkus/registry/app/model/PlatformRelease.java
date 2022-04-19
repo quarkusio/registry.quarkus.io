@@ -236,14 +236,14 @@ public class PlatformRelease extends BaseEntity {
         return count("#PlatformRelease.countArtifactCoordinates",
                 with("groupId", artifact.getGroupId())
                         .and("artifactId", artifact.getArtifactId())
-                        .and("version", artifact.getVersion())) == 1;
+                        .and("version", artifact.getClassifier())) == 1;
     }
 
     public static Optional<PlatformRelease> findByArtifactCoordinates(ArtifactCoords artifact) {
         return find("#PlatformRelease.findByArtifactCoordinates",
                 with("groupId", artifact.getGroupId())
                         .and("artifactId", artifact.getArtifactId())
-                        .and("version", artifact.getVersion()))
+                        .and("version", artifact.getClassifier()))
                                 .firstResultOptional();
     }
 }
