@@ -72,6 +72,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         platformsConfig.setArtifact(ArtifactCoords.of(mavenConfig.getRegistryGroupId(),
                 Constants.DEFAULT_REGISTRY_PLATFORMS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
                 Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
+        mavenConfig.getExtensionCatalogIncluded().ifPresent(platformsConfig::setExtensionCatalogsIncluded);
         qer.setPlatforms(platformsConfig.build());
 
         if (mavenConfig.supportsNonPlatforms()) {
