@@ -16,6 +16,7 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.Category;
@@ -65,9 +66,10 @@ public class ChangeMetadataTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_ACCEPTED);
 
         String url = String.format(
-                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%3$s.json",
+                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
                 id.getGroupId().replace('.', '/'),
                 id.getArtifactId(),
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
                 id.getVersion());
 
         // Test the maven endpoint
@@ -123,9 +125,10 @@ public class ChangeMetadataTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_ACCEPTED);
 
         String url = String.format(
-                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%3$s.json",
+                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
                 id.getGroupId().replace('.', '/'),
                 id.getArtifactId(),
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
                 id.getVersion());
 
         // Test the maven endpoint
@@ -186,9 +189,10 @@ public class ChangeMetadataTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_ACCEPTED);
 
         String url = String.format(
-                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%3$s.json",
+                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
                 id.getGroupId().replace('.', '/'),
                 id.getArtifactId(),
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
                 id.getVersion());
 
         // Test the maven endpoint

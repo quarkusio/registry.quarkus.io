@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.ExtensionCatalog;
@@ -49,9 +50,10 @@ public class PlatformCatalogContentProviderTest extends BaseTest {
                 .contentType(ContentType.JSON);
 
         String url = String.format(
-                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%3$s.json",
+                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
                 id.getGroupId().replace('.', '/'),
                 id.getArtifactId(),
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
                 id.getVersion());
         // Test the maven endpoint
         InputStream resultStream = given()

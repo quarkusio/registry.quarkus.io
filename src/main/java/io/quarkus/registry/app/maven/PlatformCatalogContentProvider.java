@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
@@ -25,7 +26,9 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
 
     @Override
     public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
-        return PlatformRelease.artifactCoordinatesExist(artifact);
+        // Version must be 1.0-SNAPSHOT
+        return Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion()) &&
+                PlatformRelease.artifactCoordinatesExist(artifact);
     }
 
     @Override
