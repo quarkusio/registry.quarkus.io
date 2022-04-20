@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.HttpHeaders;
@@ -24,10 +25,22 @@ import io.quarkus.registry.catalog.ExtensionOrigin;
 @Singleton
 public class PlatformCatalogContentProvider implements ArtifactContentProvider {
 
+    @Inject
+    MavenConfig mavenConfig;
+
+    /**
+     * @return true only if
+     *         <ul>
+     *         <li>System property/env quarkus.registry.platform.extension-catalog-included is <code>true</code></li>
+     *         <li>The requested artifact version is 1.0-SNAPSHOT</li>
+     *         <li>The requested groupId/artifactId/classifier matches an existing {@link PlatformRelease}</li>
+     *         </ul>
+     */
     @Override
     public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
+        return mavenConfig.getExtensionCatalogIncluded().orElse(Boolean.FALSE) &&
         // Version must be 1.0-SNAPSHOT
-        return Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion()) &&
+                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion()) &&
                 PlatformRelease.artifactCoordinatesExist(artifact);
     }
 

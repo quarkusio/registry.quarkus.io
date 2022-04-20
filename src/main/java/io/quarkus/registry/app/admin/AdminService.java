@@ -18,6 +18,7 @@ import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
+import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -25,6 +26,7 @@ import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
@@ -76,6 +78,7 @@ public class AdminService {
         });
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
                 .orElseGet(() -> new PlatformRelease(platformStream, version, pinned));
+        platformRelease.pinned = pinned;
         platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
         platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
         platformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
