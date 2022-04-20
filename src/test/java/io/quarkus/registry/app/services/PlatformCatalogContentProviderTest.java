@@ -60,7 +60,6 @@ public class PlatformCatalogContentProviderTest extends BaseTest {
                 .get(url)
                 .then()
                 .statusCode(200)
-                .log().all()
                 .contentType(MediaType.APPLICATION_JSON)
                 .extract().asInputStream();
 
