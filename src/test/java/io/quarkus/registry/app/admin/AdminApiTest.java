@@ -179,8 +179,8 @@ class AdminApiTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_BAD_REQUEST)
                 .contentType(ContentType.JSON)
-                .body("parameter-violations.message", hasItem("X-Platform header missing"),
-                        "parameter-violations.message", hasItem("Body payload is missing"));
+                .body("violations.message", hasItem("X-Platform header missing"),
+                        "violations.message", hasItem("Body payload is missing"));
     }
 
     @Test
