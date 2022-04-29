@@ -1,10 +1,13 @@
 package io.quarkus.registry.app.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -58,7 +61,14 @@ import io.quarkus.registry.app.util.Version;
                            group by pr2.platformStream
                       )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
+                """),
+        @NamedQuery(name = "PlatformRelease.findPinned", query = """
+                  select pr from PlatformRelease pr
+                  where pr.unlisted = false
+                  and pr.pinned = true
+                  order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """)
+
 })
 public class PlatformRelease extends BaseEntity {
 
@@ -137,17 +147,42 @@ public class PlatformRelease extends BaseEntity {
     }
 
     public static List<PlatformRelease> findLatest(String quarkusCore) {
-        EntityManager entityManager = getEntityManager();
+        EntityManager em = getEntityManager();
         TypedQuery<PlatformRelease> query;
-        if (quarkusCore != null && !quarkusCore.isBlank()) {
-            query = entityManager.createNamedQuery("PlatformRelease.findLatestByQuarkusCoreVersion", PlatformRelease.class)
+        boolean withQuarkusCore = quarkusCore != null && !quarkusCore.isBlank();
+        if (withQuarkusCore) {
+            query = em.createNamedQuery("PlatformRelease.findLatestByQuarkusCoreVersion", PlatformRelease.class)
                     .setParameter(1, quarkusCore);
         } else {
-            query = entityManager.createNamedQuery("PlatformRelease.findLatest", PlatformRelease.class);
+            query = em.createNamedQuery("PlatformRelease.findLatest", PlatformRelease.class);
         }
-        // We just want the last 2 releases. See https://github.com/quarkusio/registry.quarkus.io/issues/34
-        query.setMaxResults(2);
-        return query.getResultList();
+        // Check if we can perform this directly in the SQL
+        // We need the top 3 releases for each platform
+        var platformMap = new LinkedHashMap<Platform, List<PlatformRelease>>();
+        for (var item : query.getResultList()) {
+            var platformReleases = platformMap.computeIfAbsent(item.platformStream.platform,
+                    k -> new ArrayList<>());
+            if (platformReleases.size() < 3) {
+                // Count stable versions
+                long stableVersions = platformReleases.stream()
+                        .filter(pr -> !Version.isPreFinal(pr.version))
+                        .count();
+                if (stableVersions < 2) {
+                    platformReleases.add(item);
+                }
+            }
+        }
+        // Add pinned platforms to the result
+        if (!withQuarkusCore) {
+            var pinnedPlatforms = em.createNamedQuery("PlatformRelease.findPinned", PlatformRelease.class)
+                    .getResultList();
+            for (var item : pinnedPlatforms) {
+                platformMap.computeIfAbsent(item.platformStream.platform, k -> new ArrayList<>()).add(item);
+            }
+        }
+        return platformMap.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     public static Optional<PlatformRelease> findByPlatformKey(String platformKey, String version) {

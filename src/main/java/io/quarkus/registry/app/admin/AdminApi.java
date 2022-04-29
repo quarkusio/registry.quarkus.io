@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -261,12 +262,15 @@ public class AdminApi {
     @SecurityRequirement(name = "Authentication")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
-    @Operation(summary = "Patches a PlatformRelease", description = "Invoke this endpoint when the platform release needs to be set to unlisted")
+    @Operation(summary = "Patches a PlatformRelease", description = "Invoke this endpoint when maintaining a platform release")
+    @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful")
+    @APIResponse(responseCode = "404", name = "Not Found", description = "If Platform/Stream/Release were not found")
     public Response patchPlatformRelease(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
             @NotNull(message = "version is missing") @PathParam("version") String version,
-            @FormParam("unlisted") boolean unlisted) {
+            @FormParam("unlisted") boolean unlisted,
+            @FormParam("pinned") boolean pinned) {
         Platform platform = Platform.findByKey(platformKey)
                 .orElseThrow(() -> new NotFoundException("Platform not found"));
         PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
@@ -275,6 +279,7 @@ public class AdminApi {
                 .orElseThrow(() -> new NotFoundException("Platform Release not found"));
         // Perform changes and persist
         platformRelease.unlisted = unlisted;
+        platformRelease.pinned = pinned;
         try {
             stream.persist();
         } finally {

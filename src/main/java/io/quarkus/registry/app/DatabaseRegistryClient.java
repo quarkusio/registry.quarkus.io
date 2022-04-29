@@ -57,7 +57,7 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/platforms")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "List only the 2 latest platform releases")
+    @Operation(summary = "List only the 3 latest platform releases")
     public PlatformCatalog resolveCurrentPlatformsCatalog(@QueryParam("v") String version) {
         if (version != null && !version.isBlank()) {
             Version.validateVersion(version);
