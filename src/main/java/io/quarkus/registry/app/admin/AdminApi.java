@@ -28,6 +28,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -263,8 +264,10 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
     @Operation(summary = "Patches a PlatformRelease", description = "Invoke this endpoint when maintaining a platform release")
-    @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful")
-    @APIResponse(responseCode = "404", name = "Not Found", description = "If Platform/Stream/Release were not found")
+    @APIResponses({
+            @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful"),
+            @APIResponse(responseCode = "404", name = "Not Found", description = "If Platform/Stream/Release were not found")
+    })
     public Response patchPlatformRelease(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
@@ -282,6 +285,33 @@ public class AdminApi {
         platformRelease.pinned = pinned;
         try {
             stream.persist();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
+        return Response.accepted().build();
+    }
+
+    @PATCH
+    @Path("/v1/extension/{groupId}/{artifactId}")
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    @Operation(summary = "Patches an Extension")
+    @APIResponses({
+            @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful"),
+            @APIResponse(responseCode = "404", name = "Not Found", description = "If Platform/Stream/Release were not found")
+    })
+    public Response patchExtension(
+            @NotNull(message = "groupId is missing") @PathParam("groupId") String groupId,
+            @NotNull(message = "artifactId is missing") @PathParam("artifactId") String artifactId,
+            @FormParam("name") String name,
+            @FormParam("description") String description) {
+        Extension extension = Extension.findByGA(groupId, artifactId)
+                .orElseThrow(() -> new NotFoundException("Extension not found"));
+        extension.name = name;
+        extension.description = description;
+        try {
+            extension.persist();
         } finally {
             DbState.updateUpdatedAt();
         }

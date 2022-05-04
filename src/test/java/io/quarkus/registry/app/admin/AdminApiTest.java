@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -315,6 +316,46 @@ class AdminApiTest {
                 .contentType(ContentType.JSON)
                 .body("platforms[0].streams", hasSize(1),
                         "platforms[0].current-stream-id", is("9.0"));
+    }
+
+    @Test
+    void patch_extension() throws IOException {
+        // Change extension description
+        given()
+                .get("/client/non-platform-extensions?v=2.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("extensions[0].name", is("Foo"),
+                        "extensions[0].description", is("A Foo Extension"));
+        // Add a new Extension release
+        io.quarkus.registry.catalog.Extension extension = io.quarkus.registry.catalog.Extension.builder()
+                .setGroupId("foo.bar")
+                .setArtifactId("foo-extension")
+                .setVersion("1.0.1")
+                .setName("Another Name")
+                .setDescription("Another Description")
+                .setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"))
+                .build();
+        StringWriter sw = new StringWriter();
+        CatalogMapperHelper.serialize(extension, sw);
+
+        // Update extension
+        given()
+                .formParams(Map.of("name", "Another Name", "description", "Another Description"))
+                .header("Token", "test")
+                .patch("/admin/v1/extension/foo.bar/foo-extension")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/non-platform-extensions?v=2.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("extensions.name", hasItem("Another Name"),
+                        "extensions.description", hasItem("Another Description"));
+
     }
 
     @AfterEach

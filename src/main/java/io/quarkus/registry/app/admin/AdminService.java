@@ -4,7 +4,6 @@ import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -64,11 +63,12 @@ public class AdminService {
         });
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
                 .orElseGet(() -> new PlatformRelease(platformStream, version, pinned));
+        platformRelease.pinned = pinned;
         platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
         platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
         platformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
                 .map(PlatformArtifacts::ensureBomArtifact)
-                .map(ArtifactCoords::toString).collect(Collectors.toList()));
+                .map(ArtifactCoords::toString).toList());
         platformRelease.persistAndFlush();
         return platformRelease;
     }
