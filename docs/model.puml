@@ -10,6 +10,7 @@ class PlatformStream {
   + String streamKey
   - String streamKeySortable
   + String name
+  + boolean unlisted
   + Map<String,Object> metadata
 }
 
@@ -18,6 +19,7 @@ class PlatformRelease {
   - String versionSortable
   + String quarkusCoreVersion
   + boolean pinned
+  + boolean unlisted
   + String upstreamQuarkusCoreVersion
   + List<String> memberBoms
   + Map<String,Object> metadata

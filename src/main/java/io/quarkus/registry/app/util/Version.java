@@ -42,6 +42,11 @@ public class Version {
         return -v1.compareTo(v2);
     });
 
+    public static boolean isPreFinal(String version) {
+        DefaultArtifactVersion v = new DefaultArtifactVersion(version);
+        return isQualifierPreFinal(v.getQualifier());
+    }
+
     /**
      * @param version the version to
      * @return true if the qualifier starts with CR
