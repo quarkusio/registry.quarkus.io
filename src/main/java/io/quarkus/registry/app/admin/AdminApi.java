@@ -435,6 +435,7 @@ public class AdminApi {
         extension.description = description;
         try {
             extension.persist();
+            cache.clear();
         } finally {
             DbState.updateUpdatedAt();
         }
