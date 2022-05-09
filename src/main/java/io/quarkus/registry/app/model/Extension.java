@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -14,7 +13,6 @@ import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@Cacheable
 public class Extension extends BaseEntity {
 
     @NaturalId
