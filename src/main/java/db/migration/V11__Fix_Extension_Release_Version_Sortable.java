@@ -1,15 +1,16 @@
 package db.migration;
 
-import io.quarkus.logging.Log;
-import io.quarkus.registry.app.util.Version;
-import org.flywaydb.core.api.migration.BaseJavaMigration;
-import org.flywaydb.core.api.migration.Context;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
+
+import io.quarkus.logging.Log;
+import io.quarkus.registry.app.util.Version;
 
 /**
  * Fixes the version_sortable value column in the extension_release table
