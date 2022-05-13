@@ -16,6 +16,7 @@ class VersionTest {
         assertThat(Version.toSortable("1.2.3.Final")).isEqualTo("00001.00002.00003.Final");
         assertThat(Version.toSortable("1.20.3.Final")).isEqualTo("00001.00020.00003.Final");
         assertThat(Version.toSortable("1.10.3.Final-redhat-00001")).isEqualTo("00001.00010.00003.Final-redhat-00001");
+        assertThat(Version.toSortable("1.2.3")).isEqualTo("00001.00002.00003.Final");
     }
 
     @Test
@@ -33,6 +34,7 @@ class VersionTest {
         List<String> versions = Arrays.asList(
                 "2.7.5.Final-redhat-00001",
                 "2.3.9.CR3",
+                "2.5.0",
                 "2.5.0.CR1",
                 "2.4.0.CR2",
                 "2.4.0.Final",
@@ -40,6 +42,7 @@ class VersionTest {
         versions.sort(Version.RELEASE_IMPORTANCE_COMPARATOR);
         assertThat(versions).containsExactly(
                 "2.7.5.Final-redhat-00001",
+                "2.5.0",
                 "2.4.0.Final",
                 "2.2.5.SP1-redhat-00001",
                 "2.5.0.CR1",

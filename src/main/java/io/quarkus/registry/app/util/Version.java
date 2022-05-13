@@ -70,10 +70,10 @@ public class Version {
             int idx = version.indexOf(qualifier);
             qualifier = version.substring(idx);
         }
-        if (!qualifier.isEmpty()) {
-            qualifier = "." + qualifier;
+        if (qualifier.isEmpty()) {
+            qualifier = "Final";
         }
-        return String.format("%05d.%05d.%05d%s",
+        return String.format("%05d.%05d.%05d.%s",
                 dav.getMajorVersion(),
                 dav.getMinorVersion(),
                 dav.getIncrementalVersion(),
