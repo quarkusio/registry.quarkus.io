@@ -13,7 +13,7 @@
   <properties>
     <assertj.version>3.22.0</assertj.version>
     <formatter.plugin.version>2.18.0</formatter.plugin.version>
-    <impsort.plugin.version>1.6.2</impsort.plugin.version>
+    <impsort.plugin.version>1.7.0</impsort.plugin.version>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
