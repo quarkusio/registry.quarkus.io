@@ -10,7 +10,6 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import java.net.HttpURLConnection;
 
 import javax.transaction.Transactional;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.AfterEach;
@@ -115,7 +114,7 @@ class DatabaseRegistryClientTest {
                 .get("/client/platforms")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+                .contentType(ContentType.JSON);
     }
 
     @Test
