@@ -69,7 +69,8 @@ public class MavenResource {
             if (contentProvider.supports(artifactCoords, uriInfo)) {
                 try {
                     return contentProvider.provide(artifactCoords, uriInfo);
-                } catch (WebApplicationException wae) {
+                } catch (IllegalArgumentException | IllegalStateException | WebApplicationException wae) {
+                    // These errors will be handled by the Exception mappers
                     throw wae;
                 } catch (Exception e) {
                     log.error("Error while providing content", e);

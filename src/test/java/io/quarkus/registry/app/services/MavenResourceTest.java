@@ -4,6 +4,8 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 
+import java.net.HttpURLConnection;
+
 import javax.transaction.Transactional;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -93,6 +95,14 @@ public class MavenResourceTest {
                 .statusCode(200)
                 .header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_JSON))
                 .body("quarkus-core-version", is("2.1.3.Final"));
+    }
+
+    @Test
+    void should_return_bad_request_if_version_is_invalid() {
+        given()
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-0.23.2.json")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
     }
 
     @AfterAll
