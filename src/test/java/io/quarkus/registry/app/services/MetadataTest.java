@@ -91,10 +91,10 @@ public class MetadataTest {
                 .extract().asInputStream();
         Metadata metadata = new MetadataXpp3Reader().read(is);
         List<SnapshotVersion> snapshotVersions = metadata.getVersioning().getSnapshotVersions();
-        assertThat(snapshotVersions).hasSize(5);
+        assertThat(snapshotVersions).hasSize(6);
         assertThat(snapshotVersions)
                 .extracting("classifier")
-                .contains("2.0.2.Final", "2.0.1.Final", "2.1.0.Final");
+                .contains("2.0.2.Final", "2.0.1.Final", "2.1.0.Final", "all");
     }
 
     @Test

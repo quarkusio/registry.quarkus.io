@@ -18,6 +18,7 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 
 @QuarkusTest
 public class MavenResourceTest {
@@ -27,6 +28,29 @@ public class MavenResourceTest {
     static void setUp() {
         {
             Platform platform = Platform.findByKey("io.quarkus.platform").get();
+
+            PlatformStream stream18 = new PlatformStream();
+            stream18.platform = platform;
+            stream18.streamKey = "1.8";
+            stream18.persistAndFlush();
+
+            PlatformRelease release180 = new PlatformRelease();
+            release180.platformStream = stream18;
+            release180.version = "1.8.0.Final";
+            release180.quarkusCoreVersion = release180.version;
+            release180.persistAndFlush();
+
+            PlatformStream stream19 = new PlatformStream();
+            stream19.platform = platform;
+            stream19.streamKey = "1.9";
+            stream19.persistAndFlush();
+
+            PlatformRelease release190 = new PlatformRelease();
+            release190.platformStream = stream19;
+            release190.version = "1.9.0.Final";
+            release190.quarkusCoreVersion = release190.version;
+            release190.persistAndFlush();
+
             PlatformStream stream20 = new PlatformStream();
             stream20.platform = platform;
             stream20.streamKey = "2.0";
@@ -62,7 +86,32 @@ public class MavenResourceTest {
         given()
                 .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT.json")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .log().ifValidationFails()
+                .contentType(ContentType.JSON)
+                .body("platforms.streams.flatten().size()", is(3),
+                        "platforms[0].streams[0].id", is("2.0"),
+                        "platforms[0].streams[0].releases[0].quarkus-core-version", is("2.0.2.Final"),
+                        "platforms[0].streams[1].id", is("1.9"),
+                        "platforms[0].streams[1].releases[0].quarkus-core-version", is("1.9.0.Final"),
+                        "platforms[0].streams[2].id", is("2.1"),
+                        "platforms[0].streams[2].releases[0].quarkus-core-version", is("2.1.0.CR1"));
+    }
+
+    @Test
+    void should_return_all_platforms() {
+        given()
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-all.json")
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("platforms.streams.size()", is(1),
+                        "platforms.streams[0].id[0]", is("2.0"),
+                        "platforms.streams[0].releases.size()", is(4),
+                        "platforms.streams[0].releases[0].quarkus-core-version[0]", is("2.0.2.Final"),
+                        "platforms.streams[0].releases[1].quarkus-core-version[0]", is("1.9.0.Final"),
+                        "platforms.streams[0].releases[2].quarkus-core-version[0]", is("1.8.0.Final"),
+                        "platforms.streams[0].releases[3].quarkus-core-version[0]", is("2.1.0.CR1"));
     }
 
     @Test
