@@ -86,6 +86,7 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         addSnapshotVersion(versioning, snapshot, baseVersion, "pom", EMPTY_CLASSIFIER);
         addSnapshotVersion(versioning, snapshot, baseVersion, "json", EMPTY_CLASSIFIER);
         addSnapshotVersion(versioning, snapshot, baseVersion, "json", PlatformRelease.findQuarkusCores());
+        addSnapshotVersion(versioning, snapshot, baseVersion, "json", List.of("all"));
         return newMetadata;
     }
 
