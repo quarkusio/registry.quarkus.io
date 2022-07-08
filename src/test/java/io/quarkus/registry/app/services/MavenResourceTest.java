@@ -104,7 +104,7 @@ public class MavenResourceTest {
                 .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-all.json")
                 .then()
                 .statusCode(200)
-                 .contentType(ContentType.JSON)
+                .contentType(ContentType.JSON)
                 .body("platforms.streams.size()", is(1),
                         "platforms.streams[0].id[0]", is("2.0"),
                         "platforms.streams[0].releases.size()", is(4),
