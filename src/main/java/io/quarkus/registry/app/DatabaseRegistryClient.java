@@ -13,7 +13,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -117,6 +119,20 @@ public class DatabaseRegistryClient {
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();
+    }
+
+    @GET
+    @Path("/dump-request")
+    @Produces(MediaType.TEXT_PLAIN)
+    @Operation(hidden = true)
+    public Response dump(@Context javax.ws.rs.core.HttpHeaders headers) {
+        // Dump Request Headers
+        StringBuilder sb = new StringBuilder();
+        sb.append("Request Headers:\n");
+        for (String name : headers.getRequestHeaders().keySet()) {
+            sb.append(name).append(": ").append(headers.getRequestHeader(name)).append("\n");
+        }
+        return Response.ok(sb.toString()).build();
     }
 
     private PlatformCatalog toPlatformCatalog(List<PlatformRelease> platformReleases, boolean all) {
