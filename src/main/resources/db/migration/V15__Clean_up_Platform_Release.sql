@@ -1,0 +1,1 @@
+ALTER TABLE platform_release drop column platform_id;
