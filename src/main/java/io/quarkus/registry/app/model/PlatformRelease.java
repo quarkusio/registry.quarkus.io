@@ -244,6 +244,6 @@ public class PlatformRelease extends BaseEntity {
                 with("groupId", artifact.getGroupId())
                         .and("artifactId", artifact.getArtifactId())
                         .and("version", artifact.getClassifier()))
-                                .firstResultOptional();
+                .firstResultOptional();
     }
 }

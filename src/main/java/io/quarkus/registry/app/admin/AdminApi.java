@@ -92,15 +92,9 @@ public class AdminApi {
             @NotNull(message = "X-Platform header missing") @HeaderParam("X-Platform") String platformKey,
             @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
             @NotNull(message = "Body payload is missing") ExtensionCatalog catalog) {
-        ArtifactCoords bom = catalog.getBom();
-        Platform platform = Platform.findByKey(platformKey)
-                .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
-        Optional<PlatformRelease> platformRelease = PlatformRelease.findByPlatformKey(platformKey, bom.getVersion());
-        if (platformRelease.isPresent()) {
-            return Response.status(Response.Status.CONFLICT).build();
-        }
-        Log.infof("Adding catalog %s", abbreviate(catalog.toString(), MAX_ABBREVIATION_WIDTH));
-        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(platform, catalog, pinned);
+        final ArtifactCoords bom = catalog.getBom();
+        Log.infof("Adding catalog %s", abbreviate(bom.toString(), MAX_ABBREVIATION_WIDTH));
+        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(catalog, platformKey, pinned);
         adminService.onExtensionCatalogImport(event);
         cache.clear();
         return Response.accepted(bom).build();
@@ -112,7 +106,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Deletes an extension catalog (platform) from the database")
-    @Transactional
     public Response deleteExtensionCatalog(
             @NotNull(message = "platformKey is missing") @FormParam("platformKey") String platformKey,
             @NotNull(message = "version is missing") @FormParam("version") String version) {

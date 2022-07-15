@@ -1,0 +1,41 @@
+{
+  "id" : "io.quarkus.platform:quarkus-debezium-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final",
+  "platform" : true,
+  "bom" : "io.quarkus.platform:quarkus-debezium-bom::pom:2.10.2.Final",
+  "quarkus-core-version" : "2.10.2.Final",
+  "extensions" : [ {
+    "name" : "Debezium Quarkus Outbox",
+    "description" : "Implement the outbox pattern for reliable microservices data exchange with Debezium and change data capture",
+    "metadata" : {
+      "built-with-quarkus-core" : "2.7.2.Final",
+      "status" : "stable",
+      "guide" : "https://debezium.io/documentation/reference/1.9/transformations/outbox-event-router.html",
+      "extension-dependencies" : [ "io.quarkus:quarkus-hibernate-orm", "io.quarkus:quarkus-core", "io.quarkus:quarkus-agroal", "io.quarkus:quarkus-datasource", "io.quarkus:quarkus-narayana-jta", "io.quarkus:quarkus-mutiny", "io.quarkus:quarkus-smallrye-context-propagation", "io.quarkus:quarkus-caffeine", "io.quarkus:quarkus-jackson", "io.quarkus:quarkus-arc" ],
+      "categories" : [ "integration", "cdc" ],
+      "keywords" : [ "debezium", "outbox", "cdc" ]
+    },
+    "artifact" : "io.debezium:debezium-quarkus-outbox::jar:1.9.3.Final",
+    "origins" : [ "io.quarkus.platform:quarkus-debezium-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final" ]
+  } ],
+  "categories" : [ {
+    "id" : "integration",
+    "name" : "Integration",
+    "description" : "Connectors to read to write from a skew of systems (file, S#, Twitter, etc)",
+    "metadata" : {
+      "pinned" : [ "org.apache.camel.quarkus:camel-quarkus-core", "org.apache.camel.quarkus:camel-quarkus-core-xml" ]
+    }
+  }, {
+    "id" : "business-automation",
+    "name" : "Business Automation",
+    "description" : "Rules engine, BPM, etc"
+  } ],
+  "metadata" : {
+    "last-bom-update" : "io.quarkus.platform:quarkus-debezium-bom:2.10.0.CR1",
+    "platform-release" : {
+      "platform-key" : "io.quarkus.platform",
+      "stream" : "2.10",
+      "version" : "2.10.2.Final",
+      "members" : [ "io.quarkus.platform:quarkus-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-optaplanner-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-kogito-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-qpid-jms-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-cassandra-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-amazon-services-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-camel-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-hazelcast-client-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-debezium-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-blaze-persistence-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final", "io.quarkus.platform:quarkus-google-cloud-services-bom-quarkus-platform-descriptor:2.10.2.Final:json:2.10.2.Final" ]
+    }
+  }
+}

@@ -4,7 +4,6 @@ import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -40,21 +39,32 @@ public class AdminService {
     @Transactional
     public void onExtensionCatalogImport(ExtensionCatalogImportEvent event) {
         try {
-            ExtensionCatalog extensionCatalog = event.getExtensionCatalog();
-            PlatformRelease platformRelease = insertPlatform(event.getPlatform(), extensionCatalog, event.isPinned());
+            ExtensionCatalog extensionCatalog = event.extensionCatalog();
+            Platform platform = Platform.findByKey(event.platformKey()).orElseGet(() -> {
+                Platform p = new Platform();
+                p.platformKey = event.platformKey();
+                ArtifactCoords catalogId = ArtifactCoords.fromString(extensionCatalog.getId());
+                p.name = event.platformKey();
+                p.groupId = catalogId.getGroupId();
+                p.artifactId = catalogId.getArtifactId();
+                p.persist();
+                return p;
+            });
+            PlatformRelease platformRelease = insertPlatformRelease(platform, extensionCatalog, event.pinned());
             for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
                 insertExtensionRelease(extension, platformRelease);
             }
             //Add Categories
             for (io.quarkus.registry.catalog.Category category : extensionCatalog.getCategories()) {
-                Optional<Category> categoryOptional = Category.findByKey(category.getId());
-                categoryOptional.ifPresent(c -> {
-                    PlatformReleaseCategory prc = new PlatformReleaseCategory();
-                    prc.platformRelease = platformRelease;
-                    prc.category = c;
-                    prc.metadata = category.getMetadata();
-                    platformRelease.categories.add(prc);
-                    prc.persist();
+                Category.findByKey(category.getId()).ifPresent(c -> {
+                    if (PlatformReleaseCategory.findByNaturalKey(platformRelease, c).isEmpty()) {
+                        PlatformReleaseCategory prc = new PlatformReleaseCategory();
+                        prc.platformRelease = platformRelease;
+                        prc.category = c;
+                        prc.metadata = category.getMetadata();
+                        platformRelease.categories.add(prc);
+                        prc.persist();
+                    }
                 });
             }
             DbState.updateUpdatedAt();
@@ -65,7 +75,7 @@ public class AdminService {
     }
 
     @SuppressWarnings("unchecked")
-    private PlatformRelease insertPlatform(Platform platform, ExtensionCatalog extensionCatalog, boolean pinned) {
+    private PlatformRelease insertPlatformRelease(Platform platform, ExtensionCatalog extensionCatalog, boolean pinned) {
         Map<String, Object> platformReleaseMetadata = (Map<String, Object>) extensionCatalog.getMetadata()
                 .get("platform-release");
         String streamKey = (String) platformReleaseMetadata.get("stream");
@@ -77,14 +87,18 @@ public class AdminService {
             return stream;
         });
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
-                .orElseGet(() -> new PlatformRelease(platformStream, version, pinned));
+                .orElseGet(() -> {
+                    PlatformRelease newPlatformRelease = new PlatformRelease(platformStream, version, pinned);
+                    newPlatformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
+                    newPlatformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
+                    newPlatformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
+                            .map(PlatformArtifacts::ensureBomArtifact)
+                            .map(ArtifactCoords::toString).toList());
+                    // TODO Investigate
+                    newPlatformRelease.metadata = extensionCatalog.getMetadata();
+                    return newPlatformRelease;
+                });
         platformRelease.pinned = pinned;
-        platformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
-        platformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
-        platformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
-                .map(PlatformArtifacts::ensureBomArtifact)
-                .map(ArtifactCoords::toString).toList());
-        platformRelease.metadata = extensionCatalog.getMetadata();
         platformRelease.persistAndFlush();
         return platformRelease;
     }
