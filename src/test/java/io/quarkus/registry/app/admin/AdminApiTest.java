@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasSize;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.util.Map;
@@ -179,9 +180,10 @@ class AdminApiTest extends BaseTest {
                 .post("/admin/v1/extension/catalog")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_BAD_REQUEST)
+                .log().ifValidationFails()
                 .contentType(ContentType.JSON)
-                .body("parameter-violations.message", hasItem("X-Platform header missing"),
-                        "parameter-violations.message", hasItem("Body payload is missing"));
+                .body("violations.message", hasItem("X-Platform header missing"),
+                        "violations.message", hasItem("Body payload is missing"));
     }
 
     @Test
@@ -355,6 +357,23 @@ class AdminApiTest extends BaseTest {
                 .contentType(ContentType.JSON)
                 .body("extensions.name", hasItem("Another Name"),
                         "extensions.description", hasItem("Another Description"));
+    }
 
+    @Test
+    void insert_platform_if_not_exists() throws IOException {
+        // Add a new Extension Catalog
+        try (InputStream body = getClass().getClassLoader().getResourceAsStream("extension-catalog-debezium.json")) {
+            // Update extension
+            given()
+                    .body(body)
+                    .header("Token", "test")
+                    .header("X-Platform", "io.quarkus.platform:quarkus-debezium-bom")
+                    .contentType(ContentType.JSON)
+                    .post("/admin/v1/extension/catalog")
+                    .then()
+                    .log().ifValidationFails()
+                    .statusCode(HttpURLConnection.HTTP_ACCEPTED)
+                    .contentType(ContentType.JSON);
+        }
     }
 }
