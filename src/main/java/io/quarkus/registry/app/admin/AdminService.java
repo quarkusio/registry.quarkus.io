@@ -107,7 +107,7 @@ public class AdminService {
     public void onExtensionCreate(ExtensionCreateEvent event) {
         // Non-platform extension
         try {
-            insertExtensionRelease(event.getExtension(), null);
+            insertExtensionRelease(event.extension(), null);
             DbState.updateUpdatedAt();
         } catch (Exception e) {
             Log.error("Error while inserting extension", e);
@@ -119,7 +119,7 @@ public class AdminService {
     public void onExtensionDelete(ExtensionDeleteEvent event) {
         // Non-platform extension
         try {
-            Extension extension = event.getExtension();
+            Extension extension = event.extension();
             // Reattach extension
             extension = Extension.getEntityManager().merge(extension);
             extension.delete();
@@ -133,7 +133,7 @@ public class AdminService {
     @Transactional
     public void onExtensionCatalogDelete(ExtensionCatalogDeleteEvent event) {
         try {
-            PlatformRelease platformRelease = event.getPlatformRelease();
+            PlatformRelease platformRelease = event.platformRelease();
             // Reattach platform release
             platformRelease = PlatformRelease.getEntityManager().merge(platformRelease);
             platformRelease.delete();
@@ -148,7 +148,7 @@ public class AdminService {
     public void onExtensionReleaseDelete(ExtensionReleaseDeleteEvent event) {
         // Non-platform extension
         try {
-            ExtensionRelease extensionRelease = event.getExtensionRelease();
+            ExtensionRelease extensionRelease = event.extensionRelease();
             // Reattach extension
             extensionRelease = ExtensionRelease.getEntityManager().merge(extensionRelease);
             extensionRelease.delete();
@@ -220,13 +220,13 @@ public class AdminService {
     @Transactional
     public void onExtensionCompatibilityCreate(ExtensionCompatibilityCreateEvent event) {
         ExtensionReleaseCompatibility extensionReleaseCompatibility = ExtensionReleaseCompatibility.findByNaturalKey(
-                event.getExtensionRelease(), event.getQuarkusCore()).orElseGet(() -> {
+                event.extensionRelease(), event.quarkusCore()).orElseGet(() -> {
                     ExtensionReleaseCompatibility newEntity = new ExtensionReleaseCompatibility();
-                    newEntity.extensionRelease = event.getExtensionRelease();
-                    newEntity.quarkusCoreVersion = event.getQuarkusCore();
+                    newEntity.extensionRelease = event.extensionRelease();
+                    newEntity.quarkusCoreVersion = event.quarkusCore();
                     return newEntity;
                 });
-        extensionReleaseCompatibility.compatible = event.isCompatible();
+        extensionReleaseCompatibility.compatible = event.compatible();
         extensionReleaseCompatibility.persistAndFlush();
         DbState.updateUpdatedAt();
     }
@@ -235,8 +235,8 @@ public class AdminService {
     public void onExtensionCompatibilityDelete(ExtensionCompatibleDeleteEvent event) {
         ExtensionReleaseCompatibility.delete(
                 "from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
-                event.getExtensionRelease(),
-                event.getQuarkusCore());
+                event.extensionRelease(),
+                event.quarkusCore());
         DbState.updateUpdatedAt();
     }
 }
