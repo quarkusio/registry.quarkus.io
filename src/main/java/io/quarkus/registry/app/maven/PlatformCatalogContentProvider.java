@@ -12,7 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
@@ -67,12 +67,12 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
         Platform platform = platformRelease.platformStream.platform;
         List<Category> categories = Category.listAll();
         //TODO: This information is not stored in the DB
-        String id = new ArtifactCoords(platform.groupId, platform.artifactId, platformRelease.version, "json",
+        String id = ArtifactCoords.of(platform.groupId, platform.artifactId, platformRelease.version, "json",
                 platformRelease.version).toString();
         ExtensionCatalog expected = ExtensionCatalog.builder()
                 .setId(id)
                 //TODO: This information is not stored in the DB
-                .setBom(new ArtifactCoords(platform.groupId, "quarkus-bom", "pom", platformRelease.version))
+                .setBom(ArtifactCoords.pom(platform.groupId, "quarkus-bom", platformRelease.version))
                 .setPlatform(true)
                 .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion)
                 .setMetadata(platformRelease.metadata)

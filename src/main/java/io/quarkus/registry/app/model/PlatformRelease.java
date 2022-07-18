@@ -26,7 +26,7 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.util.Version;
 
 @Entity
@@ -44,6 +44,7 @@ import io.quarkus.registry.app.util.Version;
                 select pr from PlatformRelease pr
                 where pr.quarkusCoreVersion = ?1
                 and pr.unlisted = false
+                and pr.platformStream.platform.platformType = 'C'
                 and (pr.platformStream, pr.versionSortable) in (
                     select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
                         where pr2.quarkusCoreVersion = ?1
@@ -56,6 +57,7 @@ import io.quarkus.registry.app.util.Version;
         @NamedQuery(name = "PlatformRelease.findLatest", query = """
                   select pr from PlatformRelease pr
                   where pr.unlisted = false
+                  and pr.platformStream.platform.platformType = 'C'
                   and (pr.platformStream, pr.versionSortable) in
                       (
                        select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
@@ -69,11 +71,13 @@ import io.quarkus.registry.app.util.Version;
                   select pr from PlatformRelease pr
                   where pr.unlisted = false
                   and pr.pinned = true
+                  and pr.platformStream.platform.platformType = 'C'
                   order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """),
         @NamedQuery(name = "PlatformRelease.findLatestPinnedStream", query = """
                   select pr from PlatformRelease pr
                   where pr.unlisted = false
+                  and pr.platformStream.platform.platformType = 'C'
                   and (pr.platformStream, pr.versionSortable) in
                       (
                        select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
@@ -157,10 +161,9 @@ public class PlatformRelease extends BaseEntity {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PlatformRelease)) {
+        if (!(o instanceof PlatformRelease platform)) {
             return false;
         }
-        PlatformRelease platform = (PlatformRelease) o;
         return Objects.equals(this.platformStream, platform.platformStream) &&
                 Objects.equals(version, platform.version);
     }
