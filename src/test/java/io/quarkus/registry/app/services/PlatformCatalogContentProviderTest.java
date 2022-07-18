@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.catalog.CatalogMapperHelper;

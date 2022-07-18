@@ -66,6 +66,7 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 @RolesAllowed("admin")
 @SecurityScheme(securitySchemeName = "Authentication", description = "Admin token", type = SecuritySchemeType.APIKEY, apiKeyName = "TOKEN", in = SecuritySchemeIn.HEADER)
 @Tag(name = "Admin", description = "Admin related services")
+@SuppressWarnings("unchecked")
 public class AdminApi {
 
     /**
