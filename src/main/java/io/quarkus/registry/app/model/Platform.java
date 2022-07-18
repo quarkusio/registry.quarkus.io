@@ -9,12 +9,13 @@ import java.util.Optional;
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
 
 import io.quarkiverse.hibernate.types.json.JsonTypes;
 
@@ -38,7 +39,11 @@ public class Platform extends BaseEntity {
     @Column
     public boolean isDefault;
 
-    @Type(type = JsonTypes.JSON_BIN)
+    @Column
+    @Enumerated(EnumType.STRING)
+    public Type platformType = Type.C;
+
+    @org.hibernate.annotations.Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
     public Map<String, Object> metadata;
 
@@ -68,5 +73,19 @@ public class Platform extends BaseEntity {
         return session.byNaturalId(Platform.class)
                 .using("platformKey", platformKey)
                 .loadOptional();
+    }
+
+    /**
+     * Is this a root or a member platform?
+     */
+    public enum Type {
+        /**
+         * Core member
+         */
+        C,
+        /**
+         * Member
+         */
+        M
     }
 }

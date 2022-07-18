@@ -8,17 +8,12 @@ import java.net.HttpURLConnection;
 
 import javax.transaction.Transactional;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.registry.app.model.Extension;
-import io.quarkus.registry.app.model.ExtensionRelease;
-import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
-import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
@@ -26,12 +21,11 @@ import io.restassured.http.ContentType;
 
 @QuarkusTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-public class PlatformStreamTest {
+public class PlatformStreamTest extends BaseTest {
 
     @BeforeEach
     @Transactional
     void setUp() {
-        cleanUpDatabase();
         {
             Platform platform = Platform.findByKey("io.quarkus.platform").get();
             PlatformStream stream20 = new PlatformStream();
@@ -118,16 +112,4 @@ public class PlatformStreamTest {
                         "platforms[0].streams.id", hasItems("2.3", "2.2", "2.0"));
 
     }
-
-    @AfterEach
-    @Transactional
-    void cleanUpDatabase() {
-        PlatformExtension.deleteAll();
-        ExtensionReleaseCompatibility.deleteAll();
-        ExtensionRelease.deleteAll();
-        Extension.deleteAll();
-        PlatformRelease.deleteAll();
-        PlatformStream.deleteAll();
-    }
-
 }

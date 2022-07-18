@@ -90,11 +90,12 @@ public class AdminApi {
     @Operation(summary = "Inserts a new Extension Catalog (Platform Release) in the database", description = "Invoke this endpoint when a new extension catalog release is available")
     public Response addExtensionCatalog(
             @NotNull(message = "X-Platform header missing") @HeaderParam("X-Platform") String platformKey,
+            @DefaultValue("C") @HeaderParam("X-Platform-Type") Platform.Type platformType,
             @DefaultValue("false") @HeaderParam("X-Platform-Pinned") boolean pinned,
             @NotNull(message = "Body payload is missing") ExtensionCatalog catalog) {
         final ArtifactCoords bom = catalog.getBom();
         Log.infof("Adding catalog %s", abbreviate(bom.toString(), MAX_ABBREVIATION_WIDTH));
-        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(catalog, platformKey, pinned);
+        ExtensionCatalogImportEvent event = new ExtensionCatalogImportEvent(catalog, platformKey, pinned, platformType);
         adminService.onExtensionCatalogImport(event);
         cache.clear();
         return Response.accepted(bom).build();

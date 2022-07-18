@@ -8,6 +8,11 @@ class Platform {
   + boolean isDefault
 }
 
+enum Platform.Type {
+  + C
+  + M
+}
+
 class PlatformStream {
   + String streamKey
   - String streamKeySortable
@@ -67,8 +72,14 @@ note left of PlatformRelease::memberBoms
   Stored as a JSON array
 end note
 
+note right of Platform.Type
+  C = Core
+  M = Member
+end note
+
 Category o-- PlatformReleaseCategory
 
+Platform                -   Platform.Type
 Platform                *-- PlatformStream
 PlatformStream          *-- PlatformRelease
 PlatformRelease         *-- PlatformExtension

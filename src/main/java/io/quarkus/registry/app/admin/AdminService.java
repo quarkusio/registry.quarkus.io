@@ -47,6 +47,7 @@ public class AdminService {
                 p.name = event.platformKey();
                 p.groupId = catalogId.getGroupId();
                 p.artifactId = catalogId.getArtifactId();
+                p.platformType = event.type();
                 p.persist();
                 return p;
             });
@@ -94,7 +95,6 @@ public class AdminService {
                     newPlatformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)
                             .map(PlatformArtifacts::ensureBomArtifact)
                             .map(ArtifactCoords::toString).toList());
-                    // TODO Investigate
                     newPlatformRelease.metadata = extensionCatalog.getMetadata();
                     return newPlatformRelease;
                 });

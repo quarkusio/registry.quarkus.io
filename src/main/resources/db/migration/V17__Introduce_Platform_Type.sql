@@ -1,0 +1,1 @@
+ALTER TABLE platform ADD COLUMN platform_type varchar not null default 'C';
