@@ -18,7 +18,7 @@
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <quarkus-hibernate-types.version>0.2.0</quarkus-hibernate-types.version>
     <quarkus-logging-sentry.version>1.1.1</quarkus-logging-sentry.version>
-    <quarkus.version>2.10.2.Final</quarkus.version>
+    <quarkus.version>2.10.3.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
 
     <!-- Set Java version -->
