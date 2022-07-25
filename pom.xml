@@ -12,7 +12,7 @@
   <version>${revision}</version>
   <properties>
     <assertj.version>3.23.1</assertj.version>
-    <formatter.plugin.version>2.19.0</formatter.plugin.version>
+    <formatter.plugin.version>2.20.0</formatter.plugin.version>
     <impsort.plugin.version>1.7.0</impsort.plugin.version>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
