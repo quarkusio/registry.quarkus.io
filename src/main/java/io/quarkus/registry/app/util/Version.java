@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.util;
 
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -48,11 +49,18 @@ public class Version {
     }
 
     /**
-     * @param version the version to
-     * @return true if the qualifier starts with CR
+     * @param versionQualifier the version to
+     * @return true if the qualifier is before final (Alpha, Beta, CR or RC)
      */
-    private static boolean isQualifierPreFinal(String version) {
-        return version != null && version.startsWith("CR");
+    private static boolean isQualifierPreFinal(String versionQualifier) {
+        if (versionQualifier == null) {
+            return false;
+        }
+        String upperQualifier = versionQualifier.toUpperCase(Locale.ROOT);
+        return upperQualifier.startsWith("CR") ||
+                upperQualifier.startsWith("RC") ||
+                upperQualifier.startsWith("ALPHA") ||
+                upperQualifier.startsWith("BETA");
     }
 
     /**
@@ -72,6 +80,9 @@ public class Version {
         }
         if (qualifier.isEmpty()) {
             qualifier = "Final";
+        }
+        if (qualifier.startsWith("RC")) {
+            qualifier = "CR" + qualifier.substring(2);
         }
         return String.format("%05d.%05d.%05d.%s",
                 dav.getMajorVersion(),

@@ -34,6 +34,7 @@ class VersionTest {
         List<String> versions = Arrays.asList(
                 "2.7.5.Final-redhat-00001",
                 "2.3.9.CR3",
+                "2.4.0.RC3",
                 "2.5.0",
                 "2.5.0.CR1",
                 "2.4.0.CR2",
@@ -46,6 +47,7 @@ class VersionTest {
                 "2.4.0.Final",
                 "2.2.5.SP1-redhat-00001",
                 "2.5.0.CR1",
+                "2.4.0.RC3",
                 "2.4.0.CR2",
                 "2.3.9.CR3");
     }
