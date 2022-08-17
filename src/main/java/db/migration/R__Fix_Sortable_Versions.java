@@ -11,6 +11,7 @@ import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 
 import io.quarkus.logging.Log;
+import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.util.Version;
 
 /**
@@ -48,6 +49,7 @@ public class R__Fix_Sortable_Versions extends BaseJavaMigration {
             }
         }
         if (transformedVersions.size() > 0) {
+            int rowsUpdated = 0;
             // Execute Updates
             try (PreparedStatement stmt = connection.prepareStatement(updateVersionsSQL)) {
                 for (Map.Entry<String, String> entry : transformedVersions.entrySet()) {
@@ -56,8 +58,13 @@ public class R__Fix_Sortable_Versions extends BaseJavaMigration {
                     stmt.setString(1, sortable);
                     stmt.setString(2, original);
                     int rows = stmt.executeUpdate();
+                    rowsUpdated += rows;
                     Log.debugf("%s rows updated from %s to %s%n", rows, original, sortable);
                 }
+            }
+            // Update DbState timestamp only if any rows changed
+            if (rowsUpdated > 0) {
+                DbState.updateUpdatedAt(connection);
             }
         }
     }
