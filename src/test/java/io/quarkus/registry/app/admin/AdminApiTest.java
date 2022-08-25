@@ -18,7 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
@@ -146,7 +146,7 @@ class AdminApiTest {
                 .setVersion("1.0.1")
                 .setName("Another Name")
                 .setDescription("Another Description")
-                .setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"))
+                .setArtifact(ArtifactCoords.jar("foo.bar", "foo-extension", "1.0.1"))
                 .build();
         StringWriter sw = new StringWriter();
         CatalogMapperHelper.serialize(extension, sw);
@@ -335,7 +335,7 @@ class AdminApiTest {
                 .setVersion("1.0.1")
                 .setName("Another Name")
                 .setDescription("Another Description")
-                .setArtifact(new ArtifactCoords("foo.bar", "foo-extension", "1.0.1"))
+                .setArtifact(ArtifactCoords.jar("foo.bar", "foo-extension", "1.0.1"))
                 .build();
         StringWriter sw = new StringWriter();
         CatalogMapperHelper.serialize(extension, sw);

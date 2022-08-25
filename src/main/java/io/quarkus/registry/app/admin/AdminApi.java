@@ -36,8 +36,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 
 import io.quarkus.logging.Log;
-import io.quarkus.maven.ArtifactCoords;
-import io.quarkus.maven.ArtifactKey;
+import io.quarkus.maven.dependency.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactKey;
 import io.quarkus.registry.app.events.ExtensionCatalogDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCatalogImportEvent;
 import io.quarkus.registry.app.events.ExtensionCompatibilityCreateEvent;
@@ -142,7 +142,7 @@ public class AdminApi {
             @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
             @FormParam("version") String version) {
         if (version != null) {
-            ArtifactCoords entity = new ArtifactCoords(groupId, artifactId, version);
+            ArtifactCoords entity = ArtifactCoords.of(groupId, artifactId, null, null, version);
             ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
             // If an extension release belongs to a platform, do not remove
@@ -160,7 +160,7 @@ public class AdminApi {
                 return Response.accepted(entity).build();
             }
         } else {
-            ArtifactKey entity = new ArtifactKey(groupId, artifactId);
+            ArtifactKey entity = ArtifactKey.ga(groupId, artifactId);
             Extension extension = Extension.findByGA(groupId, artifactId)
                     .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
             Log.infof("Removing extension %s:%s", abbreviate(groupId, MAX_ABBREVIATION_WIDTH),

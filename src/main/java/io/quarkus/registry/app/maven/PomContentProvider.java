@@ -16,7 +16,7 @@ import org.apache.maven.model.Repository;
 import org.apache.maven.model.RepositoryPolicy;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 
 @Singleton
 @Priority(1000)

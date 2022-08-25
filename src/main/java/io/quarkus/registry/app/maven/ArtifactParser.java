@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.ws.rs.core.PathSegment;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 
 public class ArtifactParser {
 
@@ -86,7 +86,7 @@ public class ArtifactParser {
             groupId.append('.').append(pathSegmentList.get(i).getPath());
         }
 
-        return new ArtifactCoords(groupId.toString(), artifactId, classifier, type, version);
+        return ArtifactCoords.of(groupId.toString(), artifactId, classifier, type, version);
     }
 
     public static String getFileName(List<PathSegment> pathSegmentList) {

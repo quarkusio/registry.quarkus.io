@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.panache.common.Sort;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
@@ -79,7 +79,7 @@ public class DatabaseRegistryClient {
             @NotNull(message = "The Quarkus version (v) is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
         ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
-        String id = new ArtifactCoords(nonPlatformExtensionCoords.getGroupId(),
+        String id = ArtifactCoords.of(nonPlatformExtensionCoords.getGroupId(),
                 nonPlatformExtensionCoords.getArtifactId(),
                 quarkusVersion,
                 nonPlatformExtensionCoords.getType(),

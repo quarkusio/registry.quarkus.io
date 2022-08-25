@@ -20,7 +20,7 @@ import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 
 import io.quarkus.cache.CacheResult;
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.CacheNames;
 import io.quarkus.registry.app.maven.cache.MavenCacheState;
 import io.quarkus.registry.app.model.PlatformRelease;

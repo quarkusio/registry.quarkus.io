@@ -11,7 +11,7 @@ import org.flywaydb.core.api.migration.Context;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 
 /**
