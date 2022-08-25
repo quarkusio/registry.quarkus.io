@@ -11,7 +11,7 @@ import javax.ws.rs.core.UriInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.DatabaseRegistryClient;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.ExtensionCatalog;

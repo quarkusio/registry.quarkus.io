@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import io.quarkus.cache.CacheResult;
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.CacheNames;
 import io.quarkus.registry.config.RegistriesConfigMapperHelper;
@@ -61,7 +61,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
 
         final RegistryDescriptorConfig.Mutable descriptor = RegistryDescriptorConfig.builder();
         descriptor.setArtifact(
-                new ArtifactCoords(mavenConfig.getRegistryGroupId(),
+                ArtifactCoords.of(mavenConfig.getRegistryGroupId(),
                         Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID, null,
                         Constants.JSON, Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
         qer.setDescriptor(descriptor.build());
@@ -69,7 +69,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         final RegistryMavenConfig.Mutable registryMavenConfig = RegistryMavenConfig.builder();
 
         final RegistryPlatformsConfig.Mutable platformsConfig = RegistryPlatformsConfig.builder();
-        platformsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
+        platformsConfig.setArtifact(ArtifactCoords.of(mavenConfig.getRegistryGroupId(),
                 Constants.DEFAULT_REGISTRY_PLATFORMS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
                 Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
         qer.setPlatforms(platformsConfig.build());
@@ -77,7 +77,7 @@ public class RegistryDescriptorContentProvider implements ArtifactContentProvide
         if (mavenConfig.supportsNonPlatforms()) {
             final RegistryNonPlatformExtensionsConfig.Mutable nonPlatformExtensionsConfig = RegistryNonPlatformExtensionsConfig
                     .builder();
-            nonPlatformExtensionsConfig.setArtifact(new ArtifactCoords(mavenConfig.getRegistryGroupId(),
+            nonPlatformExtensionsConfig.setArtifact(ArtifactCoords.of(mavenConfig.getRegistryGroupId(),
                     Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID, null, Constants.JSON,
                     Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION));
             qer.setNonPlatformExtensions(nonPlatformExtensionsConfig.build());

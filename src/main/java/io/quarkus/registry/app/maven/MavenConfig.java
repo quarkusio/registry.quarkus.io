@@ -8,7 +8,7 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
 
 @ApplicationScoped
@@ -42,8 +42,9 @@ public class MavenConfig {
 
     @PostConstruct
     void init() {
-        this.nonPlatformExtensionCoords = new ArtifactCoords(registryGroupId,
+        this.nonPlatformExtensionCoords = ArtifactCoords.of(registryGroupId,
                 Constants.DEFAULT_REGISTRY_NON_PLATFORM_EXTENSIONS_CATALOG_ARTIFACT_ID,
+                null,
                 Constants.JSON,
                 Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION);
     }

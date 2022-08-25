@@ -14,7 +14,7 @@ import org.jboss.resteasy.reactive.common.util.PathSegmentImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.maven.ArtifactCoords;
+import io.quarkus.maven.dependency.ArtifactCoords;
 
 class ArtifactParserTest {
 
