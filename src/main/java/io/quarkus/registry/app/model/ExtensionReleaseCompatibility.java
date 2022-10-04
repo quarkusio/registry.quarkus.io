@@ -14,9 +14,10 @@ import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
 @Entity
-@NamedQuery(name = "ExtensionReleaseCompatibility.findCompatibility", query = "select e.extensionRelease.id as id, e.compatible as compatible from ExtensionReleaseCompatibility e "
-        +
-        "where e.quarkusCoreVersion = :quarkusCore")
+@NamedQuery(name = "ExtensionReleaseCompatibility.findCompatibility", query = """
+        select e.extensionRelease.id as id, e.compatible as compatible from ExtensionReleaseCompatibility e
+        where e.quarkusCoreVersion = :quarkusCore
+        """)
 public class ExtensionReleaseCompatibility extends BaseEntity {
 
     @NaturalId
