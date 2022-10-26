@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.model.Extension;
@@ -96,6 +97,23 @@ class DatabaseRegistryClientTest {
                 erc.compatible = true;
                 erc.persist();
             }
+
+            {
+                Extension newExtension = new Extension();
+                newExtension.name = "Bar";
+                newExtension.description = "A Bar Extension";
+                newExtension.groupId = "foo.bar";
+                newExtension.artifactId = "bar-extension";
+                newExtension.persist();
+                {
+                    ExtensionRelease extensionRelease = new ExtensionRelease();
+                    extensionRelease.extension = newExtension;
+                    extensionRelease.version = "0.4.2";
+                    extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    extensionRelease.persist();
+                }
+            }
+
         }
     }
 
@@ -132,7 +150,23 @@ class DatabaseRegistryClientTest {
                 .get("/client/non-platform-extensions?v=2.0.0.Final")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
                 .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.1.0"));
+    }
+
+    /**
+     * Test that we don't assume forwards compatibility across major versions.
+     */
+    @Disabled
+    @Test
+    void should_return_only_extensions_matching_compatible_quarkus_core_not_earlier_versions() {
+        given()
+                .get("/client/non-platform-extensions?v=3.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].artifact", is("foo.bar:bar-extension::jar:0.4.2"));
+        // We want bar, which is written for Quarkus 3, but not foo, which is written for Quarkus 2
     }
 
     @Test
