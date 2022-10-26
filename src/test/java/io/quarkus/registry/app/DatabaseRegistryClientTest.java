@@ -14,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.model.Extension;
@@ -157,7 +156,6 @@ class DatabaseRegistryClientTest {
     /**
      * Test that we don't assume forwards compatibility across major versions.
      */
-    @Disabled
     @Test
     void should_return_only_extensions_matching_compatible_quarkus_core_not_earlier_versions() {
         given()
