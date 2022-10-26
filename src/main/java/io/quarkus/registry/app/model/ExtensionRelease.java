@@ -14,6 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
@@ -29,7 +30,9 @@ import io.quarkus.registry.app.util.Version;
                 select max(ext2.versionSortable) from ExtensionRelease ext2
                 where ext2.extension = ext.extension
                 and (
-                       (ext2.quarkusCoreVersionSortable <= :quarkusCoreSortable)
+                       (ext2.quarkusCoreVersionSortable <= :quarkusCoreSortable
+                        and ext2.quarkusCoreVersionSortable < :maximumVersion
+                        and ext2.quarkusCoreVersionSortable >= :minimumVersion)
                     or ((select erc.compatible
                          from ExtensionReleaseCompatibility erc
                            where erc.extensionRelease = ext2 and erc.quarkusCoreVersion = :quarkusCore) is true)
@@ -105,9 +108,14 @@ public class ExtensionRelease extends BaseEntity {
     }
 
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
+        DefaultArtifactVersion artifactVersion = new DefaultArtifactVersion(quarkusCore);
+        String minimumVersion = artifactVersion.getMajorVersion() + ".0.0.Final";
+        String maximumVersion = (artifactVersion.getMajorVersion() + 1) + ".0.0.Final";
         return getEntityManager().createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
-                .setParameter("quarkusCoreSortable", Version.toSortable(quarkusCore))
+                .setParameter("minimumVersion", Version.toSortable(minimumVersion))
+                .setParameter("maximumVersion", Version.toSortable(maximumVersion))
                 .setParameter("quarkusCore", quarkusCore)
+                .setParameter("quarkusCoreSortable", Version.toSortable(quarkusCore))
                 .getResultList();
     }
 
