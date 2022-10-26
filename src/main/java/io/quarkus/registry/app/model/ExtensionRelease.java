@@ -31,8 +31,8 @@ import io.quarkus.registry.app.util.Version;
                 where ext2.extension = ext.extension
                 and (
                        (ext2.quarkusCoreVersionSortable <= :quarkusCoreSortable
-                        and ext2.quarkusCoreVersionSortable < :maximumVersion
-                        and ext2.quarkusCoreVersionSortable >= :minimumVersion)
+                        and ext2.quarkusCoreVersionSortable < :upperBound
+                        and ext2.quarkusCoreVersionSortable >= :lowerBound)
                     or ((select erc.compatible
                          from ExtensionReleaseCompatibility erc
                            where erc.extensionRelease = ext2 and erc.quarkusCoreVersion = :quarkusCore) is true)
@@ -109,11 +109,11 @@ public class ExtensionRelease extends BaseEntity {
 
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
         DefaultArtifactVersion artifactVersion = new DefaultArtifactVersion(quarkusCore);
-        String minimumVersion = artifactVersion.getMajorVersion() + ".0.0.Final";
-        String maximumVersion = (artifactVersion.getMajorVersion() + 1) + ".0.0.Final";
+        String lowerBound = artifactVersion.getMajorVersion() + ".0.0.A";
+        String upperBound = (artifactVersion.getMajorVersion() + 1) + ".0.0.A";
         return getEntityManager().createNamedQuery("ExtensionRelease.findNonPlatformExtensions", ExtensionRelease.class)
-                .setParameter("minimumVersion", Version.toSortable(minimumVersion))
-                .setParameter("maximumVersion", Version.toSortable(maximumVersion))
+                .setParameter("lowerBound", Version.toSortable(lowerBound))
+                .setParameter("upperBound", Version.toSortable(upperBound))
                 .setParameter("quarkusCore", quarkusCore)
                 .setParameter("quarkusCoreSortable", Version.toSortable(quarkusCore))
                 .getResultList();
