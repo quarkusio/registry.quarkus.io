@@ -22,25 +22,32 @@ public class Version {
     }
 
     /**
-     * Order versions based on the qualifier. Pre-Final releases should always come last
+     * Order versions based on the qualifier. Pre-Final releases should always come last and ordered naturally
      * 2.5.0.Final > 2.6.0.CR1
      * 2.6.0.SP1 > 2.5.0.Final
      */
-    public static final Comparator<String> RELEASE_IMPORTANCE_COMPARATOR = ((o1, o2) -> {
-        DefaultArtifactVersion v1 = new DefaultArtifactVersion(o1);
-        DefaultArtifactVersion v2 = new DefaultArtifactVersion(o2);
-        String o1Qualifier = v1.getQualifier();
-        String o2Qualifier = v2.getQualifier();
-        if (isQualifierPreFinal(o1Qualifier)) {
-            if (!isQualifierPreFinal(o2Qualifier)) {
-                return 1;
+    public static final Comparator<String> RELEASE_IMPORTANCE_COMPARATOR = ((left, right) -> {
+        DefaultArtifactVersion leftVersion = new DefaultArtifactVersion(left);
+        DefaultArtifactVersion rightVersion = new DefaultArtifactVersion(right);
+        String leftQualifier = leftVersion.getQualifier();
+        String rightQualifier = rightVersion.getQualifier();
+        int result;
+        if (isQualifierPreFinal(leftQualifier)) {
+            if (!isQualifierPreFinal(rightQualifier)) {
+                result = 1;
+            } else {
+                result = leftVersion.compareTo(rightVersion);
             }
-        } else if (isQualifierPreFinal(o2Qualifier)) {
-            if (!isQualifierPreFinal(o1Qualifier)) {
-                return -1;
+        } else if (isQualifierPreFinal(rightQualifier)) {
+            if (!isQualifierPreFinal(leftQualifier)) {
+                result = -1;
+            } else {
+                result = rightVersion.compareTo(leftVersion);
             }
+        } else {
+            result = rightVersion.compareTo(leftVersion);
         }
-        return -v1.compareTo(v2);
+        return result;
     });
 
     public static boolean isPreFinal(String version) {
