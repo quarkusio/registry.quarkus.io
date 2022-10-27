@@ -5,9 +5,11 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.net.HttpURLConnection;
+import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
@@ -113,6 +115,28 @@ class DatabaseRegistryClientTest {
                 }
             }
 
+            // An extension which is part of a platform
+            {
+                Extension newExtension = new Extension();
+                newExtension.name = "Baz";
+                newExtension.description = "A Baz Extension";
+                newExtension.groupId = "foo.bar";
+                newExtension.artifactId = "baz-extension";
+                newExtension.persist();
+                {
+                    ExtensionRelease extensionRelease = new ExtensionRelease();
+                    extensionRelease.extension = newExtension;
+                    extensionRelease.version = "0.6.7";
+                    extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    extensionRelease.persist();
+
+                    PlatformExtension platformExtension = new PlatformExtension();
+                    platformExtension.extensionRelease = extensionRelease;
+                    platformExtension.platformRelease = release210Final;
+                    platformExtension.persist();
+                }
+
+            }
         }
     }
 
@@ -165,6 +189,35 @@ class DatabaseRegistryClientTest {
                 .body("extensions", hasSize(1))
                 .body("extensions[0].artifact", is("foo.bar:bar-extension::jar:0.4.2"));
         // We want bar, which is written for Quarkus 3, but not foo, which is written for Quarkus 2
+    }
+
+    @Test
+    void should_return_all_extensions() {
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("bom", nullValue()) // These values don't make sense when listing all extensions
+                .body("platform", nullValue())
+                .body("derivedFrom", nullValue()) // These values don't make sense when listing all extensions
+                .body("quarkusCoreValue", nullValue())
+                .body("extensions", hasSize(4))
+                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.0.0"))
+                .body("extensions[1].artifact", is("foo.bar:foo-extension::jar:1.1.0"))
+                .body("extensions[2].artifact", is("foo.bar:bar-extension::jar:0.4.2"))
+                .body("extensions[3].artifact", is("foo.bar:baz-extension::jar:0.6.7"))
+                // Now lets look at the reported platform information and make sure its accurate
+                .body("extensions[3].origins",
+                        // TODO we don't know what the member bom is
+                        is(List.of(
+                                "io.quarkus.platform:quarkus-bom-quarkus-platform-descriptor:2.1.0.Final:json:2.1.0.Final")))
+                .body("extensions[2].origins",
+                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:3.0.0.Final:json:1.0-SNAPSHOT")))
+                .body("extensions[1].origins",
+                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.1.0.Final:json:1.0-SNAPSHOT")))
+                .body("extensions[0].origins",
+                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.0.0.Final:json:1.0-SNAPSHOT")));
+
     }
 
     @Test
