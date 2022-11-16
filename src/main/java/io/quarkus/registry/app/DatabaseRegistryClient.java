@@ -214,7 +214,7 @@ public class DatabaseRegistryClient {
                                             platformExtension.platformRelease.version)
                                     .toGACTVString())
                             .setBom(ArtifactCoords.pom(platformExtension.platformRelease.platformStream.platform.platformKey,
-                                    QUARKUS_BOM + "-quarkus-platform-descriptor",
+                                    QUARKUS_BOM,
                                     platformExtension.platformRelease.version))
                             .setMetadata(platformExtension.platformRelease.metadata)
                             .setQuarkusCoreVersion(platformExtension.platformRelease.quarkusCoreVersion)
