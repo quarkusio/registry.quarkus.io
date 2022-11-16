@@ -106,11 +106,26 @@ class DatabaseRegistryClientTest {
                 newExtension.groupId = "foo.bar";
                 newExtension.artifactId = "bar-extension";
                 newExtension.persist();
+                // Add a few releases to exercise the sorting
+                {
+                    ExtensionRelease extensionRelease = new ExtensionRelease();
+                    extensionRelease.extension = newExtension;
+                    extensionRelease.version = "0.2.2";
+                    extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    extensionRelease.persist();
+                }
                 {
                     ExtensionRelease extensionRelease = new ExtensionRelease();
                     extensionRelease.extension = newExtension;
                     extensionRelease.version = "0.4.2";
                     extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    extensionRelease.persist();
+                }
+                {
+                    ExtensionRelease extensionRelease = new ExtensionRelease();
+                    extensionRelease.extension = newExtension;
+                    extensionRelease.version = "0.1.0";
+                    extensionRelease.quarkusCoreVersion = "1.0.0.Final";
                     extensionRelease.persist();
                 }
             }
@@ -201,23 +216,18 @@ class DatabaseRegistryClientTest {
                 .body("platform", nullValue())
                 .body("derivedFrom", nullValue()) // These values don't make sense when listing all extensions
                 .body("quarkusCoreValue", nullValue())
-                .body("extensions", hasSize(4))
-                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.0.0"))
-                .body("extensions[1].artifact", is("foo.bar:foo-extension::jar:1.1.0"))
-                .body("extensions[2].artifact", is("foo.bar:bar-extension::jar:0.4.2"))
-                .body("extensions[3].artifact", is("foo.bar:baz-extension::jar:0.6.7"))
+                .body("extensions", hasSize(3))
+                .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.1.0"))
+                .body("extensions[1].artifact", is("foo.bar:bar-extension::jar:0.4.2"))
+                .body("extensions[2].artifact", is("foo.bar:baz-extension::jar:0.6.7"))
                 // Now lets look at the reported platform information and make sure its accurate
-                .body("extensions[3].origins",
-                        // TODO we don't know what the member bom is
+                .body("extensions[2].origins",
                         is(List.of(
                                 "io.quarkus.platform:quarkus-bom-quarkus-platform-descriptor:2.1.0.Final:json:2.1.0.Final")))
-                .body("extensions[2].origins",
-                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:3.0.0.Final:json:1.0-SNAPSHOT")))
                 .body("extensions[1].origins",
-                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.1.0.Final:json:1.0-SNAPSHOT")))
+                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:3.0.0.Final:json:1.0-SNAPSHOT")))
                 .body("extensions[0].origins",
-                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.0.0.Final:json:1.0-SNAPSHOT")));
-
+                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.1.0.Final:json:1.0-SNAPSHOT")));
     }
 
     @Test

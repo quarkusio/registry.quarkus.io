@@ -53,7 +53,7 @@ public class ExtensionRelease extends BaseEntity {
      * The version above formatted for max and order-by operations
      */
     @Column(updatable = false, length = 100)
-    private String versionSortable;
+    public String versionSortable;
 
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")

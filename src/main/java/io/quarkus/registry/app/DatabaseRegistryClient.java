@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -123,12 +124,23 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/extensions/all")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "List all extensions. When an extension has multiple releases, they will all be listed.")
+    @Operation(summary = "List all extensions. When an extension has multiple releases, only the most recent will be listed.")
     public ExtensionCatalog resolveAllExtensionsCatalog() {
         final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
-        List<ExtensionRelease> allExtensions = ExtensionRelease.listAll();
+        List<ExtensionRelease> allExtensionReleases = ExtensionRelease.listAll();
 
-        allExtensions.stream().map(this::toClientExtension).forEach(catalog::addExtension);
+        // We only want the most recent release for each extension, to avoid returning the whole db on each query
+        Map<String, List<ExtensionRelease>> releasesGroupedByExtension = allExtensionReleases.stream()
+                .collect(Collectors.groupingBy(r -> r.extension.groupId + ":" + r.extension.artifactId));
+        Set<Map.Entry<String, List<ExtensionRelease>>> entries = releasesGroupedByExtension.entrySet();
+
+        // Now sort the lists of extension releases, so we can just pick off the first one
+        entries.forEach(es -> es.getValue().sort((er1, er2) -> er2.versionSortable.compareTo(er1.versionSortable)));
+        // We know every extension has at least one release, because that's why it made it into our map
+        List<ExtensionRelease> mostRecentReleases = entries.stream().map(es -> es.getValue().get(0))
+                .toList();
+
+        mostRecentReleases.stream().map(this::toClientExtension).forEach(catalog::addExtension);
 
         // Add all categories
         List<Category> categories = Category.listAll();
