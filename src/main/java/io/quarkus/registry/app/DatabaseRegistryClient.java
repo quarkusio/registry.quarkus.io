@@ -82,7 +82,7 @@ public class DatabaseRegistryClient {
     public ExtensionCatalog resolveNonPlatformExtensionsCatalog(
             @NotNull(message = "The Quarkus version (v) is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
-        String id = getNonPlatformCoords(quarkusVersion);
+        String id = mavenConfig.getNonPlatformExtensionCoords(quarkusVersion);
 
         final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
         catalog.setId(id);
@@ -193,7 +193,7 @@ public class DatabaseRegistryClient {
 
         if (extensionRelease.platforms.isEmpty()) {
             // Non-platform case
-            String id = getNonPlatformCoords(extensionRelease.quarkusCoreVersion);
+            String id = mavenConfig.getNonPlatformExtensionCoords(extensionRelease.quarkusCoreVersion);
             extensionOrigins = List.of(ExtensionCatalog.builder().setId(id)
                     .setQuarkusCoreVersion(extensionRelease.quarkusCoreVersion)
                     .setPlatform(false)
@@ -279,16 +279,6 @@ public class DatabaseRegistryClient {
                 .setMetadata(platformRelease.metadata)
                 .setUpstreamQuarkusCoreVersion(platformRelease.upstreamQuarkusCoreVersion)
                 .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion);
-    }
-
-    private String getNonPlatformCoords(String quarkusVersion) {
-        ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
-        String id = ArtifactCoords.of(nonPlatformExtensionCoords.getGroupId(),
-                nonPlatformExtensionCoords.getArtifactId(),
-                quarkusVersion,
-                nonPlatformExtensionCoords.getType(),
-                nonPlatformExtensionCoords.getVersion()).toString();
-        return id;
     }
 
     private enum CoreCompatibility {
