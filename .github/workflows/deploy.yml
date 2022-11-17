@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
 
       - name: Authenticate and set context
         uses: redhat-actions/oc-login@v1
