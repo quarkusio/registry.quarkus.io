@@ -22,6 +22,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.panache.common.Sort;
+import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
@@ -43,6 +44,9 @@ import io.quarkus.registry.catalog.PlatformReleaseVersion;
 @Path("/client")
 @Tag(name = "Client", description = "Client related services")
 public class DatabaseRegistryClient {
+
+    private static final String IO_QUARKUS_PLATFORM = "io.quarkus.platform";
+    private static final String QUARKUS_BOM = "quarkus-bom";
 
     @Inject
     MavenConfig mavenConfig;
@@ -78,16 +82,11 @@ public class DatabaseRegistryClient {
     public ExtensionCatalog resolveNonPlatformExtensionsCatalog(
             @NotNull(message = "The Quarkus version (v) is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
-        ArtifactCoords nonPlatformExtensionCoords = mavenConfig.getNonPlatformExtensionCoords();
-        String id = ArtifactCoords.of(nonPlatformExtensionCoords.getGroupId(),
-                nonPlatformExtensionCoords.getArtifactId(),
-                quarkusVersion,
-                nonPlatformExtensionCoords.getType(),
-                nonPlatformExtensionCoords.getVersion()).toString();
+        String id = mavenConfig.getNonPlatformExtensionCoords(quarkusVersion);
 
         final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
         catalog.setId(id);
-        catalog.setBom(ArtifactCoords.pom("io.quarkus.platform", "quarkus-bom", quarkusVersion));
+        catalog.setBom(ArtifactCoords.pom(IO_QUARKUS_PLATFORM, QUARKUS_BOM, quarkusVersion));
         catalog.setQuarkusCoreVersion(quarkusVersion);
         List<ExtensionRelease> nonPlatformExtensions = ExtensionRelease.findNonPlatformExtensions(quarkusVersion);
         Map<Long, Boolean> compatibleMap = ExtensionReleaseCompatibility.findCompatibleMap(quarkusVersion);
@@ -115,6 +114,22 @@ public class DatabaseRegistryClient {
             extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
             catalog.addExtension(extension.build());
         }
+        // Add all categories
+        List<Category> categories = Category.listAll();
+        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        return catalog.build();
+    }
+
+    @GET
+    @Path("/extensions/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "List all extensions. When an extension has multiple releases, only the most recent will be listed.")
+    public ExtensionCatalog resolveAllExtensionsCatalog() {
+        final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
+        List<ExtensionRelease> allExtensionReleases = ExtensionRelease.findLatestExtensions();
+
+        allExtensionReleases.stream().map(this::toClientExtension).forEach(catalog::addExtension);
+
         // Add all categories
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
@@ -173,14 +188,63 @@ public class DatabaseRegistryClient {
         return catalog.build();
     }
 
+    private List<ExtensionOrigin> toExtensionOrigins(ExtensionRelease extensionRelease) {
+        final List<ExtensionOrigin> extensionOrigins;
+
+        if (extensionRelease.platforms.isEmpty()) {
+            // Non-platform case
+            String id = mavenConfig.getNonPlatformExtensionCoords(extensionRelease.quarkusCoreVersion);
+            extensionOrigins = List.of(ExtensionCatalog.builder().setId(id)
+                    .setQuarkusCoreVersion(extensionRelease.quarkusCoreVersion)
+                    .setPlatform(false)
+                    .build());
+        } else {
+
+            // Platform case
+            extensionOrigins = extensionRelease.platforms.stream()
+                    .map((platformExtension) -> (ExtensionOrigin) ExtensionCatalog.builder()
+                            // it should be <platform-key>:<member-bom-artifactId>-quarkus-platform-descriptor:<quarkus-version>:json:<quarkus-version>
+                            // We can get all member boms associated with this release, but not the particular one this extension came from
+                            // For the moment, we assume the member bom is quarkus-core since we don't have information to make a better choise
+                            .setId(ArtifactCoords
+                                    .of(platformExtension.platformRelease.platformStream.platform.platformKey,
+                                            QUARKUS_BOM + "-quarkus-platform-descriptor",
+                                            platformExtension.platformRelease.version,
+                                            Constants.JSON,
+                                            platformExtension.platformRelease.version)
+                                    .toGACTVString())
+                            .setBom(ArtifactCoords.pom(platformExtension.platformRelease.platformStream.platform.platformKey,
+                                    QUARKUS_BOM,
+                                    platformExtension.platformRelease.version))
+                            .setMetadata(platformExtension.platformRelease.metadata)
+                            .setQuarkusCoreVersion(platformExtension.platformRelease.quarkusCoreVersion)
+                            .setPlatform(true).build())
+                    .toList();
+        }
+
+        return extensionOrigins;
+    }
+
     private Extension.Mutable toClientExtension(ExtensionRelease extensionRelease, ExtensionOrigin extensionOrigin) {
+        return toClientExtensionNoOrigin(extensionRelease)
+                .setOrigins(Collections.singletonList(extensionOrigin));
+    }
+
+    private Extension.Mutable toClientExtension(ExtensionRelease extensionRelease) {
+
+        List<ExtensionOrigin> extensionOrigins = toExtensionOrigins(extensionRelease);
+
+        return toClientExtensionNoOrigin(extensionRelease)
+                .setOrigins(extensionOrigins);
+    }
+
+    private Extension.Mutable toClientExtensionNoOrigin(ExtensionRelease extensionRelease) {
         return Extension.builder()
                 .setGroupId(extensionRelease.extension.groupId)
                 .setArtifactId(extensionRelease.extension.artifactId)
                 .setVersion(extensionRelease.version)
                 .setName(extensionRelease.extension.name)
                 .setDescription(extensionRelease.extension.description)
-                .setOrigins(Collections.singletonList(extensionOrigin))
                 .setMetadata(extensionRelease.metadata);
     }
 

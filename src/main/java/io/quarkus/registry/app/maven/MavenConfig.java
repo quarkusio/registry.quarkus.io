@@ -49,8 +49,13 @@ public class MavenConfig {
                 Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION);
     }
 
-    public ArtifactCoords getNonPlatformExtensionCoords() {
-        return nonPlatformExtensionCoords;
+    public String getNonPlatformExtensionCoords(String quarkusVersion) {
+        String id = ArtifactCoords.of(nonPlatformExtensionCoords.getGroupId(),
+                nonPlatformExtensionCoords.getArtifactId(),
+                quarkusVersion,
+                nonPlatformExtensionCoords.getType(),
+                nonPlatformExtensionCoords.getVersion()).toString();
+        return id;
     }
 
     public boolean supports(ArtifactCoords artifact) {
@@ -119,4 +124,5 @@ public class MavenConfig {
     public Optional<Boolean> getQuarkusVersionsExclusiveProvider() {
         return quarkusVersionsExclusiveProvider;
     }
+
 }

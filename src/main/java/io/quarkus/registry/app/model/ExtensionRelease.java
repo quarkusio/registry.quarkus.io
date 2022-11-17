@@ -39,6 +39,14 @@ import io.quarkus.registry.app.util.Version;
                     )
             )
         """)
+
+@NamedQuery(name = "ExtensionRelease.findLatestExtensions", query = """
+            select ext from ExtensionRelease ext
+            where (ext.versionSortable) = (
+                select max(ext2.versionSortable) from ExtensionRelease ext2
+                where ext2.extension = ext.extension
+                )
+        """)
 public class ExtensionRelease extends BaseEntity {
 
     @NaturalId
@@ -116,6 +124,11 @@ public class ExtensionRelease extends BaseEntity {
                 .setParameter("upperBound", Version.toSortable(upperBound))
                 .setParameter("quarkusCore", quarkusCore)
                 .setParameter("quarkusCoreSortable", Version.toSortable(quarkusCore))
+                .getResultList();
+    }
+
+    public static List<ExtensionRelease> findLatestExtensions() {
+        return getEntityManager().createNamedQuery("ExtensionRelease.findLatestExtensions", ExtensionRelease.class)
                 .getResultList();
     }
 
