@@ -1,6 +1,7 @@
 package io.quarkus.registry.app;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -239,13 +240,24 @@ public class DatabaseRegistryClient {
     }
 
     private Extension.Mutable toClientExtensionNoOrigin(ExtensionRelease extensionRelease) {
+        Map<String, Object> mergedMetadata = extensionRelease.metadata != null ? new HashMap<>(extensionRelease.metadata)
+                : new HashMap<>();
+        extensionRelease.platforms
+                .forEach(platformExtension -> {
+                    if (platformExtension.metadata != null) {
+                        // If we have a key collision in the platformExtension, just take the second value; it's unlikely and it's unclear what a "right" behaviour is
+                        platformExtension.metadata.forEach(
+                                (key, value) -> mergedMetadata.merge(key, value, (v1, v2) -> v2));
+                    }
+                });
+
         return Extension.builder()
                 .setGroupId(extensionRelease.extension.groupId)
                 .setArtifactId(extensionRelease.extension.artifactId)
                 .setVersion(extensionRelease.version)
                 .setName(extensionRelease.extension.name)
                 .setDescription(extensionRelease.extension.description)
-                .setMetadata(extensionRelease.metadata);
+                .setMetadata(mergedMetadata);
     }
 
     private io.quarkus.registry.catalog.Category toClientCategory(Category category) {

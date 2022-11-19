@@ -7,9 +7,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
 
 import java.net.HttpURLConnection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.MediaType;
@@ -112,6 +115,7 @@ class DatabaseRegistryClientTest {
                     extensionRelease.extension = newExtension;
                     extensionRelease.version = "0.2.2";
                     extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    extensionRelease.metadata = Map.of("someKey", "somevalue");
                     extensionRelease.persist();
                 }
                 {
@@ -119,6 +123,7 @@ class DatabaseRegistryClientTest {
                     extensionRelease.extension = newExtension;
                     extensionRelease.version = "0.4.2";
                     extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    extensionRelease.metadata = Map.of("aKey", "avalue");
                     extensionRelease.persist();
                 }
                 {
@@ -143,11 +148,24 @@ class DatabaseRegistryClientTest {
                     extensionRelease.extension = newExtension;
                     extensionRelease.version = "0.6.7";
                     extensionRelease.quarkusCoreVersion = "3.0.0.Final";
+                    {
+                        Map<String, Object> metadata = new HashMap<>();
+                        metadata.put("indKey", "indvalue");
+                        metadata.put("commonKey", "indcommonvalue");
+                        extensionRelease.metadata = metadata;
+                    }
                     extensionRelease.persist();
 
                     PlatformExtension platformExtension = new PlatformExtension();
                     platformExtension.extensionRelease = extensionRelease;
                     platformExtension.platformRelease = release210Final;
+                    {
+                        Map<String, Object> metadata = new HashMap<>();
+                        metadata.put("platKey", "platvalue");
+                        metadata.put("commonKey", "platcommonvalue");
+                        platformExtension.metadata = metadata;
+                    }
+
                     platformExtension.persist();
                 }
 
@@ -202,8 +220,11 @@ class DatabaseRegistryClientTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .body("extensions", hasSize(1))
-                .body("extensions[0].artifact", is("foo.bar:bar-extension::jar:0.4.2"));
-        // We want bar, which is written for Quarkus 3, but not foo, which is written for Quarkus 2
+                .body("extensions[0].artifact", is("foo.bar:bar-extension::jar:0.4.2"))
+                // We want bar, which is written for Quarkus 3, but not foo, which is written for Quarkus 2
+                .body("extensions[0].metadata", hasKey("aKey"))
+                .body("extensions[0].metadata.aKey", is("avalue"));
+
     }
 
     @Test
@@ -227,7 +248,18 @@ class DatabaseRegistryClientTest {
                 .body("extensions[1].origins",
                         is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:3.0.0.Final:json:1.0-SNAPSHOT")))
                 .body("extensions[0].origins",
-                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.1.0.Final:json:1.0-SNAPSHOT")));
+                        is(List.of("io.quarkus.registry:quarkus-non-platform-extensions:2.1.0.Final:json:1.0-SNAPSHOT")))
+                // Make sure we have metadata
+                .body("extensions[1].metadata", hasKey("aKey"))
+                .body("extensions[1].metadata.aKey", is("avalue"))
+                // For platform extensions, the metadata should include what's in the PlatformExtension object and what's on the ExtensionRelease object
+                .body("extensions[2].metadata", hasKey("platKey"))
+                .body("extensions[2].metadata.platKey", is("platvalue"))
+                .body("extensions[2].metadata", hasKey("indKey"))
+                .body("extensions[2].metadata.indKey", is("indvalue"))
+                // Where there's a key overlap, we should favour the platform (in principle keys will never overlap because if there is platform-level metadata there will not be release-level metadata, but we will make sure we do the right thing even if our assumption is wrong)
+                .body("extensions[2].metadata.commonKey", is("platcommonvalue"));
+
     }
 
     @Test
