@@ -152,6 +152,7 @@ class DatabaseRegistryClientTest {
                         Map<String, Object> metadata = new HashMap<>();
                         metadata.put("indKey", "indvalue");
                         metadata.put("commonKey", "indcommonvalue");
+                        metadata.put("nested", Map.of("key1", "value1"));
                         extensionRelease.metadata = metadata;
                     }
                     extensionRelease.persist();
@@ -259,6 +260,19 @@ class DatabaseRegistryClientTest {
                 .body("extensions[2].metadata.indKey", is("indvalue"))
                 // Where there's a key overlap, we should favour the platform (in principle keys will never overlap because if there is platform-level metadata there will not be release-level metadata, but we will make sure we do the right thing even if our assumption is wrong)
                 .body("extensions[2].metadata.commonKey", is("platcommonvalue"));
+
+    }
+
+    @Test
+    void should_handle_nested_metadata_for_extensions() {
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                // Make sure we metadata with a nested structure survived ok
+                .body("extensions[2].metadata", hasKey("nested"))
+                .body("extensions[2].metadata.nested", hasKey("key1"))
+                .body("extensions[2].metadata.nested.key1", is("value1"));
 
     }
 
