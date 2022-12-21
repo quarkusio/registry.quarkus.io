@@ -43,6 +43,9 @@ public class PlatformStream extends BaseEntity {
     @Column
     public boolean unlisted;
 
+    @Column
+    public boolean pinned;
+
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
     public Map<String, Object> metadata;
