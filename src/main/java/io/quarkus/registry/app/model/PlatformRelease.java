@@ -67,7 +67,20 @@ import io.quarkus.registry.app.util.Version;
                   where pr.unlisted = false
                   and pr.pinned = true
                   order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
-                """)
+                """),
+        @NamedQuery(name = "PlatformRelease.findLatestPinnedStream", query = """
+                  select pr from PlatformRelease pr
+                  where pr.unlisted = false
+                  and (pr.platformStream, pr.versionSortable) in
+                      (
+                       select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
+                           where pr2.platformStream.unlisted = false
+                           and pr2.platformStream.pinned = true
+                           and pr2.unlisted = false
+                           group by pr2.platformStream
+                      )
+                order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
+                """),
 
 })
 public class PlatformRelease extends BaseEntity {
@@ -177,6 +190,12 @@ public class PlatformRelease extends BaseEntity {
             var pinnedPlatforms = em.createNamedQuery("PlatformRelease.findPinned", PlatformRelease.class)
                     .getResultList();
             for (var item : pinnedPlatforms) {
+                platformMap.computeIfAbsent(item.platformStream.platform, k -> new ArrayList<>()).add(item);
+            }
+            // Add latest platforms from pinned streams
+            var pinnedStreams = em.createNamedQuery("PlatformRelease.findLatestPinnedStream", PlatformRelease.class)
+                    .getResultList();
+            for (var item : pinnedStreams) {
                 platformMap.computeIfAbsent(item.platformStream.platform, k -> new ArrayList<>()).add(item);
             }
         }

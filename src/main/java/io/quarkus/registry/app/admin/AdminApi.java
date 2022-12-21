@@ -244,12 +244,14 @@ public class AdminApi {
     public Response patchPlatformStream(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
-            @FormParam("unlisted") boolean unlisted) {
+            @FormParam("unlisted") boolean unlisted,
+            @FormParam("pinned") boolean pinned) {
         Platform platform = Platform.findByKey(platformKey)
                 .orElseThrow(() -> new NotFoundException("Platform not found"));
         PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
                 .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
         stream.unlisted = unlisted;
+        stream.pinned = pinned;
         try {
             stream.persist();
         } finally {
