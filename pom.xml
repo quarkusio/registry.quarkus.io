@@ -11,7 +11,7 @@
   <artifactId>quarkus-registry-app</artifactId>
   <version>${revision}</version>
   <properties>
-    <assertj.version>3.23.1</assertj.version>
+    <assertj.version>3.24.1</assertj.version>
     <formatter.plugin.version>2.21.0</formatter.plugin.version>
     <impsort.plugin.version>1.8.0</impsort.plugin.version>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
