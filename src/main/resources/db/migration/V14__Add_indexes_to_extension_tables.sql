@@ -1,0 +1,8 @@
+create index idx_extension_release_version_sortable on extension_release(version_sortable);
+create index idx_extension_release_quarkus_core_version on extension_release(quarkus_core_version);
+create index idx_extension_release_version on extension_release(version);
+create index idx_extension_release_extension_id on extension_release(extension_id);
+create index idx_extension_release_quarkus_core_version_sortable on extension_release(quarkus_core_version_sortable);
+
+create index idx_extension_release_compatibility_quarkus_core_version on extension_release_compatibility(quarkus_core_version);
+create index idx_extension_release_compatibility_extension_release_id on extension_release_compatibility(extension_release_id);
