@@ -16,7 +16,7 @@
     <impsort.plugin.version>1.8.0</impsort.plugin.version>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
-    <quarkus-hibernate-types.version>1.0.0</quarkus-hibernate-types.version>
+    <quarkus-hibernate-types.version>1.0.1</quarkus-hibernate-types.version>
     <quarkus-logging-sentry.version>1.2.1</quarkus-logging-sentry.version>
     <quarkus.version>2.16.0.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
