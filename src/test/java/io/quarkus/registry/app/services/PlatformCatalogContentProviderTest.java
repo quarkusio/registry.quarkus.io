@@ -48,22 +48,43 @@ public class PlatformCatalogContentProviderTest extends BaseTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_ACCEPTED)
                 .contentType(ContentType.JSON);
+        // Test using 1.0-SNAPSHOT
+        {
+            String url = String.format(
+                    "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
+                    id.getGroupId().replace('.', '/'),
+                    id.getArtifactId(),
+                    Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
+                    id.getVersion());
+            // Test the maven endpoint
+            InputStream resultStream = given()
+                    .get(url)
+                    .then()
+                    .statusCode(200)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .extract().asInputStream();
 
-        String url = String.format(
-                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
-                id.getGroupId().replace('.', '/'),
-                id.getArtifactId(),
-                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
-                id.getVersion());
-        // Test the maven endpoint
-        InputStream resultStream = given()
-                .get(url)
-                .then()
-                .statusCode(200)
-                .contentType(MediaType.APPLICATION_JSON)
-                .extract().asInputStream();
+            ExtensionCatalog result = CatalogMapperHelper.deserialize(resultStream, ExtensionCatalogImpl.Builder.class).build();
+            assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+        }
+        // Test using the same version as in the qualifier
+        {
+            String url = String.format(
+                    "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
+                    id.getGroupId().replace('.', '/'),
+                    id.getArtifactId(),
+                    id.getVersion(),
+                    id.getVersion());
+            // Test the maven endpoint
+            InputStream resultStream = given()
+                    .get(url)
+                    .then()
+                    .statusCode(200)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .extract().asInputStream();
 
-        ExtensionCatalog result = CatalogMapperHelper.deserialize(resultStream, ExtensionCatalogImpl.Builder.class).build();
-        assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+            ExtensionCatalog result = CatalogMapperHelper.deserialize(resultStream, ExtensionCatalogImpl.Builder.class).build();
+            assertThat(result).usingRecursiveComparison().isEqualTo(expected);
+        }
     }
 }
