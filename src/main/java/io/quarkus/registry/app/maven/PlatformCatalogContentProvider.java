@@ -3,6 +3,7 @@ package io.quarkus.registry.app.maven;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,16 +33,16 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
      * @return true only if
      *         <ul>
      *         <li>System property/env quarkus.registry.platform.extension-catalog-included is <code>true</code></li>
-     *         <li>The requested artifact version is 1.0-SNAPSHOT</li>
+     *         <li>The requested artifact version is 1.0-SNAPSHOT or matches the qualifier</li>
      *         <li>The requested groupId/artifactId/classifier matches an existing {@link PlatformRelease}</li>
      *         </ul>
      */
     @Override
     public boolean supports(ArtifactCoords artifact, UriInfo uriInfo) {
         return mavenConfig.getExtensionCatalogIncluded().orElse(Boolean.FALSE) &&
-        // Version must be 1.0-SNAPSHOT
-                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion()) &&
-                PlatformRelease.artifactCoordinatesExist(artifact);
+                (Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION.equals(artifact.getVersion())
+                        || Objects.equals(artifact.getClassifier(), artifact.getVersion()))
+                && PlatformRelease.artifactCoordinatesExist(artifact);
     }
 
     @Override
