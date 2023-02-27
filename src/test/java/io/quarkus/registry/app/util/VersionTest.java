@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class VersionTest {
@@ -53,6 +54,7 @@ class VersionTest {
     }
 
     @Test
+    @Disabled("See https://issues.apache.org/jira/browse/MNG-7690")
     void sortSPs() {
         List<String> versions = Arrays.asList(
                 "2.13.7.Final-redhat-00003",
