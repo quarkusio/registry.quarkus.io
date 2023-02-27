@@ -52,4 +52,39 @@ class VersionTest {
                 "2.5.1.CR1");
     }
 
+    @Test
+    void sortSPs() {
+        List<String> versions = Arrays.asList(
+                "2.13.7.Final-redhat-00003",
+                "2.13.5.SP1-redhat-00002",
+                "2.13.5.Final-redhat-00002",
+                "2.7.6.Final-redhat-00012",
+                "2.7.6.Final-redhat-00011",
+                "2.7.6.Final-redhat-00009",
+                "2.7.6.Final-redhat-00006",
+                "2.7.5.Final-redhat-00011",
+                "2.2.5.SP2-redhat-00003",
+                "2.2.5.SP1-redhat-00001",
+                "2.2.5.Final-redhat-00007",
+                "2.2.3.SP2-redhat-00001",
+                "2.2.3.SP1-redhat-00002",
+                "2.2.3.Final-redhat-00013");
+        versions.sort(Version.RELEASE_IMPORTANCE_COMPARATOR);
+        assertThat(versions).containsExactly(
+                "2.13.7.Final-redhat-00003",
+                "2.13.5.SP1-redhat-00002",
+                "2.13.5.Final-redhat-00002",
+                "2.7.6.Final-redhat-00012",
+                "2.7.6.Final-redhat-00011",
+                "2.7.6.Final-redhat-00009",
+                "2.7.6.Final-redhat-00006",
+                "2.7.5.Final-redhat-00011",
+                "2.2.5.SP2-redhat-00003",
+                "2.2.5.SP1-redhat-00001",
+                "2.2.5.Final-redhat-00007",
+                "2.2.3.SP2-redhat-00001",
+                "2.2.3.SP1-redhat-00002",
+                "2.2.3.Final-redhat-00013");
+    }
+
 }
