@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
+import io.smallrye.common.version.VersionScheme;
+
 public class Version {
 
     /**
@@ -36,16 +38,16 @@ public class Version {
             if (!isQualifierPreFinal(rightQualifier)) {
                 result = 1;
             } else {
-                result = leftVersion.compareTo(rightVersion);
+                result = VersionScheme.MAVEN.compare(left, right);
             }
         } else if (isQualifierPreFinal(rightQualifier)) {
             if (!isQualifierPreFinal(leftQualifier)) {
                 result = -1;
             } else {
-                result = rightVersion.compareTo(leftVersion);
+                result = VersionScheme.MAVEN.compare(right, left);
             }
         } else {
-            result = rightVersion.compareTo(leftVersion);
+            result = VersionScheme.MAVEN.compare(right, left);
         }
         return result;
     });
