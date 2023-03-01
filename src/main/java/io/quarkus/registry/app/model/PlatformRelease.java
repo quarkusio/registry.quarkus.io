@@ -31,6 +31,12 @@ import io.quarkus.registry.app.util.Version;
 
 @Entity
 @NamedQueries({
+        @NamedQuery(name = "PlatformRelease.findAllCorePlatforms", query = """
+                select pr from PlatformRelease pr
+                where pr.platformStream.platform.platformType = 'C'
+                order by pr.versionSortable desc
+                """),
+
         @NamedQuery(name = "PlatformRelease.findByPlatformKey", query = """
                 select pr from PlatformRelease pr
                 where pr.platformStream.platform.platformKey = ?1 and pr.version = ?2
@@ -248,5 +254,9 @@ public class PlatformRelease extends BaseEntity {
                         .and("artifactId", artifact.getArtifactId())
                         .and("version", artifact.getClassifier()))
                 .firstResultOptional();
+    }
+
+    public static List<PlatformRelease> findAllCorePlatforms() {
+        return list("#PlatformRelease.findAllCorePlatforms");
     }
 }
