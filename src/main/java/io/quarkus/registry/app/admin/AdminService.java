@@ -44,7 +44,7 @@ public class AdminService {
                 Platform p = new Platform();
                 p.platformKey = event.platformKey();
                 ArtifactCoords catalogId = ArtifactCoords.fromString(extensionCatalog.getId());
-                p.name = event.platformKey();
+                p.name = Platform.toPlatformName(event.platformKey());
                 p.groupId = catalogId.getGroupId();
                 p.artifactId = catalogId.getArtifactId();
                 p.platformType = event.type();

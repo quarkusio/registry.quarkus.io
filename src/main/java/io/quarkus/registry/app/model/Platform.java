@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
@@ -14,6 +16,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.annotations.NaturalId;
 
@@ -22,6 +25,9 @@ import io.quarkiverse.hibernate.types.json.JsonTypes;
 @Entity
 @Cacheable
 public class Platform extends BaseEntity {
+
+    private static final Pattern PLATFORM_KEY_PATTERN = Pattern.compile(
+            "[a-zA-Z0-9\\-]+:quarkus-([a-zA-Z0-9\\-]+)-quarkus-platform-descriptor");
 
     @NaturalId
     @Column(nullable = false)
@@ -73,6 +79,25 @@ public class Platform extends BaseEntity {
         return session.byNaturalId(Platform.class)
                 .using("platformKey", platformKey)
                 .loadOptional();
+    }
+
+    /**
+     * Returns a friendly platform name based on the platform key
+     *
+     * @param platformKey the platform key, in the format of groupId:artifactId
+     * @return the platform name
+     */
+    public static String toPlatformName(String platformKey) {
+        //io.quarkus.platform:quarkus-qpid-jms-bom-quarkus-platform-descriptor
+        if (platformKey == null) {
+            return null;
+        }
+        Matcher matcher = PLATFORM_KEY_PATTERN.matcher(platformKey);
+        if (matcher.find()) {
+            String content = StringUtils.removeEnd(matcher.group(1).replace('-', ' '), " bom");
+            return StringUtils.capitalize(content);
+        }
+        return platformKey;
     }
 
     /**
