@@ -21,7 +21,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
-import io.quarkus.panache.common.Sort;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
@@ -56,7 +55,7 @@ public class DatabaseRegistryClient {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "List all platform releases from the database")
     public PlatformCatalog resolveAllPlatforms() {
-        List<PlatformRelease> platformReleases = PlatformRelease.findAll(Sort.descending("versionSortable")).list();
+        List<PlatformRelease> platformReleases = PlatformRelease.findAllCorePlatforms();
         return toPlatformCatalog(platformReleases, true);
     }
 
