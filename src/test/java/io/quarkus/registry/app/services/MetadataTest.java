@@ -47,12 +47,14 @@ public class MetadataTest extends BaseTest {
         release201.platformStream = stream20;
         release201.version = "2.0.1.Final";
         release201.quarkusCoreVersion = "2.0.1.Final";
+        release201.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.1.Final";
         release201.persistAndFlush();
 
         PlatformRelease release202 = new PlatformRelease();
         release202.platformStream = stream20;
         release202.version = "2.0.2.Final";
         release202.quarkusCoreVersion = "2.0.2.Final";
+        release202.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.2.Final";
         release202.persistAndFlush();
 
         PlatformStream stream21 = new PlatformStream();
@@ -64,6 +66,7 @@ public class MetadataTest extends BaseTest {
         release210CR1.platformStream = stream21;
         release210CR1.version = "2.1.0.Final";
         release210CR1.quarkusCoreVersion = "2.1.0.Final";
+        release210CR1.bom = "io.quarkus.platform:quarkus-bom::pom:2.1.0.CR1";
         release210CR1.persistAndFlush();
     }
 

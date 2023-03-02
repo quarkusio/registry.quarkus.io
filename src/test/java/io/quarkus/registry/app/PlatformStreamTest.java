@@ -38,12 +38,14 @@ public class PlatformStreamTest extends BaseTest {
             release201.platformStream = stream20;
             release201.version = "2.0.1.Final";
             release201.quarkusCoreVersion = release201.version;
+            release201.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.1.Final";
             release201.persistAndFlush();
 
             PlatformRelease release202 = new PlatformRelease();
             release202.platformStream = stream20;
             release202.version = "2.0.2.Final";
             release202.quarkusCoreVersion = release202.version;
+            release202.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.2.Final";
             release202.persistAndFlush();
 
             PlatformStream stream21 = new PlatformStream();
@@ -55,6 +57,7 @@ public class PlatformStreamTest extends BaseTest {
             release210CR1.platformStream = stream21;
             release210CR1.version = "2.1.0.CR1";
             release210CR1.quarkusCoreVersion = release210CR1.version;
+            release210CR1.bom = "io.quarkus.platform:quarkus-bom::pom:2.1.0.CR1";
             release210CR1.persistAndFlush();
 
             PlatformRelease release210Final = new PlatformRelease();
@@ -62,6 +65,7 @@ public class PlatformStreamTest extends BaseTest {
             release210Final.version = "2.1.0.Final";
             release210Final.quarkusCoreVersion = release210Final.version;
             release210Final.unlisted = true;
+            release210Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.1.0.Final";
             release210Final.persistAndFlush();
 
             PlatformStream stream22 = new PlatformStream();
@@ -73,12 +77,14 @@ public class PlatformStreamTest extends BaseTest {
             release220Final.platformStream = stream22;
             release220Final.version = "2.2.0.Final";
             release220Final.quarkusCoreVersion = release220Final.version;
+            release220Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.2.0.Final";
             release220Final.persistAndFlush();
 
             PlatformRelease release221Final = new PlatformRelease();
             release221Final.platformStream = stream22;
             release221Final.version = "2.2.1.Final";
             release221Final.quarkusCoreVersion = release221Final.version;
+            release221Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.2.1.Final";
             release221Final.persistAndFlush();
 
             PlatformStream stream23 = new PlatformStream();
@@ -90,12 +96,14 @@ public class PlatformStreamTest extends BaseTest {
             release230Final.platformStream = stream23;
             release230Final.version = "2.3.0.Final";
             release230Final.quarkusCoreVersion = release230Final.version;
+            release230Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.3.0.Final";
             release230Final.persistAndFlush();
 
             PlatformRelease release231Final = new PlatformRelease();
             release231Final.platformStream = stream23;
             release231Final.version = "2.3.1.Final";
             release231Final.quarkusCoreVersion = release231Final.version;
+            release231Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.3.1.Final";
             release231Final.persistAndFlush();
         }
     }

@@ -90,6 +90,7 @@ public class AdminService {
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(platformStream, version)
                 .orElseGet(() -> {
                     PlatformRelease newPlatformRelease = new PlatformRelease(platformStream, version, pinned);
+                    newPlatformRelease.bom = extensionCatalog.getBom().toString();
                     newPlatformRelease.quarkusCoreVersion = extensionCatalog.getQuarkusCoreVersion();
                     newPlatformRelease.upstreamQuarkusCoreVersion = extensionCatalog.getUpstreamQuarkusCoreVersion();
                     newPlatformRelease.memberBoms.addAll(memberBoms.stream().map(ArtifactCoords::fromString)

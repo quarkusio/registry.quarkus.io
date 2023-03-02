@@ -38,6 +38,7 @@ public class MavenResourceTest extends BaseTest {
             release180.platformStream = stream18;
             release180.version = "1.8.0.Final";
             release180.quarkusCoreVersion = release180.version;
+            release180.bom = "io.quarkus.platform:quarkus-bom::pom:1.8.0.Final";
             release180.persistAndFlush();
 
             PlatformStream stream19 = new PlatformStream();
@@ -49,6 +50,7 @@ public class MavenResourceTest extends BaseTest {
             release190.platformStream = stream19;
             release190.version = "1.9.0.Final";
             release190.quarkusCoreVersion = release190.version;
+            release190.bom = "io.quarkus.platform:quarkus-bom::pom:1.9.0.Final";
             release190.persistAndFlush();
 
             PlatformStream stream20 = new PlatformStream();
@@ -60,12 +62,14 @@ public class MavenResourceTest extends BaseTest {
             release201.platformStream = stream20;
             release201.version = "2.0.1.Final";
             release201.quarkusCoreVersion = release201.version;
+            release201.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.1.Final";
             release201.persistAndFlush();
 
             PlatformRelease release202 = new PlatformRelease();
             release202.platformStream = stream20;
             release202.version = "2.0.2.Final";
             release202.quarkusCoreVersion = release202.version;
+            release202.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.2.Final";
             release202.persistAndFlush();
 
             PlatformStream stream21 = new PlatformStream();
@@ -77,6 +81,7 @@ public class MavenResourceTest extends BaseTest {
             release210CR1.platformStream = stream21;
             release210CR1.version = "2.1.0.CR1";
             release210CR1.quarkusCoreVersion = release210CR1.version;
+            release210CR1.bom = "io.quarkus.platform:quarkus-bom::pom:2.1.0.CR1";
             release210CR1.persistAndFlush();
         }
     }
