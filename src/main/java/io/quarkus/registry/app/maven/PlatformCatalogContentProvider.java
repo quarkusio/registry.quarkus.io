@@ -72,8 +72,7 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
                 platformRelease.version).toString();
         ExtensionCatalog expected = ExtensionCatalog.builder()
                 .setId(id)
-                //TODO: This information is not stored in the DB
-                .setBom(ArtifactCoords.pom(platform.groupId, "quarkus-bom", platformRelease.version))
+                .setBom(ArtifactCoords.fromString(platformRelease.bom))
                 .setPlatform(true)
                 .setQuarkusCoreVersion(platformRelease.quarkusCoreVersion)
                 .setMetadata(platformRelease.metadata)

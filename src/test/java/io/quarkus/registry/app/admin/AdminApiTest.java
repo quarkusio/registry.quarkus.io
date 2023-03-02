@@ -86,13 +86,15 @@ class AdminApiTest extends BaseTest {
             release9.platformStream = stream9;
             release9.version = "9.0.0.Final";
             release9.quarkusCoreVersion = "9.0.0.Final";
+            release9.bom = "io.quarkus.platform:quarkus-bom::pom:9.0.0.Final";
             release9.persistAndFlush();
 
-            PlatformRelease release201 = new PlatformRelease();
-            release201.platformStream = stream10;
-            release201.version = "10.0.0.Final";
-            release201.quarkusCoreVersion = "10.0.0.Final";
-            release201.persistAndFlush();
+            PlatformRelease release10 = new PlatformRelease();
+            release10.platformStream = stream10;
+            release10.version = "10.0.0.Final";
+            release10.quarkusCoreVersion = "10.0.0.Final";
+            release10.bom = "io.quarkus.platform:quarkus-bom::pom:10.0.0.Final";
+            release10.persistAndFlush();
 
             Extension extensionToBeDeleted = new Extension();
             extensionToBeDeleted.name = "ToDeleteFromPlatform";
@@ -109,7 +111,7 @@ class AdminApiTest extends BaseTest {
 
             PlatformExtension platformExtension = new PlatformExtension();
             platformExtension.extensionRelease = extensionReleaseToBeDeleted;
-            platformExtension.platformRelease = release201;
+            platformExtension.platformRelease = release10;
             platformExtension.persist();
 
             ExtensionRelease extensionReleaseToBeDeleted2 = new ExtensionRelease();

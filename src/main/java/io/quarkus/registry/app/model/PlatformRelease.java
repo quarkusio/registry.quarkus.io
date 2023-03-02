@@ -134,6 +134,9 @@ public class PlatformRelease extends BaseEntity {
 
     public boolean unlisted;
 
+    @Column
+    public String bom;
+
     @Type(type = JsonTypes.JSON_BIN)
     @Column(columnDefinition = "json")
     public List<String> memberBoms = new ArrayList<>();

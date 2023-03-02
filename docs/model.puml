@@ -29,6 +29,7 @@ class PlatformRelease {
   + boolean pinned
   + boolean unlisted
   + String upstreamQuarkusCoreVersion
+  + String bom
   + List<String> memberBoms
   + Map<String,Object> metadata
 }
