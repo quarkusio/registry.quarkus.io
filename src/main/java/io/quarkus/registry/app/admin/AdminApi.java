@@ -436,4 +436,45 @@ public class AdminApi {
         }
         return Response.accepted().build();
     }
+
+    @PATCH
+    @Path("/v1/extension/{groupId}/{artifactId}/{version}")
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    @Operation(summary = "Patches an Extension Release")
+    @APIResponses({
+            @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful"),
+            @APIResponse(responseCode = "204", name = "No Content", description = "If metadata is empty"),
+            @APIResponse(responseCode = "404", name = "Not Found", description = "If Extension Release was not found")
+    })
+    public Response patchExtensionRelease(
+            @NotNull(message = "groupId is missing") @PathParam("groupId") String groupId,
+            @NotNull(message = "artifactId is missing") @PathParam("artifactId") String artifactId,
+            @NotNull(message = "version is missing") @PathParam("version") String version,
+            @NotNull(message = "metadata is required") @FormParam("metadata") String metadataJson) {
+        Map<String, Object> metadata;
+        if (metadataJson != null) {
+            try {
+                metadata = objectMapper.readValue(metadataJson, Map.class);
+            } catch (JsonProcessingException e) {
+                throw new BadRequestException("Invalid metadata JSON", e);
+            }
+        } else {
+            // Since metadata is the only parameter, return NO_CONTENT
+            return Response.noContent().build();
+        }
+        ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
+                .orElseThrow(() -> new NotFoundException("Extension Release not found"));
+        // Perform changes and persist
+        try {
+            extensionRelease.metadata = metadata;
+            extensionRelease.persist();
+            cache.clear();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
+        return Response.accepted().build();
+    }
+
 }
