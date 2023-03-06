@@ -1,6 +1,7 @@
 package io.quarkus.registry.app.admin;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -27,6 +28,8 @@ import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
+import io.quarkus.registry.catalog.ExtensionCatalog;
+import io.quarkus.registry.catalog.ExtensionCatalogImpl;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
@@ -378,4 +381,25 @@ class AdminApiTest extends BaseTest {
                     .contentType(ContentType.JSON);
         }
     }
+
+    @Test
+    void patch_extension_release() throws IOException {
+        // Update extension release
+        given()
+                .formParams("metadata", Map.of("foo", "bar"))
+                .header("Token", "test")
+                .patch("/admin/v1/extension/foo.bar/foo-extension/1.0.0")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+        try (InputStream stream = given()
+                .get("/client/non-platform-extensions?v=2.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .extract().body().asInputStream()) {
+            ExtensionCatalog catalog = CatalogMapperHelper.deserialize(stream, ExtensionCatalogImpl.Builder.class).build();
+            assertThat(catalog.getExtensions().iterator().next().getMetadata()).containsEntry("foo", "bar");
+        }
+    }
+
 }
