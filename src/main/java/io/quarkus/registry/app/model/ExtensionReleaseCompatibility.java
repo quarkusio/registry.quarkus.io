@@ -16,7 +16,7 @@ import org.hibernate.annotations.NaturalId;
 @Entity
 @NamedQuery(name = "ExtensionReleaseCompatibility.findCompatibility", query = """
         select e.extensionRelease.id as id, e.compatible as compatible from ExtensionReleaseCompatibility e
-        where e.quarkusCoreVersion = :quarkusCore
+        where :quarkusCore like e.quarkusCoreVersion
         """)
 public class ExtensionReleaseCompatibility extends BaseEntity {
 

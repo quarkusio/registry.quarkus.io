@@ -45,7 +45,7 @@ import io.quarkus.registry.app.util.Version;
                 extension_release
                 JOIN extension ON extension.id = extension_release.extension_id
                 LEFT JOIN platform_extension ON extension_release.id = platform_extension.extension_release_id
-                LEFT JOIN extension_release_compatibility ON extension_release_compatibility.extension_release_id = extension_release.id AND extension_release_compatibility.quarkus_core_version = :quarkusCore
+                LEFT JOIN extension_release_compatibility ON extension_release_compatibility.extension_release_id = extension_release.id AND :quarkusCore like extension_release_compatibility.quarkus_core_version
             WHERE
                 platform_extension.id IS NULL AND (
                     (extension_release.quarkus_core_version_sortable <= :quarkusCoreSortable AND
