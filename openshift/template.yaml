@@ -111,8 +111,8 @@ objects:
                 - name: QUARKUS_LOG_SENTRY_DSN
                   valueFrom:
                     secretKeyRef:
-                      name: secrets
-                      key: sentry-dsn
+                      name: ${GLITCHTIP_SECRET}
+                      key: dsn
                       optional: true
       triggers:
         - type: ConfigChange
@@ -146,6 +146,8 @@ parameters:
   - name: QUARKUS_DEFAULT_PLATFORM
   - name: QUARKUS_LOG_SENTRY
     value: "false"
+  - name: GLITCHTIP_SECRET
+    value: "glitchtip-secret"
   - name: IMAGE
     value: quay.io/quarkus/registry-app
     required: true
