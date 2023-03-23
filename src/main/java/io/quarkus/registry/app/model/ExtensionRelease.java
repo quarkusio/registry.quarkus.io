@@ -6,24 +6,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityResult;
-import javax.persistence.FieldResult;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedNativeQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.SqlResultSetMapping;
-
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.registry.app.util.Version;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityResult;
+import jakarta.persistence.FieldResult;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedNativeQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.SqlResultSetMapping;
 
 @Entity
 @NamedNativeQuery(name = "ExtensionRelease.findNonPlatformExtensions", query = """
@@ -111,8 +110,7 @@ public class ExtensionRelease extends BaseEntity {
     @Column(updatable = false, length = 100)
     private String versionSortable;
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> metadata;
 
     @Column(nullable = false)

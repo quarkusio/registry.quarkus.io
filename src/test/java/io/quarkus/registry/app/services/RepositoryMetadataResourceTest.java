@@ -4,15 +4,14 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 
-import javax.inject.Inject;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 public class RepositoryMetadataResourceTest extends BaseTest {

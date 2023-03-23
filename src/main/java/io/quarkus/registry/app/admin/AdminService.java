@@ -5,9 +5,6 @@ import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
-
 import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.events.ExtensionCatalogDeleteEvent;
@@ -29,6 +26,8 @@ import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 
 /**
  * Administrative operations on the database

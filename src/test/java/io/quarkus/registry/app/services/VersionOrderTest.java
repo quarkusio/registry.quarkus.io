@@ -6,9 +6,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.core.MediaType;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +14,8 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 public class VersionOrderTest extends BaseTest {
