@@ -7,8 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
-import javax.ws.rs.core.MediaType;
-
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
@@ -19,6 +17,7 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionCatalogImpl;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * Tests if the {@link ExtensionCatalog} content is generated correctly

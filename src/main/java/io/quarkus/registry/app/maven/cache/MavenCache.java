@@ -2,9 +2,6 @@ package io.quarkus.registry.app.maven.cache;
 
 import java.time.LocalDateTime;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -12,6 +9,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.quarkus.cache.CacheInvalidateAll;
 import io.quarkus.registry.app.CacheNames;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * Holding the maven cache

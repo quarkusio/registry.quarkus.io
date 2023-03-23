@@ -6,19 +6,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.PrePersist;
-
 import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.registry.app.util.Version;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.PrePersist;
 
 @Entity
 public class PlatformStream extends BaseEntity {
@@ -46,8 +45,7 @@ public class PlatformStream extends BaseEntity {
     @Column
     public boolean pinned;
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> metadata;
 
     @OneToMany(mappedBy = "platformStream", orphanRemoval = true)

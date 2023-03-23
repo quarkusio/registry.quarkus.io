@@ -2,9 +2,8 @@ package io.quarkus.registry.app.maven;
 
 import java.util.List;
 
-import javax.ws.rs.core.PathSegment;
-
 import io.quarkus.maven.dependency.ArtifactCoords;
+import jakarta.ws.rs.core.PathSegment;
 
 public class ArtifactParser {
 

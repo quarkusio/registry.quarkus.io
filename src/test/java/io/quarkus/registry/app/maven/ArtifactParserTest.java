@@ -7,14 +7,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.PathSegment;
-
 import org.assertj.core.api.SoftAssertions;
 import org.jboss.resteasy.reactive.common.util.PathSegmentImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
+import jakarta.ws.rs.core.PathSegment;
 
 class ArtifactParserTest {
 

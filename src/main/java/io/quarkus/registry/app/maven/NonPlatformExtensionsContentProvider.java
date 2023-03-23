@@ -2,19 +2,18 @@ package io.quarkus.registry.app.maven;
 
 import java.io.StringWriter;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.DatabaseRegistryClient;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.ExtensionCatalog;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 @Singleton
 public class NonPlatformExtensionsContentProvider implements ArtifactContentProvider {

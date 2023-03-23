@@ -2,13 +2,6 @@ package io.quarkus.registry.app.maven;
 
 import java.io.StringWriter;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import io.quarkus.cache.CacheResult;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
@@ -21,6 +14,12 @@ import io.quarkus.registry.config.RegistryMavenRepoConfig;
 import io.quarkus.registry.config.RegistryNonPlatformExtensionsConfig;
 import io.quarkus.registry.config.RegistryPlatformsConfig;
 import io.quarkus.registry.config.RegistryQuarkusVersionsConfig;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 
 @Singleton
 public class RegistryDescriptorContentProvider implements ArtifactContentProvider {

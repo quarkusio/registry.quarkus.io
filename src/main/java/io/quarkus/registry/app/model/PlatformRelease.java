@@ -11,23 +11,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.TypedQuery;
-
 import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.util.Version;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.TypedQuery;
 
 @Entity
 @NamedQueries({
@@ -137,12 +136,10 @@ public class PlatformRelease extends BaseEntity {
     @Column(nullable = false)
     public String bom;
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
     public List<String> memberBoms = new ArrayList<>();
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> metadata;
 
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)

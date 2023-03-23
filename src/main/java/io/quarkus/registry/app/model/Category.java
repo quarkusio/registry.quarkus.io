@@ -4,15 +4,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-
 import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 /**
  * Categories an extension belongs to
@@ -31,8 +30,7 @@ public class Category extends BaseEntity {
     @Column(length = 4096)
     public String description;
 
-    @Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = JsonTypes.JSON_BIN)
+    @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> metadata;
 
     @Override

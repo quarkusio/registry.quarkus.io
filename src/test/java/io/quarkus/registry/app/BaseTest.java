@@ -1,10 +1,10 @@
 package io.quarkus.registry.app;
 
-import javax.inject.Inject;
-
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import jakarta.inject.Inject;
 
 public abstract class BaseTest {
 

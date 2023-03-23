@@ -10,8 +10,6 @@ import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.ws.rs.core.MediaType;
-
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +22,7 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionCatalogImpl;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 public class ChangeMetadataTest extends BaseTest {

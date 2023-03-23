@@ -3,14 +3,13 @@ package io.quarkus.registry.app.maven.cache;
 import java.util.Date;
 import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import io.quarkus.logging.Log;
 import io.quarkus.registry.app.model.DbState;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 @Startup

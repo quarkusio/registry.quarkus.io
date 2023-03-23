@@ -16,9 +16,8 @@
     <impsort.plugin.version>1.8.0</impsort.plugin.version>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
-    <quarkus-hibernate-types.version>1.0.2</quarkus-hibernate-types.version>
     <quarkus-logging-sentry.version>1.2.1</quarkus-logging-sentry.version>
-    <quarkus.version>2.16.6.Final</quarkus.version>
+    <quarkus.version>3.0.0.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
 
     <!-- Set Java version -->
@@ -45,11 +44,6 @@
       <version>2.15.1-02</version>
     </dependency>
     <dependency>
-      <groupId>io.quarkiverse.hibernatetypes</groupId>
-      <artifactId>quarkus-hibernate-types</artifactId>
-      <version>${quarkus-hibernate-types.version}</version>
-    </dependency>
-    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-devtools-registry-client</artifactId>
     </dependency>
@@ -62,8 +56,8 @@
       <artifactId>quarkus-hibernate-validator</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.jaxrs</groupId>
-      <artifactId>jackson-jaxrs-yaml-provider</artifactId>
+      <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+      <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

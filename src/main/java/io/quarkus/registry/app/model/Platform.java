@@ -8,19 +8,19 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.type.SqlTypes;
 
-import io.quarkiverse.hibernate.types.json.JsonTypes;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 
 @Entity
 @Cacheable
@@ -49,8 +49,7 @@ public class Platform extends BaseEntity {
     @Enumerated(EnumType.STRING)
     public Type platformType = Type.C;
 
-    @org.hibernate.annotations.Type(type = JsonTypes.JSON_BIN)
-    @Column(columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> metadata;
 
     @OneToMany(mappedBy = "platform", orphanRemoval = true)
