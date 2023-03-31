@@ -133,15 +133,6 @@ public class MavenResourceTest extends BaseTest {
     }
 
     @Test
-    void should_return_204_on_inexistent_platforms() {
-        given()
-                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-10.1.0.CR1.json")
-                .then()
-                .statusCode(204)
-                .header("X-Reason", "No platforms found");
-    }
-
-    @Test
     void non_platform_descriptor_should_contain_quarkus_core() {
         given()
                 .get("/maven/io/quarkus/registry/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-2.1.3.Final.json")
@@ -152,10 +143,34 @@ public class MavenResourceTest extends BaseTest {
     }
 
     @Test
-    void should_return_bad_request_if_version_is_invalid() {
+    void should_return_not_found_if_version_is_invalid() {
         given()
                 .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-0.23.2.json")
                 .then()
-                .statusCode(HttpURLConnection.HTTP_BAD_REQUEST);
+                .statusCode(HttpURLConnection.HTTP_NOT_FOUND);
+    }
+
+    @Test
+    void should_return_not_found_if_snapshot_version_is_invalid() {
+        given()
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-999-SNAPSHOT.json")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_FOUND);
+    }
+
+    @Test
+    void should_return_not_found_to_sha1_if_version_is_invalid() {
+        given()
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-0.23.2.json.sha1")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_FOUND);
+    }
+
+    @Test
+    void should_return_not_found_to_sha1_if_snapshot_version_is_invalid() {
+        given()
+                .get("/maven/io/quarkus/registry/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT-999-SNAPSHOT.sha1")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_NOT_FOUND);
     }
 }

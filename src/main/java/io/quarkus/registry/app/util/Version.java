@@ -18,7 +18,7 @@ public class Version {
      */
     public static void validateVersion(String version) {
         DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
-        if (dav.getMajorVersion() == 0) {
+        if (dav.getMajorVersion() == 0 && dav.getMinorVersion() == 0 && dav.getIncrementalVersion() == 0) {
             throw new IllegalArgumentException("Invalid Version: " + version);
         }
     }
