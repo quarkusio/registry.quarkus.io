@@ -18,7 +18,7 @@
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <quarkus-logging-sentry.version>2.0.1</quarkus-logging-sentry.version>
-    <quarkus.version>3.1.0.Final</quarkus.version>
+    <quarkus.version>3.1.1.Final</quarkus.version>
     <revision>999-SNAPSHOT</revision>
 
     <!-- Set Java version -->
