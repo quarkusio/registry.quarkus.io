@@ -59,7 +59,7 @@ public class MavenResource {
     @GET
     @Path("{path:.+}")
     @Operation(hidden = true)
-    @Timed(value = "registry-maven-requests", description = "Duration of Maven requests", histogram = true)
+    @Timed(value = "registry-maven-requests", description = "Duration of Maven requests", histogram = true, percentiles = { 0.5, 0.75, 0.95, 0.99 })
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
             @Context UriInfo uriInfo) {

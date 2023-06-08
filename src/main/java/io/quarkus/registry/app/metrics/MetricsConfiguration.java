@@ -22,6 +22,7 @@ public class MetricsConfiguration {
                 if (id.getName().equals("http.server.requests")) {
                     return DistributionStatisticConfig.builder()
                             .percentilesHistogram(true) // histogram buckets (e.g. prometheus histogram_quantile)
+                            .percentiles(0.5, 0.75, 0.95, 0.99) // median, 75th percentile, 95th, 99th
                             .build()
                             .merge(config);
                 }
