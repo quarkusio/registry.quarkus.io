@@ -50,12 +50,12 @@ import jakarta.persistence.TypedQuery;
                 where pr.quarkusCoreVersion = ?1
                 and pr.unlisted = false
                 and pr.platformStream.platform.platformType = 'C'
-                and (pr.platformStream, pr.versionSortable) in (
-                    select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
+                and (pr.platformStream.id, pr.versionSortable) in (
+                    select pr2.platformStream.id, max(pr2.versionSortable) from PlatformRelease pr2
                         where pr2.quarkusCoreVersion = ?1
                         and pr2.platformStream.unlisted = false
                         and pr2.unlisted = false
-                        group by pr2.platformStream
+                        group by pr2.platformStream.id
                 )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """),
@@ -63,12 +63,12 @@ import jakarta.persistence.TypedQuery;
                   select pr from PlatformRelease pr
                   where pr.unlisted = false
                   and pr.platformStream.platform.platformType = 'C'
-                  and (pr.platformStream, pr.versionSortable) in
+                  and (pr.platformStream.id, pr.versionSortable) in
                       (
-                       select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
+                       select pr2.platformStream.id, max(pr2.versionSortable) from PlatformRelease pr2
                            where pr2.platformStream.unlisted = false
                            and pr2.unlisted = false
-                           group by pr2.platformStream
+                           group by pr2.platformStream.id
                       )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """),
@@ -83,13 +83,13 @@ import jakarta.persistence.TypedQuery;
                   select pr from PlatformRelease pr
                   where pr.unlisted = false
                   and pr.platformStream.platform.platformType = 'C'
-                  and (pr.platformStream, pr.versionSortable) in
+                  and (pr.platformStream.id, pr.versionSortable) in
                       (
-                       select pr2.platformStream, max(pr2.versionSortable) from PlatformRelease pr2
+                       select pr2.platformStream.id, max(pr2.versionSortable) from PlatformRelease pr2
                            where pr2.platformStream.unlisted = false
                            and pr2.platformStream.pinned = true
                            and pr2.unlisted = false
-                           group by pr2.platformStream
+                           group by pr2.platformStream.id
                       )
                 order by pr.versionSortable desc, pr.platformStream.platform.isDefault desc
                 """),
