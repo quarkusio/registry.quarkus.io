@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
+
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.maven.MavenConfig;
@@ -24,6 +26,11 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.PlatformReleaseVersion;
+import io.quarkus.registry.config.RegistriesConfig;
+import io.quarkus.registry.config.RegistryConfig;
+import io.quarkus.registry.config.RegistryDescriptorConfig;
+import io.quarkus.registry.config.RegistryMavenConfig;
+import io.quarkus.registry.config.RegistryMavenRepoConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -132,6 +139,28 @@ public class DatabaseRegistryClient {
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();
+    }
+
+    @GET
+    @Path("/config.yaml")
+    @Produces(YAMLMediaTypes.APPLICATION_JACKSON_YAML)
+    @Operation(summary = "Example Quarkus Registry Client configuration file")
+    public RegistriesConfig clientConfigYaml() {
+        ArtifactCoords coords = ArtifactCoords
+                .fromString(mavenConfig.getRegistryGroupId() + ":quarkus-registry-descriptor::json:1.0-SNAPSHOT");
+        RegistryMavenRepoConfig mavenRepoConfig = RegistryMavenRepoConfig.builder().setUrl(mavenConfig.getRegistryUrl())
+                .build();
+        RegistryConfig registry = RegistryConfig.builder()
+                .setId(mavenConfig.getRegistryId())
+                .setUpdatePolicy("always")
+                .setDescriptor(
+                        RegistryDescriptorConfig.builder().setArtifact(coords))
+                .setMaven(
+                        RegistryMavenConfig.builder()
+                                .setRepository(mavenRepoConfig)
+                                .build())
+                .build();
+        return RegistriesConfig.builder().setRegistry(registry).build();
     }
 
     @GET

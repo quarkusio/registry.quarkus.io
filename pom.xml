@@ -99,7 +99,6 @@
     <dependency>
       <groupId>io.smallrye.common</groupId>
       <artifactId>smallrye-common-version</artifactId>
-      <version>2.1.0</version>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.loggingsentry</groupId>
@@ -205,7 +204,6 @@
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
-            <quarkus.registry.expose.client.config.yaml>true</quarkus.registry.expose.client.config.yaml>
           </systemPropertyVariables>
         </configuration>
       </plugin>
