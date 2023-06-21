@@ -1,6 +1,7 @@
 package io.quarkus.registry.app;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -17,6 +18,9 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
+
+import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
@@ -24,13 +28,22 @@ import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.registry.config.RegistriesConfig;
+import io.quarkus.registry.config.RegistriesConfigImpl;
+import io.quarkus.registry.config.RegistriesConfigMapperHelper;
+import io.quarkus.registry.config.RegistryConfig;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.internal.mapping.Jackson2Mapper;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 class DatabaseRegistryClientTest extends BaseTest {
+
+    @Inject
+    MavenConfig mavenConfig;
 
     @BeforeEach
     @Transactional
@@ -303,4 +316,23 @@ class DatabaseRegistryClientTest extends BaseTest {
                         "platforms[0].streams[1].releases", not(hasItem("2.1.0.Final")));
 
     }
+
+    @Test
+    void should_return_client_configuration_yaml() {
+        RegistriesConfig registriesConfig = given()
+                .get("/client/config.yaml")
+                .then()
+                .statusCode(200)
+                .log().ifValidationFails()
+                .contentType(YAMLMediaTypes.APPLICATION_JACKSON_YAML)
+                .extract().body()
+                .as(RegistriesConfigImpl.Builder.class,
+                        new Jackson2Mapper((type, s) -> RegistriesConfigMapperHelper.yamlMapper()))
+                .build();
+        assertThat(registriesConfig.getRegistries()).hasSize(1);
+        RegistryConfig registryConfig = registriesConfig.getRegistries().get(0);
+        assertThat(registryConfig.getId()).isEqualTo(mavenConfig.getRegistryId());
+        assertThat(registryConfig.getMaven().getRepository().getUrl()).isEqualTo(mavenConfig.getRegistryUrl());
+    }
+
 }
