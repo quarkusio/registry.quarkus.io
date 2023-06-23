@@ -12,9 +12,17 @@
   <version>${revision}</version>
   <properties>
     <assertj.version>3.24.2</assertj.version>
-    <formatter.plugin.version>2.23.0</formatter.plugin.version>
-    <impsort.plugin.version>1.9.0</impsort.plugin.version>
-    <version.surefire.plugin>3.0.0</version.surefire.plugin>
+    <version.buildnumber.plugin>3.1.0</version.buildnumber.plugin>
+    <version.clean.plugin>3.3.1</version.clean.plugin>
+    <version.compiler.plugin>3.11.0</version.compiler.plugin>
+    <version.enforcer.plugin>3.3.0</version.enforcer.plugin>
+    <version.formatter.plugin>2.23.0</version.formatter.plugin>
+    <version.impsort.plugin>1.9.0</version.impsort.plugin>
+    <version.jar.plugin>3.3.0</version.jar.plugin>
+    <version.resources.plugin>3.3.1</version.resources.plugin>
+    <version.source.plugin>3.3.0</version.source.plugin>
+    <version.surefire.plugin>3.1.2</version.surefire.plugin>
+
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <quarkus-logging-sentry.version>2.0.1</quarkus-logging-sentry.version>
@@ -136,7 +144,7 @@
       <plugin>
         <groupId>net.revelc.code.formatter</groupId>
         <artifactId>formatter-maven-plugin</artifactId>
-        <version>${formatter.plugin.version}</version>
+        <version>${version.formatter.plugin}</version>
         <executions>
           <execution>
             <phase>process-sources</phase>
@@ -160,7 +168,7 @@
       <plugin>
         <groupId>net.revelc.code</groupId>
         <artifactId>impsort-maven-plugin</artifactId>
-        <version>${impsort.plugin.version}</version>
+        <version>${version.impsort.plugin}</version>
         <executions>
           <execution>
             <id>sort-imports</id>
