@@ -1,12 +1,12 @@
 package io.quarkus.registry.app.metrics;
 
+import java.util.concurrent.TimeUnit;
+
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
-
-import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class MetricsConfiguration {
@@ -27,8 +27,7 @@ public class MetricsConfiguration {
                                     TimeUnit.MILLISECONDS.toNanos(100),
                                     TimeUnit.MILLISECONDS.toNanos(500),
                                     TimeUnit.SECONDS.toNanos(1),
-                                    TimeUnit.SECONDS.toNanos(5)
-                            )
+                                    TimeUnit.SECONDS.toNanos(5))
                             .build()
                             .merge(config);
                 }
