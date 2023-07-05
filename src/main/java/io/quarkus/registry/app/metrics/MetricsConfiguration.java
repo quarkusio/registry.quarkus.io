@@ -24,10 +24,8 @@ public class MetricsConfiguration {
                 if (id.getName().equals("http.server.requests")) {
                     return DistributionStatisticConfig.builder()
                             .serviceLevelObjectives(
-                                    TimeUnit.MILLISECONDS.toNanos(100),
                                     TimeUnit.MILLISECONDS.toNanos(500),
-                                    TimeUnit.SECONDS.toNanos(1),
-                                    TimeUnit.SECONDS.toNanos(5))
+                                    TimeUnit.SECONDS.toNanos(1))
                             .build()
                             .merge(config);
                 }
