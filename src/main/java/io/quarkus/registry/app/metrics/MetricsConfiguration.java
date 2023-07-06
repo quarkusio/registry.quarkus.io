@@ -21,11 +21,14 @@ public class MetricsConfiguration {
 
             @Override
             public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-                if (id.getName().equals("http.server.requests")) {
+                if ("http.server.requests".equals(id.getName())) {
                     return DistributionStatisticConfig.builder()
+                            .percentilesHistogram(false) // histogram buckets (e.g. prometheus histogram_quantile)
                             .serviceLevelObjectives(
                                     TimeUnit.MILLISECONDS.toNanos(500),
-                                    TimeUnit.SECONDS.toNanos(1))
+                                    TimeUnit.MILLISECONDS.toNanos(1_000),
+                                    TimeUnit.MILLISECONDS.toNanos(5_000),
+                                    TimeUnit.MILLISECONDS.toNanos(10_000)) //slo slots
                             .build()
                             .merge(config);
                 }
