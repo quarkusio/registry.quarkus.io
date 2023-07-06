@@ -6,7 +6,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
-import io.micrometer.core.annotation.Timed;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -59,7 +58,6 @@ public class MavenResource {
     @GET
     @Path("{path:.+}")
     @Operation(hidden = true)
-    @Timed(value = "registry-maven-requests", description = "Duration of Maven requests", histogram = true)
     public Response handleArtifactRequest(
             @PathParam("path") List<PathSegment> pathSegments,
             @Context UriInfo uriInfo) {

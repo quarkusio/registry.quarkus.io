@@ -18,7 +18,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
 
-import io.micrometer.core.annotation.Timed;
 import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.maven.dependency.ArtifactKey;
@@ -89,8 +88,6 @@ public class AdminApi {
     @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Inserts a new Extension Catalog (Platform Release) in the database", description = "Invoke this endpoint when a new extension catalog release is available")
-    @Timed(value = "registry-extension-catalog-imports", description = "Duration of extension catalog imports", extraTags = {
-            "op", "write" }, histogram = true)
     public Response addExtensionCatalog(
             @NotNull(message = "X-Platform header missing") @HeaderParam("X-Platform") String platformKey,
             @DefaultValue("C") @HeaderParam("X-Platform-Type") Platform.Type platformType,
@@ -110,8 +107,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Deletes an extension catalog (platform) from the database")
-    @Timed(value = "registry-extension-catalog-deletes", description = "Duration of extension catalog deletes", extraTags = {
-            "op", "write" }, histogram = true)
     public Response deleteExtensionCatalog(
             @NotNull(message = "platformKey is missing") @FormParam("platformKey") String platformKey,
             @NotNull(message = "version is missing") @FormParam("version") String version) {
@@ -129,8 +124,6 @@ public class AdminApi {
     @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Inserts an extension in the database")
-    @Timed(value = "registry-extension-imports", description = "Duration of extension imports", extraTags = { "op",
-            "write" }, histogram = true)
     public Response addExtension(
             @NotNull(message = "Body payload is missing") io.quarkus.registry.catalog.Extension extension) {
         ArtifactCoords bom = extension.getArtifact();
@@ -152,8 +145,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Deletes an extension from the database")
-    @Timed(value = "registry-extension-deletes", description = "Duration of extension deletes", extraTags = { "op",
-            "write" }, histogram = true)
     public Response deleteExtension(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
             @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
             @FormParam("version") String version) {
@@ -202,8 +193,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Flags an extension as compatible against a specific Quarkus version")
-    @Timed(value = "registry-extension-compat-adds", description = "Duration of extension compat adds", extraTags = { "op",
-            "write" }, histogram = true)
     public Response addExtensionCompatibilty(
             @NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
             @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
@@ -231,8 +220,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Flags an extension as incompatible against a specific Quarkus version")
-    @Timed(value = "registry-extension-compat-removes", description = "Duration of extension compat removals", extraTags = {
-            "op", "write" }, histogram = true)
     public Response removeExtensionCompatibilty(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
             @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
             @NotNull(message = "version is missing") @FormParam("version") String version,
@@ -265,8 +252,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
     @Operation(summary = "Patches a PlatformStream")
-    @Timed(value = "registry-platform-stream-patches", description = "Duration of platform stream patches", extraTags = { "op",
-            "write" }, histogram = true)
     public Response patchPlatformStream(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
@@ -297,8 +282,6 @@ public class AdminApi {
             @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful"),
             @APIResponse(responseCode = "404", name = "Not Found", description = "If Platform/Stream/Release were not found")
     })
-    @Timed(value = "registry-platform-release-patches", description = "Duration of platform release patches", extraTags = {
-            "op", "write" }, histogram = true)
     public Response patchPlatformRelease(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
@@ -341,8 +324,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
     @Operation(summary = "Patches a PlatformReleaseCategory", description = "Invoke this endpoint when the platform release needs to be set to unlisted")
-    @Timed(value = "registry-platform-release-category-patches", description = "Duration of platform release category patches", extraTags = {
-            "op", "write" }, histogram = true)
     public Response patchPlatformReleaseCategory(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
@@ -387,8 +368,6 @@ public class AdminApi {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
     @Operation(summary = "Patches a PlatformExtension", description = "Invoke this endpoint to patch a PlatformExtension")
-    @Timed(value = "registry-platform-extension-patches", description = "Duration of platform extension patches", extraTags = {
-            "op", "write" }, histogram = true)
     public Response patchPlatformExtension(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
@@ -439,8 +418,6 @@ public class AdminApi {
             @APIResponse(responseCode = "202", name = "Accepted", description = "If invocation is successful"),
             @APIResponse(responseCode = "404", name = "Not Found", description = "If Platform/Stream/Release were not found")
     })
-    @Timed(value = "registry-extension-patches", description = "Duration of extension patches", extraTags = { "op",
-            "write" }, histogram = true)
     public Response patchExtension(
             @NotNull(message = "groupId is missing") @PathParam("groupId") String groupId,
             @NotNull(message = "artifactId is missing") @PathParam("artifactId") String artifactId,
@@ -470,8 +447,6 @@ public class AdminApi {
             @APIResponse(responseCode = "204", name = "No Content", description = "If metadata is empty"),
             @APIResponse(responseCode = "404", name = "Not Found", description = "If Extension Release was not found")
     })
-    @Timed(value = "registry-extension-release-patches", description = "Duration of extension release patches", extraTags = {
-            "op", "write" }, histogram = true)
     public Response patchExtensionRelease(
             @NotNull(message = "groupId is missing") @PathParam("groupId") String groupId,
             @NotNull(message = "artifactId is missing") @PathParam("artifactId") String artifactId,
