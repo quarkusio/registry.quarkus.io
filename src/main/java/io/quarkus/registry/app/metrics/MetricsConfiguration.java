@@ -32,6 +32,7 @@ public class MetricsConfiguration {
                                     TimeUnit.MILLISECONDS.toNanos(250),
                                     TimeUnit.MILLISECONDS.toNanos(500),
                                     TimeUnit.MILLISECONDS.toNanos(1_000),
+                                    TimeUnit.MILLISECONDS.toNanos(2_500),
                                     TimeUnit.MILLISECONDS.toNanos(5_000),
                                     TimeUnit.MILLISECONDS.toNanos(10_000)) //slo slots
                             .build()
