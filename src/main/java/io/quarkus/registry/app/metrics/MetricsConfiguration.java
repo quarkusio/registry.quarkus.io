@@ -25,6 +25,11 @@ public class MetricsConfiguration {
                     return DistributionStatisticConfig.builder()
                             .percentilesHistogram(false) // histogram buckets (e.g. prometheus histogram_quantile)
                             .serviceLevelObjectives(
+                                    TimeUnit.MILLISECONDS.toNanos(5),
+                                    TimeUnit.MILLISECONDS.toNanos(10),
+                                    TimeUnit.MILLISECONDS.toNanos(25),
+                                    TimeUnit.MILLISECONDS.toNanos(50),
+                                    TimeUnit.MILLISECONDS.toNanos(250),
                                     TimeUnit.MILLISECONDS.toNanos(500),
                                     TimeUnit.MILLISECONDS.toNanos(1_000),
                                     TimeUnit.MILLISECONDS.toNanos(5_000),
