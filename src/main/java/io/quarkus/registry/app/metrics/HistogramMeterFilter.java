@@ -15,6 +15,8 @@ import jakarta.inject.Singleton;
 @Singleton
 public class HistogramMeterFilter implements MeterFilter {
     private static final Set<String> WRITE_METHODS = Set.of("POST", "PUT", "PATCH", "DELETE");
+    private static final Tag OP_READ = Tag.of("op", "r");
+    private static final Tag OP_WRITE = Tag.of("op", "w");
 
     @Override
     public Meter.Id map(Meter.Id id) {
@@ -25,9 +27,9 @@ public class HistogramMeterFilter implements MeterFilter {
                 return id;
             }
             if (WRITE_METHODS.contains(method) && uri.startsWith("/admin")) {
-                return id.withTag(Tag.of("op", "w"));
+                return id.withTag(OP_WRITE);
             }
-            return id.withTag(Tag.of("op", "r"));
+            return id.withTag(OP_READ);
         }
         return id;
     }
