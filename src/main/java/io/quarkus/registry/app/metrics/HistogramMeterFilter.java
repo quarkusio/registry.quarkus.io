@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.binder.http.Outcome;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import jakarta.inject.Singleton;
@@ -26,9 +25,9 @@ public class HistogramMeterFilter implements MeterFilter {
                 return id;
             }
             if (WRITE_METHODS.contains(method) && uri.startsWith("/admin")) {
-                return id.withTag(Tag.of("op", "write"));
+                return id.withTag(Tag.of("op", "w"));
             }
-            return id.withTag(Tag.of("op", "read"));
+            return id.withTag(Tag.of("op", "r"));
         }
         return id;
     }
@@ -36,9 +35,9 @@ public class HistogramMeterFilter implements MeterFilter {
     @Override
     public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
         if (isHttpServerRequests(id)) {
-            if (id.getTags().contains(Outcome.CLIENT_ERROR.asTag())) {
-                return MeterFilter.deny().configure(id, config);
-            }
+            //            if (id.getTags().contains(Outcome.CLIENT_ERROR.asTag())) {
+            //                return MeterFilter.deny().configure(id, config);
+            //            }
             return DistributionStatisticConfig.builder()
                     .percentilesHistogram(false) // histogram buckets (e.g. prometheus histogram_quantile)
                     .serviceLevelObjectives(
