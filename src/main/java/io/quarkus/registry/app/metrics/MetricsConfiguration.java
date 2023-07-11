@@ -3,6 +3,7 @@ package io.quarkus.registry.app.metrics;
 import java.util.concurrent.TimeUnit;
 
 import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.binder.http.Outcome;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import jakarta.enterprise.inject.Produces;
@@ -22,6 +23,9 @@ public class MetricsConfiguration {
             @Override
             public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
                 if ("http.server.requests".equals(id.getName())) {
+                    if (id.getTags().contains(Outcome.CLIENT_ERROR.asTag())) {
+                        return MeterFilter.deny().configure(id, config);
+                    }
                     return DistributionStatisticConfig.builder()
                             .percentilesHistogram(false) // histogram buckets (e.g. prometheus histogram_quantile)
                             .serviceLevelObjectives(
