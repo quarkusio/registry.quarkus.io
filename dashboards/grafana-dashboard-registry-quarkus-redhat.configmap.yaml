@@ -933,8 +933,8 @@ data:
         ]
       },
       "timezone": "",
-      "title": "Quarkus Registry",
-      "uid": "playground",
+      "title": "Red Hat Quarkus Registry",
+      "uid": "registry-quarkus-redhat",
       "version": 1,
       "weekStart": ""
     }
