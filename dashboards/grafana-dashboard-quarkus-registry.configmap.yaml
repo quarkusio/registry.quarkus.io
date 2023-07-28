@@ -350,7 +350,7 @@ data:
           "nameFilter": "",
           "onlyAlertsOnDashboard": false,
           "options": {
-            "alertInstanceLabelFilter": "rate(up{job=\"registry-quarkus\",namespace=\"registry-quarkus-redhat-production\"}[5m]) unless up{job=\"registry-quarkus\",namespace=\"registry-quarkus-redhat-production\"}",
+            "alertInstanceLabelFilter": "rate(up{job=\"registry-quarkus\",namespace=\"$namespace\"}[5m]) unless up{job=\"registry-quarkus\",namespace=\"$namespace\"}",
             "alertName": "",
             "dashboardAlerts": false,
             "datasource": "app-sre-prod-01-prometheus",
