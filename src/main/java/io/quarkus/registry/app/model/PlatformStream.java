@@ -45,6 +45,9 @@ public class PlatformStream extends BaseEntity {
     @Column
     public boolean pinned;
 
+    @Column
+    public boolean lts;
+
     @JdbcTypeCode(SqlTypes.JSON)
     public Map<String, Object> metadata;
 
