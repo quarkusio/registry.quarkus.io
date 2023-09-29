@@ -201,14 +201,15 @@ public class DatabaseRegistryClient {
             } else {
                 mutableClientPlatformStream = clientPlatformStream.mutable();
             }
+            mutableClientPlatformStream.setMetadata("lts", platformStream.lts);
             io.quarkus.registry.catalog.PlatformRelease.Mutable mutablePlatformRelease = toClientPlatformRelease(
                     platformRelease);
             if (all) {
-                mutablePlatformRelease.getMetadata().put("unlisted", platformRelease.unlisted);
+                mutablePlatformRelease.setMetadata("unlisted", platformRelease.unlisted);
             }
             mutableClientPlatformStream.addRelease(mutablePlatformRelease.build());
             if (all) {
-                mutableClientPlatformStream.getMetadata().put("unlisted", platformStream.unlisted);
+                mutableClientPlatformStream.setMetadata("unlisted", platformStream.unlisted);
             }
             catalog.addPlatform(mutableClientPlatform.addStream(mutableClientPlatformStream.build()).build());
         }

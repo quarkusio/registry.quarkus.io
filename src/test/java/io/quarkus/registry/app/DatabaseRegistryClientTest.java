@@ -72,6 +72,7 @@ class DatabaseRegistryClientTest extends BaseTest {
             PlatformStream stream21 = new PlatformStream();
             stream21.platform = platform;
             stream21.streamKey = "2.1";
+            stream21.lts = true;
             stream21.persistAndFlush();
 
             PlatformRelease release210CR1 = new PlatformRelease();
@@ -333,6 +334,16 @@ class DatabaseRegistryClientTest extends BaseTest {
         RegistryConfig registryConfig = registriesConfig.getRegistries().get(0);
         assertThat(registryConfig.getId()).isEqualTo(mavenConfig.getRegistryId());
         assertThat(registryConfig.getMaven().getRepository().getUrl()).isEqualTo(mavenConfig.getRegistryUrl());
+    }
+
+    @Test
+    void should_check_if_lts_is_returned() {
+        given()
+                .get("/client/platforms/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms[0].streams.find{it.id = '2.1'}.lts", is(true));
     }
 
 }
