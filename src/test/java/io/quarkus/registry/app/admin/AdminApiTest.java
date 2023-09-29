@@ -401,4 +401,27 @@ class AdminApiTest extends BaseTest {
         }
     }
 
+    @Test
+    void patch_platform_stream_lts() throws IOException {
+        given()
+                .get("/client/platforms")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms[0].streams.find{it.id = '10.0'}.lts", is(false));
+
+        given().formParam("lts", "true")
+                .header("Token", "test")
+                .patch("/admin/v1/stream/io.quarkus.platform/10.0")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/platforms")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms[0].streams.find{it.id = '10.0'}.lts", is(true));
+
+    }
 }
