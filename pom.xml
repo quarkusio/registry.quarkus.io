@@ -26,7 +26,7 @@
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <quarkus-logging-sentry.version>2.0.4</quarkus-logging-sentry.version>
-    <quarkus.version>3.5.0</quarkus.version>
+    <quarkus.version>3.2.6.Final-redhat-00002</quarkus.version>
     <revision>999-SNAPSHOT</revision>
 
     <!-- Set Java version -->
@@ -38,7 +38,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.quarkus</groupId>
+        <groupId>com.redhat.quarkus.platform</groupId>
         <artifactId>quarkus-bom</artifactId>
         <version>${quarkus.version}</version>
         <type>pom</type>
@@ -157,7 +157,7 @@
           <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-ide-config</artifactId>
-            <version>${quarkus.version}</version>
+            <version>3.5.0</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -191,7 +191,7 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>io.quarkus</groupId>
+        <groupId>com.redhat.quarkus.platform</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
         <version>${quarkus.version}</version>
         <extensions>true</extensions>
@@ -278,4 +278,28 @@
       </properties>
     </profile>
   </profiles>
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>redhat</id>
+      <url>https://maven.repository.redhat.com/ga</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>redhat</id>
+      <url>https://maven.repository.redhat.com/ga</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
