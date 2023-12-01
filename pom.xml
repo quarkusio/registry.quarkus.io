@@ -26,7 +26,7 @@
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
     <quarkus-logging-sentry.version>2.0.4</quarkus-logging-sentry.version>
-    <quarkus.version>3.2.6.Final-redhat-00002</quarkus.version>
+    <quarkus.version>3.2.9.Final-redhat-00003</quarkus.version>
     <revision>999-SNAPSHOT</revision>
 
     <!-- Set Java version -->
