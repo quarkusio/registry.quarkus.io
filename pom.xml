@@ -11,7 +11,7 @@
   <artifactId>quarkus-registry-app</artifactId>
   <version>${revision}</version>
   <properties>
-    <assertj.version>3.24.2</assertj.version>
+    <assertj.version>3.25.0</assertj.version>
     <version.buildnumber.plugin>3.1.0</version.buildnumber.plugin>
     <version.clean.plugin>3.3.1</version.clean.plugin>
     <version.compiler.plugin>3.11.0</version.compiler.plugin>
