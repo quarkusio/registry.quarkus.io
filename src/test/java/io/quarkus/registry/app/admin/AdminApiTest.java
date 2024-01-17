@@ -285,7 +285,7 @@ class AdminApiTest extends BaseTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
-                .body("platforms[0].streams", hasSize(2),
+                .body("platforms[0].streams", hasSize(1),
                         "platforms[0].current-stream-id", is("10.0"));
 
         // Setting unlisted=true to 10.0 stream

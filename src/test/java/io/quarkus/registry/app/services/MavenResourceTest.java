@@ -93,13 +93,11 @@ public class MavenResourceTest extends BaseTest {
                 .statusCode(200)
                 .log().ifValidationFails()
                 .contentType(ContentType.JSON)
-                .body("platforms.streams.flatten().size()", is(3),
+                .body("platforms.streams.flatten().size()", is(2),
                         "platforms[0].streams[0].id", is("2.0"),
                         "platforms[0].streams[0].releases[0].quarkus-core-version", is("2.0.2.Final"),
-                        "platforms[0].streams[1].id", is("1.9"),
-                        "platforms[0].streams[1].releases[0].quarkus-core-version", is("1.9.0.Final"),
-                        "platforms[0].streams[2].id", is("2.1"),
-                        "platforms[0].streams[2].releases[0].quarkus-core-version", is("2.1.0.CR1"));
+                        "platforms[0].streams[1].id", is("2.1"),
+                        "platforms[0].streams[1].releases[0].quarkus-core-version", is("2.1.0.CR1"));
     }
 
     @Test

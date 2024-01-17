@@ -162,6 +162,10 @@ public class PlatformRelease extends BaseEntity {
         this.versionSortable = Version.toSortable(version);
     }
 
+    public boolean isVersionStable() {
+        return !Version.isPreFinal(version);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -198,19 +202,16 @@ public class PlatformRelease extends BaseEntity {
             query = em.createNamedQuery("PlatformRelease.findLatest", PlatformRelease.class);
         }
         // Check if we can perform this directly in the SQL
-        // We need the top 3 releases for each platform
         var platformMap = new LinkedHashMap<Platform, List<PlatformRelease>>();
         for (var item : query.getResultList()) {
             var platformReleases = platformMap.computeIfAbsent(item.platformStream.platform,
                     k -> new ArrayList<>());
-            if (platformReleases.size() < 3) {
-                // Count stable versions
-                long stableVersions = platformReleases.stream()
-                        .filter(pr -> !Version.isPreFinal(pr.version))
-                        .count();
-                if (stableVersions < 2) {
-                    platformReleases.add(item);
-                }
+            // Add all versions until we find the latest stable one
+            long stableVersions = platformReleases.stream()
+                    .filter(PlatformRelease::isVersionStable)
+                    .count();
+            if (stableVersions == 0) {
+                platformReleases.add(item);
             }
         }
         // Add pinned platforms to the result
