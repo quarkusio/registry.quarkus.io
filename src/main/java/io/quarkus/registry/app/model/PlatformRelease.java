@@ -207,10 +207,9 @@ public class PlatformRelease extends BaseEntity {
             var platformReleases = platformMap.computeIfAbsent(item.platformStream.platform,
                     k -> new ArrayList<>());
             // Add all versions until we find the latest stable one
-            long stableVersions = platformReleases.stream()
-                    .filter(PlatformRelease::isVersionStable)
-                    .count();
-            if (stableVersions == 0) {
+            boolean hasStableVersions = platformReleases.stream()
+                    .anyMatch(PlatformRelease::isVersionStable);
+            if (!hasStableVersions) {
                 platformReleases.add(item);
             }
         }
