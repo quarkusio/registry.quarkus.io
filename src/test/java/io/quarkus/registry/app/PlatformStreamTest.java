@@ -70,6 +70,7 @@ public class PlatformStreamTest extends BaseTest {
             PlatformStream stream22 = new PlatformStream();
             stream22.platform = platform;
             stream22.streamKey = "2.2";
+            stream22.pinned = true;
             stream22.persistAndFlush();
 
             PlatformRelease release220Final = new PlatformRelease();
@@ -108,7 +109,7 @@ public class PlatformStreamTest extends BaseTest {
     }
 
     @Test
-    void should_return_pinned_platform_streams() {
+    void should_return_pinned_and_latest_platform_streams() {
         given()
                 .get("/client/platforms")
                 .then()
