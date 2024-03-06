@@ -7,7 +7,7 @@ COPY --chown=quarkus:quarkus .mvn /code/.mvn
 COPY --chown=quarkus:quarkus pom.xml /code/
 USER quarkus
 WORKDIR /code
-RUN ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.1.2:go-offline
+RUN ./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline
 COPY src /code/src
 RUN ./mvnw -ntp package -Pnative -DskipTests $MAVEN_BUILD_EXTRA_ARGS
 
