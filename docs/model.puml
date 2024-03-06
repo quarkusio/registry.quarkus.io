@@ -8,7 +8,7 @@ class Platform {
   + boolean isDefault
 }
 
-enum Platform.Type {
+enum Platform$Type {
   + C
   + M
 }
@@ -73,14 +73,14 @@ note left of PlatformRelease::memberBoms
   Stored as a JSON array
 end note
 
-note right of Platform.Type
+note right of Platform$Type
   C = Core
   M = Member
 end note
 
 Category o-- PlatformReleaseCategory
 
-Platform                -   Platform.Type
+Platform                -   Platform$Type
 Platform                *-- PlatformStream
 PlatformStream          *-- PlatformRelease
 PlatformRelease         *-- PlatformExtension
