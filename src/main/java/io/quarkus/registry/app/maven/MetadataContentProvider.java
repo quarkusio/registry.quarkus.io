@@ -2,6 +2,7 @@ package io.quarkus.registry.app.maven;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -73,8 +74,8 @@ public class MetadataContentProvider implements ArtifactContentProvider {
         Versioning versioning = new Versioning();
         newMetadata.setVersioning(versioning);
 
-        Date lastUpdated = mavenCacheState.getLastUpdate();
-        versioning.setLastUpdatedTimestamp(lastUpdated);
+        Instant lastUpdated = mavenCacheState.getLastUpdate();
+        versioning.setLastUpdatedTimestamp(Date.from(lastUpdated));
 
         Snapshot snapshot = new Snapshot();
         versioning.setSnapshot(snapshot);
