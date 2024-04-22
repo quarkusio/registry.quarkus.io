@@ -1,6 +1,6 @@
 package io.quarkus.registry.app.maven.cache;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Objects;
 
 import io.quarkus.logging.Log;
@@ -18,7 +18,7 @@ public class MavenCacheState {
     @Inject
     MavenCache cache;
 
-    private Date lastUpdate;
+    private Instant lastUpdate;
 
     /**
      * Check cache state on every 10 seconds
@@ -27,7 +27,7 @@ public class MavenCacheState {
     @Scheduled(cron = "{quarkus.registry.cache.cron:*/10 * * * * ?}")
     void checkDbState() {
         Log.debugf("Checking cache state %s", lastUpdate);
-        Date updatedAt = DbState.findUpdatedAt();
+        Instant updatedAt = DbState.findUpdatedAt();
         if (lastUpdate == null || !Objects.equals(lastUpdate, updatedAt)) {
             Log.debugf("Cache changed -> %s", updatedAt);
             lastUpdate = updatedAt;
@@ -35,7 +35,7 @@ public class MavenCacheState {
         }
     }
 
-    public Date getLastUpdate() {
+    public Instant getLastUpdate() {
         return lastUpdate;
     }
 }

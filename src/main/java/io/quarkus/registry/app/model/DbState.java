@@ -3,7 +3,7 @@ package io.quarkus.registry.app.model;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Date;
+import java.time.Instant;
 
 import org.hibernate.annotations.ColumnDefault;
 
@@ -12,8 +12,6 @@ import jakarta.persistence.NamedNativeQueries;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @Entity
 @NamedQueries({
@@ -26,15 +24,14 @@ public class DbState extends BaseEntity {
 
     static final String UPDATE_SQL = "UPDATE db_state set updated_at = CURRENT_TIMESTAMP where id =1";
 
-    @Temporal(value = TemporalType.TIMESTAMP)
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
-    public Date updatedAt;
+    public Instant updatedAt;
 
     /**
      * There will be only one row in this table
      */
-    public static Date findUpdatedAt() {
-        return getEntityManager().createNamedQuery("DbState.findUpdatedAt", Date.class).getSingleResult();
+    public static Instant findUpdatedAt() {
+        return getEntityManager().createNamedQuery("DbState.findUpdatedAt", Instant.class).getSingleResult();
     }
 
     public static void updateUpdatedAt() {
