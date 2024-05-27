@@ -12,6 +12,14 @@ on:
     branches:
       - 'main'
 
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     name: Build and publish Docker image
