@@ -29,9 +29,9 @@
 
     <!-- Set Java version -->
     <maven.compiler.parameters>true</maven.compiler.parameters>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -166,6 +166,8 @@
           </dependency>
         </dependencies>
         <configuration>
+          <!-- Setting to 17 because the plugin does not support 21 -->
+          <compilerCompliance>17</compilerCompliance>
           <configFile>eclipse-format.xml</configFile>
           <lineEnding>LF</lineEnding>
         </configuration>
@@ -183,6 +185,8 @@
           </execution>
         </executions>
         <configuration>
+          <!-- Setting to 17 because the plugin does not support 21 -->
+          <compliance>17</compliance>
           <groups>java.,javax.,org.,com.</groups>
           <staticGroups>*</staticGroups>
           <removeUnused>true</removeUnused>
