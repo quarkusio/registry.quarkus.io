@@ -1,5 +1,5 @@
 ## Stage 1 : build with maven builder image
-FROM registry.redhat.io/quarkus/mandrel-for-jdk-21-rhel8:23.1 AS build
+FROM registry.access.redhat.com/quarkus/mandrel-for-jdk-21-rhel8:23.1 AS build
 ARG MAVEN_BUILD_EXTRA_ARGS=
 RUN echo "$MAVEN_BUILD_EXTRA_ARGS"
 COPY --chown=quarkus:quarkus mvnw /code/mvnw
