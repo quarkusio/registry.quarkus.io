@@ -20,7 +20,7 @@ RUN chown 1001 /work \
     && chown 1001:root /work
 
 COPY --from=build --chown=1001 /code/target/*-runner /work/application
-COPY --from=build --chown=101 /code/target/generated-resources/licenses /licenses
+COPY --from=build --chown=1001 /code/target/generated-resources/licenses /licenses
 EXPOSE 8080
 USER 1001
 
