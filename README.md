@@ -1,4 +1,4 @@
-# Quarkus Extension Registry
+# Quarkus Extension Registry (registry.quarkus.io / registry.quarkus.redhat.com)
 
 This application is the backend for the Quarkus Extension Registry. It is responsible for indexing all Quarkus
 extensions and platforms, and providing a REST API to query them.
