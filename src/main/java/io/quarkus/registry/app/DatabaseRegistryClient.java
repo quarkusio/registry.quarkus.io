@@ -68,7 +68,7 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/platforms")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "List only the 3 latest platform releases")
+    @Operation(summary = "List the latest stable + newer unstable + pinned platform releases")
     public PlatformCatalog resolveCurrentPlatformsCatalog(@QueryParam("v") String version) {
         if (version != null && !version.isBlank()) {
             Version.validateVersion(version);
@@ -83,7 +83,7 @@ public class DatabaseRegistryClient {
     @GET
     @Path("/non-platform-extensions")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "List all non-platform extensions compatible with a given Quarkus version")
+    @Operation(summary = "List all latest non-platform extensions compatible with a given Quarkus version")
     public ExtensionCatalog resolveNonPlatformExtensionsCatalog(
             @NotNull(message = "The Quarkus version (v) is missing") @QueryParam("v") String quarkusVersion) {
         Version.validateVersion(quarkusVersion);
