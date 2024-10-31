@@ -68,7 +68,8 @@ class VersionTest {
                 "2.2.5.Final-redhat-00007",
                 "2.2.3.SP2-redhat-00001",
                 "2.2.3.SP1-redhat-00002",
-                "2.2.3.Final-redhat-00013");
+                "2.2.3.Final-redhat-00013",
+                "2.2.3-SNAPSHOT");
         versions.sort(Version.RELEASE_IMPORTANCE_COMPARATOR);
         assertThat(versions).containsExactly(
                 "2.13.7.Final-redhat-00003",
@@ -84,7 +85,8 @@ class VersionTest {
                 "2.2.5.Final-redhat-00007",
                 "2.2.3.SP2-redhat-00001",
                 "2.2.3.SP1-redhat-00002",
-                "2.2.3.Final-redhat-00013");
+                "2.2.3.Final-redhat-00013",
+                "2.2.3-SNAPSHOT");
     }
 
 }
