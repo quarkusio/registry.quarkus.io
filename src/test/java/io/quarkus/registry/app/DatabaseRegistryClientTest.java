@@ -90,6 +90,18 @@ class DatabaseRegistryClientTest extends BaseTest {
             release210Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.1.0.Final";
             release210Final.persistAndFlush();
 
+            PlatformStream stream22 = new PlatformStream();
+            stream22.platform = platform;
+            stream22.streamKey = "2.2";
+            stream22.persistAndFlush();
+
+            PlatformRelease release220SNAPSHOT = new PlatformRelease();
+            release220SNAPSHOT.platformStream = stream22;
+            release220SNAPSHOT.version = "2.2.0-SNAPSHOT";
+            release220SNAPSHOT.quarkusCoreVersion = release220SNAPSHOT.version;
+            release220SNAPSHOT.bom = "io.quarkus.platform:quarkus-bom::pom:2.2.0-SNAPSHOT";
+            release220SNAPSHOT.persistAndFlush();
+
             Extension extension = new Extension();
             extension.name = "Foo";
             extension.description = "A Foo Extension";
@@ -299,8 +311,8 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
                 .body("platforms", hasSize(1),
-                        "platforms[0].streams", hasSize(2),
-                        "platforms[0].streams.id", hasItems("2.1", "2.0"),
+                        "platforms[0].streams", hasSize(3),
+                        "platforms[0].streams.id", hasItems("2.2", "2.1", "2.0"),
                         "platforms[0].current-stream-id", is("2.1"));
     }
 
@@ -312,7 +324,7 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
                 .body("platforms", hasSize(1),
-                        "platforms[0].streams", hasSize(2),
+                        "platforms[0].streams", hasSize(3),
                         "platforms[0].streams.id", hasItems("2.1", "2.0"),
                         "platforms[0].streams[1].releases", not(hasItem("2.1.0.Final")));
 
@@ -344,6 +356,20 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .contentType(ContentType.JSON)
                 .body("platforms[0].streams.find{it.id = '2.1'}.lts", is(true));
+    }
+
+    @Test
+    void should_consider_snapshot_prefinal() {
+        given()
+                .get("/client/platforms")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .log().ifValidationFails()
+                .body("platforms", hasSize(1),
+                        "platforms[0].streams", hasSize(3),
+                        "platforms[0].streams.id", hasItems("2.2"),
+                        "platforms[0].current-stream-id", is("2.0"));
     }
 
 }

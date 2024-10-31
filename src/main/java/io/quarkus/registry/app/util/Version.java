@@ -59,7 +59,7 @@ public class Version {
 
     /**
      * @param versionQualifier the version to
-     * @return true if the qualifier is before final (Alpha, Beta, CR or RC)
+     * @return true if the qualifier is before final (Alpha, Beta, CR or RC or SNAPSHOTS)
      */
     private static boolean isQualifierPreFinal(String versionQualifier) {
         if (versionQualifier == null) {
@@ -69,7 +69,8 @@ public class Version {
         return upperQualifier.startsWith("CR") ||
                 upperQualifier.startsWith("RC") ||
                 upperQualifier.startsWith("ALPHA") ||
-                upperQualifier.startsWith("BETA");
+                upperQualifier.startsWith("BETA") ||
+                upperQualifier.startsWith("SNAPSHOT");
     }
 
     /**
