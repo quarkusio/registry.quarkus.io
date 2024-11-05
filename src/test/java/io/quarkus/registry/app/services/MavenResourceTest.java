@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.is;
 import java.net.HttpURLConnection;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.BaseTest;
@@ -20,6 +22,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class MavenResourceTest extends BaseTest {
 
     @BeforeEach
@@ -170,4 +173,13 @@ public class MavenResourceTest extends BaseTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_NOT_FOUND);
     }
+
+    @Test
+    void should_display_welcome_page() {
+        given()
+                .get("/maven")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK);
+    }
+
 }

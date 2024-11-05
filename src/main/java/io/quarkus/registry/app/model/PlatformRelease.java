@@ -43,7 +43,7 @@ import jakarta.persistence.TypedQuery;
         @NamedQuery(name = "PlatformRelease.findQuarkusCores", query = """
                 select pr.version from PlatformRelease pr
                 where pr.platformStream.platform.isDefault = true
-                order by pr.versionSortable
+                order by pr.versionSortable desc
                 """),
         @NamedQuery(name = "PlatformRelease.findLatestByQuarkusCoreVersion", query = """
                 select pr from PlatformRelease pr
@@ -240,6 +240,14 @@ public class PlatformRelease extends BaseEntity {
         return getEntityManager().createNamedQuery("PlatformRelease.findQuarkusCores", String.class)
                 .getResultList();
     }
+
+    public static String findLatestQuarkusCore() {
+        return getEntityManager().createNamedQuery("PlatformRelease.findQuarkusCores", String.class)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst().orElse(null);
+    }
+
 
     public static boolean artifactCoordinatesExist(ArtifactCoords artifact) {
         return count("#PlatformRelease.countArtifactCoordinates",
