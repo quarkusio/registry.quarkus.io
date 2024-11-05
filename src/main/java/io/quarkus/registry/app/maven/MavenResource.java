@@ -68,7 +68,7 @@ public class MavenResource {
                             <title>Quarkus Registry Maven Repository</title>
                         </head>
                         <h1>Welcome to the Quarkus Registry Maven Repository</h1>
-                        This endpoint provides <a href="https://quarkus.io/guides/platform">Quarkus platform</a> and <a href="https://quarkus.io/guides/extension-metadata">extension metadata</a> in the form of Maven artifacts for <a href="https://quarkus.io/guides/extension-registry-user">Quarkus Registry user clients</a>.
+                        This endpoint provides <a href="https://quarkus.io/guides/platform">Quarkus platform</a> and <a href="https://quarkus.io/guides/extension-metadata">extension metadata</a> in the form of Maven artifacts for <a href="https://quarkus.io/guides/extension-registry-user">Quarkus Registry clients</a>.
                         It provides the following artifacts:
                         <ul>
                             <li><a href="%1$s/%2$s/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT.json">Platforms</a></li>
@@ -76,7 +76,7 @@ public class MavenResource {
                             <li><a href="%1$s/%2$s/quarkus-registry-descriptor/1.0-SNAPSHOT/quarkus-registry-descriptor-1.0-SNAPSHOT.json">Registry Descriptor</a></li>
                         </ul>
 
-                        If you have a Nexus Repository Manager and are looking on how to configure it to use this repository, please refer to the <a href="https://quarkus.io/guides/extension-registry-user#how-to-register-as-a-nexus-repository-proxy">How to register as a Nexus Repository proxy guide</a>.
+                        If you use a Nexus Repository Manager and are looking for a way to configure it to use this repository, please refer to the <a href="https://quarkus.io/guides/extension-registry-user#how-to-register-as-a-nexus-repository-proxy">How to register as a Nexus Repository proxy guide</a>.
                         """,mavenConfig.getRegistryUrl(),
                             mavenConfig.getRegistryGroupId().replace(".", "/"),
                             PlatformRelease.findLatestQuarkusCore()
