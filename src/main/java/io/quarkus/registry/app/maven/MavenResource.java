@@ -68,7 +68,8 @@ public class MavenResource {
                             <title>Quarkus Registry Maven Repository</title>
                         </head>
                         <h1>Welcome to the Quarkus Registry Maven Repository</h1>
-                        This endpoint is used by Quarkus CLI to resolve Quarkus extensions and platforms and provides the following artifacts:
+                        This endpoint provides <a href="https://quarkus.io/guides/platform">Quarkus platform</a> and <a href="https://quarkus.io/guides/extension-metadata">extension metadata</a> in the form of Maven artifacts for Quarkus Dev Tools clients, such as <a href="https://code.quarkus.io/">code.quarkus.io</a> and <a href="https://quarkus.io/guides/cli-tooling">Quarkus CLI</a>.
+                        It provides the following artifacts:
                         <ul>
                             <li><a href="%1$s/%2$s/quarkus-platforms/1.0-SNAPSHOT/quarkus-platforms-1.0-SNAPSHOT.json">Platforms</a></li>
                             <li><a href="%1$s/%2$s/quarkus-non-platform-extensions/1.0-SNAPSHOT/quarkus-non-platform-extensions-1.0-SNAPSHOT-%3$s.json">Non-platform extensions</a></li>
