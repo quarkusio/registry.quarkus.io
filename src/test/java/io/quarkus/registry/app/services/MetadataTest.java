@@ -13,6 +13,8 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.BaseTest;
@@ -28,6 +30,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class MetadataTest extends BaseTest {
 
     @Inject

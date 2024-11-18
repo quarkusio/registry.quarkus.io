@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
@@ -40,6 +42,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class DatabaseRegistryClientTest extends BaseTest {
 
     @Inject

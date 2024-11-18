@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
@@ -25,6 +27,7 @@ import io.restassured.http.ContentType;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class ChangeMetadataTest extends BaseTest {
 
     @Test

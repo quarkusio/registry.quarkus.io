@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.registry.app.BaseTest;
@@ -18,6 +20,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class VersionOrderTest extends BaseTest {
 
     @BeforeEach

@@ -15,6 +15,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
@@ -33,6 +35,7 @@ import io.restassured.http.ContentType;
 import jakarta.transaction.Transactional;
 
 @QuarkusTest
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class AdminApiTest extends BaseTest {
 
     @BeforeEach
