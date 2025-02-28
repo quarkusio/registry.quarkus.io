@@ -22,19 +22,31 @@ public class R__Fix_Sortable_Versions extends BaseJavaMigration {
     /**
      * Increase this number to have this script re-run when the application starts
      */
-    private final Integer checksum = 1;
+    private final Integer checksum = 2;
 
     @Override
     public void migrate(Context context) throws Exception {
         Connection connection = context.getConnection();
-        // Update quarkus_core_version_sortable
+        // Update quarkus_core_version_sortable from extension_release
         updateSortableColumn(connection,
                 "SELECT DISTINCT QUARKUS_CORE_VERSION FROM extension_release",
                 "UPDATE extension_release set quarkus_core_version_sortable = ? where quarkus_core_version = ?");
-        // Update version_sortable
+
+        // Update version_sortable from extension_release
         updateSortableColumn(connection,
                 "SELECT DISTINCT VERSION FROM extension_release",
                 "UPDATE extension_release set version_sortable = ? where version = ?");
+
+        // Update version_sortable from platform_release
+        updateSortableColumn(connection,
+                "SELECT DISTINCT VERSION FROM platform_release",
+                "UPDATE platform_release set version_sortable = ? where version = ?");
+
+        // Update version_sortable from platform_stream
+        updateSortableColumn(connection,
+                "SELECT DISTINCT stream_key FROM platform_stream",
+                "UPDATE platform_stream set stream_key_sortable = ? where stream_key = ?");
+
     }
 
     private static void updateSortableColumn(Connection connection, String selectVersionsSQL, String updateVersionsSQL)
