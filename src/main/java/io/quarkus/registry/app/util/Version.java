@@ -1,9 +1,13 @@
 package io.quarkus.registry.app.util;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import io.smallrye.common.version.VersionScheme;
@@ -75,15 +79,25 @@ public class Version {
 
     /**
      * Transforms the given version into a lexicographically sortable type
-     * Eg. 1.2.3.Final -> 00001.00002.00003.Final
+     * Eg. 1.2.3.Final -> 00001.00002.00003.00000.Final
      *
      * @param version the version to be formatted
      * @return a version lexicographically sortable
      */
     public static String toSortable(String version) {
-        DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
-        String qualifier = Objects.toString(dav.getQualifier(), "");
-        // getQualifier does not work in some cases. Eg. 1.2.3.Final-redhat-00001
+        List<String> formattedParts = new ArrayList<>();
+        String qualifier = "";
+        DecimalFormat df = new DecimalFormat("00000");
+        for (String part : version.split("\\.")) {
+            if (StringUtils.isNumeric(part)) {
+                formattedParts.add(df.format(Integer.parseInt(part)));
+            } else {
+                qualifier = part;
+            }
+        }
+        for (int i = formattedParts.size(); i < 4; i++) {
+            formattedParts.add(df.format(0));
+        }
         if (!version.endsWith(qualifier)) {
             int idx = version.indexOf(qualifier);
             qualifier = version.substring(idx);
@@ -94,10 +108,7 @@ public class Version {
         if (qualifier.startsWith("RC")) {
             qualifier = "CR" + qualifier.substring(2);
         }
-        return String.format("%05d.%05d.%05d.%s",
-                dav.getMajorVersion(),
-                dav.getMinorVersion(),
-                dav.getIncrementalVersion(),
-                qualifier);
+        formattedParts.add(qualifier);
+        return formattedParts.stream().collect(Collectors.joining("."));
     }
 }

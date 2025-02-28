@@ -3,6 +3,7 @@ package io.quarkus.registry.app.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,10 +14,19 @@ class VersionTest {
 
     @Test
     void toSortable() {
-        assertThat(Version.toSortable("1.2.3.Final")).isEqualTo("00001.00002.00003.Final");
-        assertThat(Version.toSortable("1.20.3.Final")).isEqualTo("00001.00020.00003.Final");
-        assertThat(Version.toSortable("1.10.3.Final-redhat-00001")).isEqualTo("00001.00010.00003.Final-redhat-00001");
-        assertThat(Version.toSortable("1.2.3")).isEqualTo("00001.00002.00003.Final");
+        assertSoftly(softly -> {
+            softly.assertThat(Version.toSortable("1.2.3.Final")).isEqualTo("00001.00002.00003.00000.Final");
+            softly.assertThat(Version.toSortable("1.20.3.Final")).isEqualTo("00001.00020.00003.00000.Final");
+            softly.assertThat(Version.toSortable("1.10.3.Final-redhat-00001")).isEqualTo("00001.00010.00003.00000.Final-redhat-00001");
+            softly.assertThat(Version.toSortable("1.2.3")).isEqualTo("00001.00002.00003.00000.Final");
+            softly.assertThat(Version.toSortable("3.17")).isEqualTo("00003.00017.00000.00000.Final");
+
+        });
+    }
+
+    @Test
+    void shouldWorkWith4DigitsVersions() {
+        assertThat(Version.toSortable("3.15.3.1")).isEqualTo("00003.00015.00003.00001.Final");
     }
 
     @Test
