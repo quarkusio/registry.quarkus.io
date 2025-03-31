@@ -13,7 +13,7 @@ COPY src /code/src
 RUN ./mvnw -ntp package -Pnative -DskipTests $MAVEN_BUILD_EXTRA_ARGS
 
 ## Stage 2 : create the docker final image
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10-1179.1739286367
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10
 WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
