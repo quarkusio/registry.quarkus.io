@@ -339,7 +339,7 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .get("/client/config.yaml")
                 .then()
                 .statusCode(200)
-                .log().ifValidationFails()
+                .log().all()
                 .contentType(YAMLMediaTypes.APPLICATION_JACKSON_YAML)
                 .extract().body()
                 .as(RegistriesConfigImpl.Builder.class,

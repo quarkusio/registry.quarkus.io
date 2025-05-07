@@ -148,7 +148,7 @@ public class DatabaseRegistryClient {
     @Path("/config.yaml")
     @Produces(YAMLMediaTypes.APPLICATION_JACKSON_YAML)
     @Operation(summary = "Example Quarkus Registry Client configuration file")
-    public Response clientConfigYaml() throws IOException {
+    public RegistriesConfig clientConfigYaml() throws IOException {
         ArtifactCoords coords = ArtifactCoords
                 .of(mavenConfig.getRegistryGroupId(),
                         Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID,
@@ -167,10 +167,7 @@ public class DatabaseRegistryClient {
                                 .setRepository(mavenRepoConfig)
                                 .build())
                 .build();
-        RegistriesConfig config = RegistriesConfig.builder().setRegistry(registry).build();
-        StringWriter writer = new StringWriter();
-        RegistriesConfigMapperHelper.toYaml(config, writer);
-        return Response.ok(writer.toString()).build();
+        return RegistriesConfig.builder().setRegistry(registry).build();
     }
 
     @GET
