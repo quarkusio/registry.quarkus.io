@@ -1,5 +1,7 @@
 package io.quarkus.registry.app;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import io.quarkus.registry.catalog.ExtensionOrigin;
 import io.quarkus.registry.catalog.PlatformCatalog;
 import io.quarkus.registry.catalog.PlatformReleaseVersion;
 import io.quarkus.registry.config.RegistriesConfig;
+import io.quarkus.registry.config.RegistriesConfigMapperHelper;
 import io.quarkus.registry.config.RegistryConfig;
 import io.quarkus.registry.config.RegistryDescriptorConfig;
 import io.quarkus.registry.config.RegistryMavenConfig;
@@ -145,9 +148,13 @@ public class DatabaseRegistryClient {
     @Path("/config.yaml")
     @Produces(YAMLMediaTypes.APPLICATION_JACKSON_YAML)
     @Operation(summary = "Example Quarkus Registry Client configuration file")
-    public RegistriesConfig clientConfigYaml() {
+    public Response clientConfigYaml() throws IOException {
         ArtifactCoords coords = ArtifactCoords
-                .fromString(mavenConfig.getRegistryGroupId() + ":quarkus-registry-descriptor::json:1.0-SNAPSHOT");
+                .of(mavenConfig.getRegistryGroupId(),
+                        Constants.DEFAULT_REGISTRY_DESCRIPTOR_ARTIFACT_ID,
+                        null,
+                        Constants.JSON,
+                        Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION);
         RegistryMavenRepoConfig mavenRepoConfig = RegistryMavenRepoConfig.builder().setUrl(mavenConfig.getRegistryUrl())
                 .build();
         RegistryConfig registry = RegistryConfig.builder()
@@ -160,7 +167,10 @@ public class DatabaseRegistryClient {
                                 .setRepository(mavenRepoConfig)
                                 .build())
                 .build();
-        return RegistriesConfig.builder().setRegistry(registry).build();
+        RegistriesConfig config = RegistriesConfig.builder().setRegistry(registry).build();
+        StringWriter writer = new StringWriter();
+        RegistriesConfigMapperHelper.toYaml(config, writer);
+        return Response.ok(writer.toString()).build();
     }
 
     @GET
