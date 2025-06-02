@@ -20,7 +20,7 @@
     <quarkus-logging-sentry.version>2.1.4</quarkus-logging-sentry.version>
 
     <quarkus.groupId>com.redhat.quarkus.platform</quarkus.groupId>
-    <quarkus.version>3.20.0.redhat-00002</quarkus.version>
+    <quarkus.version>3.20.1.redhat-00003</quarkus.version>
 
     <revision>999-SNAPSHOT</revision>
     <!-- Cross plugins settings -->
