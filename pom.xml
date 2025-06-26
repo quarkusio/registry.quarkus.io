@@ -17,7 +17,7 @@
     <version.failsafe.plugin>3.1.2</version.failsafe.plugin>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
-    <quarkus-logging-sentry.version>2.1.4</quarkus-logging-sentry.version>
+    <quarkus-logging-sentry.version>2.1.5</quarkus-logging-sentry.version>
 
     <quarkus.groupId>com.redhat.quarkus.platform</quarkus.groupId>
     <quarkus.version>3.20.0.redhat-00002</quarkus.version>
