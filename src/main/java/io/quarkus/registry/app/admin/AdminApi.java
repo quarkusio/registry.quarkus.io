@@ -85,7 +85,7 @@ public class AdminApi {
     @POST
     @Path("/v1/extension/catalog")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Inserts a new Extension Catalog (Platform Release) in the database", description = "Invoke this endpoint when a new extension catalog release is available")
     public Response addExtensionCatalog(
@@ -121,7 +121,7 @@ public class AdminApi {
     @POST
     @Path("/v1/extension")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({ MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML })
+    @Consumes({MediaType.APPLICATION_JSON, YAMLMediaTypes.APPLICATION_JACKSON_YAML})
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Inserts an extension in the database")
     public Response addExtension(
@@ -146,8 +146,8 @@ public class AdminApi {
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Deletes an extension from the database")
     public Response deleteExtension(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
-            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
-            @FormParam("version") String version) {
+                                    @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
+                                    @FormParam("version") String version) {
         if (version != null) {
             ArtifactCoords entity = ArtifactCoords.of(groupId, artifactId, null, null, version);
             ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
@@ -221,9 +221,9 @@ public class AdminApi {
     @SecurityRequirement(name = "Authentication")
     @Operation(summary = "Flags an extension as incompatible against a specific Quarkus version")
     public Response removeExtensionCompatibilty(@NotNull(message = "groupId is missing") @FormParam("groupId") String groupId,
-            @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
-            @NotNull(message = "version is missing") @FormParam("version") String version,
-            @NotNull(message = "quarkusCore is missing") @FormParam("quarkusCore") String quarkusCore) {
+                                                @NotNull(message = "artifactId is missing") @FormParam("artifactId") String artifactId,
+                                                @NotNull(message = "version is missing") @FormParam("version") String version,
+                                                @NotNull(message = "quarkusCore is missing") @FormParam("quarkusCore") String quarkusCore) {
         ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseThrow(() -> new WebApplicationException(Response.Status.NOT_FOUND));
         Log.infof("Extension %s:%s:%s is no longer compatible with Quarkus %s",
@@ -268,6 +268,34 @@ public class AdminApi {
         try {
             stream.persistAndFlush();
             cache.clear();
+        } finally {
+            DbState.updateUpdatedAt();
+        }
+        return Response.accepted().build();
+    }
+
+    @Path("/v1/stream/{platformKey}/{streamKey}")
+    @DELETE
+    @SecurityRequirement(name = "Authentication")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Transactional
+    @Operation(summary = "Deletes a PlatformStream")
+    public Response deletePlatformStream(
+            @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
+            @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey) {
+        Platform platform = Platform.findByKey(platformKey)
+                .orElseThrow(() -> new NotFoundException("Platform not found"));
+        PlatformStream stream = PlatformStream.findByNaturalKey(platform, streamKey)
+                .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
+        try {
+            // Delete the stream
+            stream.delete();
+            cache.clear();
+            // Delete the platform members too
+            for (Platform member : Platform.findMembersByPlatform(platform)) {
+                PlatformStream.findByNaturalKey(member, streamKey).ifPresent(PlatformStream::delete);
+                cache.clear();
+            }
         } finally {
             DbState.updateUpdatedAt();
         }
