@@ -320,7 +320,7 @@ public class AdminApi {
             @FormParam("pinned") boolean pinned,
             @FormParam("metadata") String metadataJson) {
         Map<String, Object> metadata = null;
-        if (metadataJson != null) {
+        if (metadataJson != null && !metadataJson.isEmpty()) {
             try {
                 metadata = objectMapper.readValue(metadataJson, Map.class);
             } catch (JsonProcessingException e) {
@@ -361,7 +361,7 @@ public class AdminApi {
             @NotNull(message = "categoryKey is missing") @PathParam("categoryKey") String categoryKey,
             @FormParam("metadata") String metadataJson) {
         Map<String, Object> metadata;
-        if (metadataJson != null) {
+        if (metadataJson != null && !metadataJson.isEmpty()) {
             try {
                 metadata = objectMapper.readValue(metadataJson, Map.class);
             } catch (JsonProcessingException e) {
@@ -407,7 +407,7 @@ public class AdminApi {
             @NotNull(message = "extensionVersion is missing") @PathParam("extensionVersion") String extensionVersion,
             @FormParam("metadata") String metadataJson) {
         Map<String, Object> metadata;
-        if (metadataJson != null) {
+        if (metadataJson != null && !metadataJson.isEmpty()) {
             try {
                 metadata = objectMapper.readValue(metadataJson, Map.class);
             } catch (JsonProcessingException e) {
@@ -483,7 +483,7 @@ public class AdminApi {
             @NotNull(message = "version is missing") @PathParam("version") String version,
             @NotNull(message = "metadata is required") @FormParam("metadata") String metadataJson) {
         Map<String, Object> metadata;
-        if (metadataJson != null) {
+        if (metadataJson != null && !metadataJson.isEmpty()) {
             try {
                 metadata = objectMapper.readValue(metadataJson, Map.class);
             } catch (JsonProcessingException e) {
