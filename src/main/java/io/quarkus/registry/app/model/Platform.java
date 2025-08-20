@@ -80,6 +80,15 @@ public class Platform extends BaseEntity {
                 .loadOptional();
     }
 
+    public static List<Platform> findMembersByPlatform(Platform platform) {
+        Session session = getEntityManager().unwrap(Session.class);
+        return session.createQuery("FROM Platform p WHERE p.platformKey like :platformKey AND p.platformType = :type", Platform.class)
+                .setParameter("platformKey", platform.platformKey +":%")
+                .setParameter("type", Type.M)
+                .getResultList();
+    }
+
+
     /**
      * Returns a friendly platform name based on the platform key
      *
