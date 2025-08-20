@@ -130,7 +130,7 @@ class AdminApiTest extends BaseTest {
     @Test
     void unauthenticated_requests_should_forbid_access() {
         given().body(
-                "{ \"artifact\":\"aaaa\",\"artifactId\": \"string\", \"description\": \"string\", \"groupId\": \"messging\", \"metadata\":   {}, \"name\": \"string\",\"origins\": [   {     \"id\": \"string\",     \"platform\": false   } ], \"version\": \"string\"}")
+                        "{ \"artifact\":\"aaaa\",\"artifactId\": \"string\", \"description\": \"string\", \"groupId\": \"messging\", \"metadata\":   {}, \"name\": \"string\",\"origins\": [   {     \"id\": \"string\",     \"platform\": false   } ], \"version\": \"string\"}")
                 .post("/admin/v1/extension")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_FORBIDDEN);
@@ -225,8 +225,8 @@ class AdminApiTest extends BaseTest {
     void delete_extension() {
         // Delete extension version
         given().formParams("groupId", "delete",
-                "artifactId", "me",
-                "version", "1.1.0")
+                        "artifactId", "me",
+                        "version", "1.1.0")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -242,7 +242,7 @@ class AdminApiTest extends BaseTest {
 
         // Delete extension
         given().formParams("groupId", "delete",
-                "artifactId", "me")
+                        "artifactId", "me")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -261,8 +261,8 @@ class AdminApiTest extends BaseTest {
     void should_not_delete_extension_release_from_platform() {
         // Should not delete an extension release if it belongs to a platform
         given().formParams("groupId", "delete-platform-groupId",
-                "artifactId", "delete-platform-artifactId",
-                "version", "1.0.0")
+                        "artifactId", "delete-platform-artifactId",
+                        "version", "1.0.0")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -273,7 +273,7 @@ class AdminApiTest extends BaseTest {
     void should_not_delete_extension_from_platform() {
         // Should not delete an extension if any release belongs to a platform
         given().formParams("groupId", "delete-platform-groupId",
-                "artifactId", "delete-platform-artifactId")
+                        "artifactId", "delete-platform-artifactId")
                 .header("Token", "test")
                 .delete("/admin/v1/extension")
                 .then()
@@ -312,7 +312,7 @@ class AdminApiTest extends BaseTest {
     void delete_extension_catalog() {
         // Delete extension version
         given().formParams("platformKey", "io.quarkus.platform",
-                "version", "10.0.0.Final")
+                        "version", "10.0.0.Final")
                 .header("Token", "test")
                 .delete("/admin/v1/extension/catalog")
                 .then()
@@ -426,5 +426,23 @@ class AdminApiTest extends BaseTest {
                 .contentType(ContentType.JSON)
                 .body("platforms[0].streams.find{it.id = '10.0'}.lts", is(true));
 
+    }
+
+    @Test
+    void delete_platform_stream() {
+        // Delete platform stream
+        given()
+                .header("Token", "test")
+                .delete("/admin/v1/stream/io.quarkus.platform/10.0")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/platforms/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .contentType(ContentType.JSON)
+                .body("platforms[0].streams", hasSize(1),
+                        "platforms[0].current-stream-id", is("9.0"));
     }
 }
