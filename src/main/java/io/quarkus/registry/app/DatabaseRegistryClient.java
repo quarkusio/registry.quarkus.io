@@ -159,7 +159,6 @@ public class DatabaseRegistryClient {
                 .build();
         RegistryConfig registry = RegistryConfig.builder()
                 .setId(mavenConfig.getRegistryId())
-                .setUpdatePolicy("always")
                 .setDescriptor(
                         RegistryDescriptorConfig.builder().setArtifact(coords))
                 .setMaven(
