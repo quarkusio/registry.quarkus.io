@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -21,10 +20,7 @@ public class Version {
      * @return
      */
     public static void validateVersion(String version) {
-        DefaultArtifactVersion dav = new DefaultArtifactVersion(version);
-        if (dav.getMajorVersion() == 0 && dav.getMinorVersion() == 0 && dav.getIncrementalVersion() == 0) {
-            throw new IllegalArgumentException("Invalid Version: " + version);
-        }
+        VersionScheme.MAVEN.validate(version);
     }
 
     /**
@@ -109,6 +105,6 @@ public class Version {
             qualifier = "CR" + qualifier.substring(2);
         }
         formattedParts.add(qualifier);
-        return formattedParts.stream().collect(Collectors.joining("."));
+        return String.join(".", formattedParts);
     }
 }
