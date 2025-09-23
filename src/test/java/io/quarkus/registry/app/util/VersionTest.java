@@ -2,7 +2,6 @@ package io.quarkus.registry.app.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
@@ -32,11 +31,12 @@ class VersionTest {
     @Test
     void isVersionValid() {
         assertThatCode(() -> Version.validateVersion("1.2.3.Final")).doesNotThrowAnyException();
-        assertThatIllegalArgumentException().isThrownBy(
-                        () -> Version.validateVersion("%3c%68%74%6d%6c%3e%3c%68%65%61%64%3e%3c%73%63%72%69%70%74%3e%61%6c%65"
-                                + "%72%74%28%64%6f%63%75%6d%65%6e%74%2e%6c%6f%63%61%74%69%6f%6e%29%3c%2f%73%63"
-                                + "%72%69%70%74%3e%3c%2f%68%65%61%64%3e%3c%2f%68%74%6d%6c%3e"))
-                .withMessageStartingWith("Invalid Version");
+        assertThatCode(() -> Version.validateVersion("3.20.2.2")).doesNotThrowAnyException();
+        // According to Maven, this is a valid version
+        assertThatCode(
+                () -> Version.validateVersion("%3c%68%74%6d%6c%3e%3c%68%65%61%64%3e%3c%73%63%72%69%70%74%3e%61%6c%65"
+                        + "%72%74%28%64%6f%63%75%6d%65%6e%74%2e%6c%6f%63%61%74%69%6f%6e%29%3c%2f%73%63"
+                        + "%72%69%70%74%3e%3c%2f%68%65%61%64%3e%3c%2f%68%74%6d%6c%3e")).doesNotThrowAnyException();
     }
 
     @Test
