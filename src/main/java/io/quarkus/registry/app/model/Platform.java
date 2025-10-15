@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.hibernate.Session;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
@@ -102,7 +103,7 @@ public class Platform extends BaseEntity {
         }
         Matcher matcher = PLATFORM_KEY_PATTERN.matcher(platformKey);
         if (matcher.find()) {
-            String content = StringUtils.removeEnd(matcher.group(1).replace('-', ' '), " bom");
+            String content = Strings.CS.removeEnd(matcher.group(1).replace('-', ' '), " bom");
             return StringUtils.capitalize(content);
         }
         return platformKey;
