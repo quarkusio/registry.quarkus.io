@@ -53,12 +53,11 @@ public class MavenConfig {
     }
 
     public String getNonPlatformExtensionCoords(String quarkusVersion) {
-        String id = ArtifactCoords.of(nonPlatformExtensionCoords.getGroupId(),
+        return ArtifactCoords.of(nonPlatformExtensionCoords.getGroupId(),
                 nonPlatformExtensionCoords.getArtifactId(),
                 quarkusVersion,
                 nonPlatformExtensionCoords.getType(),
                 nonPlatformExtensionCoords.getVersion()).toString();
-        return id;
     }
 
     public boolean supports(ArtifactCoords artifact) {

@@ -43,10 +43,15 @@ import jakarta.persistence.SqlResultSetMapping;
             FROM
                 extension_release
                 JOIN extension ON extension.id = extension_release.extension_id
-                LEFT JOIN platform_extension ON extension_release.id = platform_extension.extension_release_id
                 LEFT JOIN extension_release_compatibility ON extension_release_compatibility.extension_release_id = extension_release.id AND extension_release_compatibility.quarkus_core_version = :quarkusCore
             WHERE
-                platform_extension.id IS NULL AND (
+                NOT EXISTS (
+                    SELECT 1
+                    FROM platform_extension pe
+                             JOIN extension_release er2 ON er2.id = pe.extension_release_id
+                    WHERE er2.extension_id = extension.id
+                )
+                AND (
                     (extension_release.quarkus_core_version_sortable <= :quarkusCoreSortable AND
                        extension_release.quarkus_core_version_sortable < :upperBound AND
                        extension_release.quarkus_core_version_sortable >= :lowerBound)
