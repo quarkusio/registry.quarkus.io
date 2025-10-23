@@ -3,6 +3,6 @@
 dev:
    quarkus dev
 
-# build main project fast - skip docs, tests, ITs, invoker, extension validation, gradle tests, truststore
+# Run Quarkus dev with a local DB
 local:
   quarkus dev -Dquarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/quarkus -Dquarkus.datasource.username=quarkus -Dquarkus.datasource.password=quarkus
