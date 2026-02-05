@@ -11,7 +11,7 @@
     <version.compiler.plugin>3.12.1</version.compiler.plugin>
     <version.formatter.plugin>2.24.0</version.formatter.plugin>
     <version.impsort.plugin>1.13.0</version.impsort.plugin>
-    <version.resources.plugin>3.3.1</version.resources.plugin>
+    <version.resources.plugin>3.4.0</version.resources.plugin>
     <version.source.plugin>3.3.0</version.source.plugin>
     <version.surefire.plugin>3.5.4</version.surefire.plugin>
     <version.failsafe.plugin>3.5.4</version.failsafe.plugin>
