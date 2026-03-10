@@ -13,7 +13,7 @@
     <version.impsort.plugin>1.13.0</version.impsort.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
     <version.source.plugin>3.3.0</version.source.plugin>
-    <version.surefire.plugin>3.5.4</version.surefire.plugin>
+    <version.surefire.plugin>3.5.5</version.surefire.plugin>
     <version.failsafe.plugin>3.5.5</version.failsafe.plugin>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
