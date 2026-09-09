@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.hibernate.Session;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.type.SqlTypes;
 
 import io.quarkus.registry.app.util.Version;
+import io.smallrye.common.version.VersionIterator;
+import io.smallrye.common.version.VersionScheme;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -166,11 +167,27 @@ public class ExtensionRelease extends BaseEntity {
                 .loadOptional();
     }
 
+    /**
+     * Returns the major version of the given version, or {@code 0} if it does not start with a number.
+     * <p>
+     * {@link org.apache.maven.artifact.versioning.DefaultArtifactVersion} cannot be used here: it only understands
+     * {@code major[.minor[.incremental]]} and reports a major of {@code 0} for four-segment versions such as the
+     * {@code 3.33.3.2} LTS stream heads.
+     */
+    private static int majorVersionOf(String version) {
+        VersionIterator iterator = VersionScheme.MAVEN.iterate(version);
+        if (!iterator.hasNext()) {
+            return 0;
+        }
+        iterator.next();
+        return iterator.isNumberPart() ? iterator.getNumberPartAsInt() : 0;
+    }
+
     @SuppressWarnings("unchecked")
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
-        DefaultArtifactVersion artifactVersion = new DefaultArtifactVersion(quarkusCore);
-        String lowerBound = artifactVersion.getMajorVersion() + ".0.0.A";
-        String upperBound = (artifactVersion.getMajorVersion() + 1) + ".0.0.A";
+        int majorVersion = majorVersionOf(quarkusCore);
+        String lowerBound = majorVersion + ".0.0.A";
+        String upperBound = (majorVersion + 1) + ".0.0.A";
         List<Object[]> results = getEntityManager().createNamedQuery("ExtensionRelease.findNonPlatformExtensions")
                 .setParameter("lowerBound", Version.toSortable(lowerBound))
                 .setParameter("upperBound", Version.toSortable(upperBound))
