@@ -10,11 +10,11 @@ on:
 jobs:
   deploy:
     name: Deploy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Authenticate and set context
         uses: redhat-actions/oc-login@v1
