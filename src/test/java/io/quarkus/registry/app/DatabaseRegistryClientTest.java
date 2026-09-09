@@ -258,6 +258,35 @@ class DatabaseRegistryClientTest extends BaseTest {
 
     }
 
+    /**
+     * Four-segment versions (eg. the LTS stream heads 3.33.3.2 and 3.27.5.2) must resolve the same extensions as the
+     * three-segment version they are based on.
+     *
+     * @see <a href="https://github.com/quarkusio/registry.quarkus.io/issues/335">#335</a>
+     */
+    @Test
+    void should_return_extensions_for_four_segment_quarkus_version() {
+        given()
+                .get("/client/non-platform-extensions?v=3.0.0.2")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].artifact", is("foo.bar:bar-extension::jar:0.4.2"));
+    }
+
+    /**
+     * {@code VersionScheme.MAVEN.validate} accepts versions that don't start with a number, so resolving the major
+     * version must not blow up on them.
+     */
+    @Test
+    void should_return_empty_catalog_for_quarkus_version_without_a_major() {
+        given()
+                .get("/client/non-platform-extensions?v=final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", nullValue());
+    }
+
     @Test
     void should_return_all_extensions() {
         given()
