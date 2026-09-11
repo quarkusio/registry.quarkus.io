@@ -145,6 +145,18 @@ public class DatabaseRegistryClient {
     }
 
     @GET
+    @Path("/categories/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "List all categories present in the registry.")
+    public ExtensionCatalog resolveAllCategories() {
+        // The extension catalog is being used here just to give a categories: element in the response json
+        final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
+        List<Category> categories = Category.listAll();
+        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        return catalog.build();
+    }
+
+    @GET
     @Path("/config.yaml")
     @Produces(YAMLMediaTypes.APPLICATION_JACKSON_YAML)
     @Operation(summary = "Example Quarkus Registry Client configuration file")

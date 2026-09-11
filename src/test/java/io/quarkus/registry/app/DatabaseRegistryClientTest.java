@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 
@@ -333,6 +334,16 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .body("extensions[2].metadata.nested", hasKey("key1"))
                 .body("extensions[2].metadata.nested.key1", is("value1"));
 
+    }
+
+    @Test
+    void should_return_all_categories() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories", hasSize(greaterThan(8)))
+                .body("categories[0]", hasKey("id"));
     }
 
     @Test
