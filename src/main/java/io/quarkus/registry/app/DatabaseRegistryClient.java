@@ -8,6 +8,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -34,16 +45,6 @@ import io.quarkus.registry.config.RegistryConfig;
 import io.quarkus.registry.config.RegistryDescriptorConfig;
 import io.quarkus.registry.config.RegistryMavenConfig;
 import io.quarkus.registry.config.RegistryMavenRepoConfig;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 /**
  * This class will query the database for the requested information
@@ -139,6 +140,18 @@ public class DatabaseRegistryClient {
         allExtensionReleases.stream().map(this::toClientExtension).forEach(catalog::addExtension);
 
         // Add all categories
+        List<Category> categories = Category.listAll();
+        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        return catalog.build();
+    }
+
+    @GET
+    @Path("/categories/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "List all categories present in the registry.")
+    public ExtensionCatalog resolveAllCategories() {
+        // The extension catalog is being used here just to give a categories: element in the response json
+        final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();

@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 
@@ -14,6 +15,10 @@ import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.MediaType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -37,9 +42,6 @@ import io.quarkus.registry.config.RegistryConfig;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.internal.mapping.Jackson2Mapper;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.core.MediaType;
 
 @QuarkusTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -304,6 +306,16 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .body("extensions[2].metadata.nested", hasKey("key1"))
                 .body("extensions[2].metadata.nested.key1", is("value1"));
 
+    }
+
+    @Test
+    void should_return_all_categories() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories", hasSize(greaterThan(8)))
+                .body("categories[0]", hasKey("id"));
     }
 
     @Test
