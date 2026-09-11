@@ -11,13 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.hibernate.Session;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.type.SqlTypes;
-
-import io.quarkus.maven.dependency.ArtifactCoords;
-import io.quarkus.registry.app.util.Version;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -25,8 +18,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.TypedQuery;
+
+import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.type.SqlTypes;
+
+import io.quarkus.maven.dependency.ArtifactCoords;
+import io.quarkus.registry.app.util.Version;
 
 @Entity
 @NamedQueries({
@@ -145,7 +147,14 @@ public class PlatformRelease extends BaseEntity {
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
     public List<PlatformExtension> extensions = new ArrayList<>();
 
+    /**
+     * Ordered by insertion, which is the order the categories appeared in the imported extension catalog.
+     * The working assumption is that platforms
+     * list their categories in a deliberate order and consumers render them in that order, so we preserve it.
+     * Alphabetical would also be a reasonable choice.
+     */
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
+    @OrderBy("id")
     public List<PlatformReleaseCategory> categories = new ArrayList<>();
 
     public PlatformRelease() {
@@ -247,7 +256,6 @@ public class PlatformRelease extends BaseEntity {
                 .getResultStream()
                 .findFirst().orElse(null);
     }
-
 
     public static boolean artifactCoordinatesExist(ArtifactCoords artifact) {
         return count("#PlatformRelease.countArtifactCoordinates",

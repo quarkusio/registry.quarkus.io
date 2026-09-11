@@ -1,3 +1,4 @@
+-- This was used to seed the prod table, and is used for local dev, but prod will have other categories beyond this
 ALTER TABLE category ADD COLUMN IF NOT EXISTS category_key varchar NOT NULL DEFAULT 'undefined';
 
 UPDATE category SET category_key = 'core', description = 'Core Quarkus components: engine, logging, etc.' where name = 'Core';

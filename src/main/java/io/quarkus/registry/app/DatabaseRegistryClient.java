@@ -122,7 +122,8 @@ public class DatabaseRegistryClient {
             extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
             catalog.addExtension(extension.build());
         }
-        // Add all categories
+        // Add all categories the registry has ever seen, across every platform. To narrow this to a single platform,
+        // go through PlatformRelease.categories instead (see PlatformCatalogContentProvider)
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();
@@ -138,7 +139,8 @@ public class DatabaseRegistryClient {
 
         allExtensionReleases.stream().map(this::toClientExtension).forEach(catalog::addExtension);
 
-        // Add all categories
+        // Add all categories the registry has ever seen, across every platform. To narrow this to a single platform,
+        // go through PlatformRelease.categories instead (see PlatformCatalogContentProvider)
         List<Category> categories = Category.listAll();
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();

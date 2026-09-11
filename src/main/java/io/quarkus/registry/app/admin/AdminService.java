@@ -5,6 +5,9 @@ import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+
 import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.app.events.ExtensionCatalogDeleteEvent;
@@ -26,8 +29,6 @@ import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 /**
  * Administrative operations on the database
@@ -56,16 +57,17 @@ public class AdminService {
             }
             //Add Categories
             for (io.quarkus.registry.catalog.Category category : extensionCatalog.getCategories()) {
-                Category.findByKey(category.getId()).ifPresent(c -> {
-                    if (PlatformReleaseCategory.findByNaturalKey(platformRelease, c).isEmpty()) {
-                        PlatformReleaseCategory prc = new PlatformReleaseCategory();
-                        prc.platformRelease = platformRelease;
-                        prc.category = c;
-                        prc.metadata = category.getMetadata();
-                        platformRelease.categories.add(prc);
-                        prc.persist();
-                    }
-                });
+                Category c = findOrCreateCategory(category);
+                // The link table is what allows categories to be queried per platform release,
+                // rather than only as the global Category.listAll() set
+                if (PlatformReleaseCategory.findByNaturalKey(platformRelease, c).isEmpty()) {
+                    PlatformReleaseCategory prc = new PlatformReleaseCategory();
+                    prc.platformRelease = platformRelease;
+                    prc.category = c;
+                    prc.metadata = category.getMetadata();
+                    platformRelease.categories.add(prc);
+                    prc.persist();
+                }
             }
             DbState.updateUpdatedAt();
         } catch (Exception e) {
@@ -101,6 +103,38 @@ public class AdminService {
         platformRelease.pinned = pinned;
         platformRelease.persistAndFlush();
         return platformRelease;
+    }
+
+    /**
+     * Returns the {@link Category} for the given catalog category, creating it if the registry has never seen it before.
+     * <p>
+     * This makes the imported platform descriptors (ultimately backed by Quarkus' {@code catalog-overrides.json}) the
+     * source of truth for the category list, instead of the hardcoded seed in {@code V2__Add_categories.sql}. Only
+     * platform catalogs reach this method today.
+     *
+     * If we later want non-platform extensions to contribute categories as
+     * well, call this from {@link #insertExtensionRelease} with the categories declared in the extension metadata.
+     */
+    private Category findOrCreateCategory(io.quarkus.registry.catalog.Category category) {
+        Category c = Category.findByKey(category.getId()).orElseGet(() -> {
+            Category newCategory = new Category();
+            newCategory.categoryKey = category.getId();
+            // Fall back to the key: a catalog may reference a category by id alone, and name is not nullable
+            // TODO we may want to add some prettifying logic if we set the name to the id
+            newCategory.name = category.getId();
+            newCategory.persist();
+            return newCategory;
+        });
+        // Name and description might have changed. A catalog referencing a category without redefining it (to pin
+        // extensions to it, for example) must not wipe what a previous catalog told us about it.
+        if (category.getName() != null) {
+            c.name = category.getName();
+        }
+        if (category.getDescription() != null) {
+            c.description = category.getDescription();
+        }
+        c.persist();
+        return c;
     }
 
     @Transactional
