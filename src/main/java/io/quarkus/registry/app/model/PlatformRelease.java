@@ -11,6 +11,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.hibernate.Session;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.type.SqlTypes;
+
+import io.quarkus.maven.dependency.ArtifactCoords;
+import io.quarkus.registry.app.util.Version;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
@@ -21,14 +28,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.TypedQuery;
-
-import org.hibernate.Session;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.NaturalId;
-import org.hibernate.type.SqlTypes;
-
-import io.quarkus.maven.dependency.ArtifactCoords;
-import io.quarkus.registry.app.util.Version;
 
 @Entity
 @NamedQueries({
