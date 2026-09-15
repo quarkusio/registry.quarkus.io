@@ -23,14 +23,25 @@ Run the following command to start the application (make sure your Docker daemon
 ./mvnw clean compile quarkus:dev -Ddebug
 ```
 
+A fresh dev instance starts with an empty database, so the client endpoints have nothing to return. Open
+http://localhost:8080/dev for a one-click import of the catalog the tests use, enough to see the endpoints working.
+To import another file instead:
+
+```shell script
+./mvnw clean compile quarkus:dev -Dregistry.dev.catalog=/path/to/catalog.json
+```
+
 ## Indexing extensions and platforms
 
-Once the application is running, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following
+For the real thing, clone the https://github.com/quarkusio/quarkus-extension-catalog and run the following
 in the root of your cloned repo:
 
 ```bash          
 jbang catalog_publish@quarkusio --working-directory=. --registry-url=http://localhost:8080 --token=test --all
 ```
+
+With both the button-import and the jbang script, the data arrives through `POST /admin/v1/extension/catalog`.
+Nothing seeds the database directly, so dev mode exercises the same import path production does.
 
 ## CI Builds
 
