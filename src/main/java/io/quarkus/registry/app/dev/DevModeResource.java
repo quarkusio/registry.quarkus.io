@@ -3,13 +3,6 @@ package io.quarkus.registry.app.dev;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import io.quarkus.arc.profile.IfBuildProfile;
-import io.quarkus.logging.Log;
-import io.quarkus.narayana.jta.QuarkusTransaction;
-import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.ws.rs.GET;
@@ -17,6 +10,14 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import io.quarkus.arc.profile.IfBuildProfile;
+import io.quarkus.logging.Log;
+import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.registry.app.model.PlatformRelease;
+import io.quarkus.runtime.StartupEvent;
 
 /**
  * A landing page, offered only under {@code quarkus:dev}, with a button that loads a catalog into the registry.
@@ -86,10 +87,14 @@ public class DevModeResource {
     @Path("/catalog.json")
     @Produces(MediaType.APPLICATION_JSON)
     public String catalog() throws IOException {
-        java.nio.file.Path path = java.nio.file.Path.of(catalogPath);
+        java.nio.file.Path cwd = java.nio.file.Path.of("").toAbsolutePath();
+        java.nio.file.Path path = java.nio.file.Path.of(catalogPath).toAbsolutePath().normalize();
+        if (!path.startsWith(cwd)) {
+            throw new NotFoundException("Catalog path must be inside the project directory.");
+        }
         if (!Files.isReadable(path)) {
             // Almost always because dev mode was started from somewhere other than the project directory.
-            throw new NotFoundException(path.toAbsolutePath()
+            throw new NotFoundException(path
                     + " is not readable. Start dev mode from the project directory, or point"
                     + " -Dregistry.dev.catalog at a catalog of your own.");
         }
@@ -167,7 +172,8 @@ public class DevModeResource {
                     'TOKEN': document.getElementById('token').value,
                     // The groupId of the catalog's own id, which is what the publishing tooling sends. Reading it
                     // rather than hard-coding io.quarkus.platform, since -Dregistry.dev.catalog may be another one.
-                    'X-Platform': JSON.parse(catalog).id.split(':')[0]
+                    // Strip anything that is not a safe Maven groupId character to prevent header injection.
+                    'X-Platform': JSON.parse(catalog).id.split(':')[0].replace(/[^\\w.\\-]/g, '')
                   },
                   body: catalog
                 });
