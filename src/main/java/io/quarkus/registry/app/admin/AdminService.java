@@ -2,8 +2,10 @@ package io.quarkus.registry.app.admin;
 
 import static io.quarkus.registry.catalog.Extension.MD_BUILT_WITH_QUARKUS_CORE;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.ArtifactCoords;
@@ -14,15 +16,14 @@ import io.quarkus.registry.app.events.ExtensionCompatibleDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
-import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformCategory;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
@@ -54,19 +55,12 @@ public class AdminService {
             for (io.quarkus.registry.catalog.Extension extension : extensionCatalog.getExtensions()) {
                 insertExtensionRelease(extension, platformRelease);
             }
-            //Add Categories
-            for (io.quarkus.registry.catalog.Category category : extensionCatalog.getCategories()) {
-                Category.findByKey(category.getId()).ifPresent(c -> {
-                    if (PlatformReleaseCategory.findByNaturalKey(platformRelease, c).isEmpty()) {
-                        PlatformReleaseCategory prc = new PlatformReleaseCategory();
-                        prc.platformRelease = platformRelease;
-                        prc.category = c;
-                        prc.metadata = category.getMetadata();
-                        platformRelease.categories.add(prc);
-                        prc.persist();
-                    }
-                });
-            }
+            // Store the catalog's categories verbatim against the release that declared them. Re-importing the same
+            // release replaces the list, so a category the platform has dropped does not linger.
+            platformRelease.categories = extensionCatalog.getCategories().stream()
+                    .map(PlatformCategory::from)
+                    .collect(Collectors.toCollection(ArrayList::new));
+            platformRelease.persist();
             DbState.updateUpdatedAt();
         } catch (Exception e) {
             Log.error("Error while inserting platform", e);

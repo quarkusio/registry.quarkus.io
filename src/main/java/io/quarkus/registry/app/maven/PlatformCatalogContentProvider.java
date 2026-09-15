@@ -7,8 +7,8 @@ import java.util.Objects;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
-import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformCategory;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.Extension;
@@ -65,7 +65,6 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
         PlatformRelease platformRelease = PlatformRelease.findByArtifactCoordinates(artifact)
                 .orElseThrow(() -> new NotFoundException("Platform release requested not found"));
         Platform platform = platformRelease.platformStream.platform;
-        List<Category> categories = Category.listAll();
         //TODO: This information is not stored in the DB
         String id = ArtifactCoords.of(platform.groupId, platform.artifactId, platformRelease.version, "json",
                 platformRelease.version).toString();
@@ -77,12 +76,9 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
                 .setMetadata(platformRelease.metadata)
                 .setUpstreamQuarkusCoreVersion(platformRelease.upstreamQuarkusCoreVersion)
                 .setCategories(
-                        platformRelease.categories.stream().map(prc -> io.quarkus.registry.catalog.Category.builder()
-                                .setId(prc.category.categoryKey)
-                                .setName(prc.category.name)
-                                .setMetadata(prc.metadata)
-                                .setDescription(prc.category.description)
-                                .build()).toList())
+                        platformRelease.categories.stream()
+                                .map(PlatformCategory::toCatalogCategory)
+                                .toList())
                 .setExtensions(
                         platformRelease.extensions.stream().map(pe -> Extension.builder()
                                 .setName(pe.extensionRelease.extension.name)

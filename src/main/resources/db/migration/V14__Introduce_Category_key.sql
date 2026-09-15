@@ -1,3 +1,5 @@
+-- Historical. This normalised the keys of the hardcoded category list that V2 used to seed. That list has since been
+-- removed and the category table itself is dropped in V20, so on a fresh database these statements match no rows.
 ALTER TABLE category ADD COLUMN IF NOT EXISTS category_key varchar NOT NULL DEFAULT 'undefined';
 
 UPDATE category SET category_key = 'core', description = 'Core Quarkus components: engine, logging, etc.' where name = 'Core';

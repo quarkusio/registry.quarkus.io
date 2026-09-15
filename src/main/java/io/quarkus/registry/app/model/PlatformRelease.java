@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.Session;
@@ -106,6 +107,12 @@ import jakarta.persistence.TypedQuery;
                 and pr.platformStream.platform.artifactId = :artifactId
                 and pr.version = :version
                 and pr.unlisted = false
+                """),
+        @NamedQuery(name = "PlatformRelease.findAllListed", query = """
+                select pr from PlatformRelease pr
+                where pr.unlisted = false
+                and pr.platformStream.unlisted = false
+                order by pr.versionSortable desc
                 """)
 })
 public class PlatformRelease extends BaseEntity {
@@ -145,8 +152,13 @@ public class PlatformRelease extends BaseEntity {
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
     public List<PlatformExtension> extensions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
-    public List<PlatformReleaseCategory> categories = new ArrayList<>();
+    /**
+     * The categories this release's extension catalog declared, stored verbatim and in the order the catalog listed
+     * them. The working assumption is that platforms list their categories in a deliberate order and consumers render
+     * them in that order, so we preserve it. Alphabetical would also be a reasonable choice.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    public List<PlatformCategory> categories = new ArrayList<>();
 
     public PlatformRelease() {
     }
@@ -248,7 +260,6 @@ public class PlatformRelease extends BaseEntity {
                 .findFirst().orElse(null);
     }
 
-
     public static boolean artifactCoordinatesExist(ArtifactCoords artifact) {
         return count("#PlatformRelease.countArtifactCoordinates",
                 with("groupId", artifact.getGroupId())
@@ -266,5 +277,47 @@ public class PlatformRelease extends BaseEntity {
 
     public static List<PlatformRelease> findAllCorePlatforms() {
         return list("#PlatformRelease.findAllCorePlatforms");
+    }
+
+    /**
+     * Every category declared by any listed platform release, deduplicated by id.
+     * <p>
+     * Releases are walked newest first, so when two releases declare the same category the newer definition wins and
+     * names and descriptions stay current. Within a release, the catalog's own ordering is preserved, which puts the
+     * current platform's categories first and any categories only older releases knew about after them.
+     */
+    public static List<PlatformCategory> findAllCategories() {
+        Map<String, PlatformCategory> categoriesById = new LinkedHashMap<>();
+        for (PlatformRelease release : PlatformRelease.<PlatformRelease> list("#PlatformRelease.findAllListed")) {
+            for (PlatformCategory category : release.categories) {
+                categoriesById.putIfAbsent(category.id, category);
+            }
+        }
+        return List.copyOf(categoriesById.values());
+    }
+
+    /**
+     * The ids of categories that at least one extension actually claims membership of, whether that extension came
+     * from a platform or was published on its own.
+     * <p>
+     * Extensions record their categories as a bare list of ids in their metadata, so this is the emergent set: it
+     * includes categories no platform declares, and excludes declared categories nothing has adopted yet. Native SQL
+     * because the ids live inside a JSON document; the app only ever runs on PostgreSQL.
+     */
+    public static Set<String> findCategoryIdsInUse() {
+        @SuppressWarnings("unchecked")
+        List<String> ids = getEntityManager().createNativeQuery("""
+                select distinct c.category_id from (
+                    select (pe.metadata::jsonb) -> 'categories' as categories
+                        from platform_extension pe
+                        where jsonb_typeof((pe.metadata::jsonb) -> 'categories') = 'array'
+                    union all
+                    select (er.metadata::jsonb) -> 'categories' as categories
+                        from extension_release er
+                        where jsonb_typeof((er.metadata::jsonb) -> 'categories') = 'array'
+                ) m
+                cross join lateral jsonb_array_elements_text(m.categories) as c(category_id)
+                """, String.class).getResultList();
+        return Set.copyOf(ids);
     }
 }

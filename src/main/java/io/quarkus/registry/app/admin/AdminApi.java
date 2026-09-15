@@ -29,14 +29,13 @@ import io.quarkus.registry.app.events.ExtensionCreateEvent;
 import io.quarkus.registry.app.events.ExtensionDeleteEvent;
 import io.quarkus.registry.app.events.ExtensionReleaseDeleteEvent;
 import io.quarkus.registry.app.maven.cache.MavenCache;
-import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.DbState;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformCategory;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
-import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import jakarta.annotation.security.RolesAllowed;
@@ -353,7 +352,7 @@ public class AdminApi {
     @SecurityRequirement(name = "Authentication")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Transactional
-    @Operation(summary = "Patches a PlatformReleaseCategory", description = "Invoke this endpoint when the platform release needs to be set to unlisted")
+    @Operation(summary = "Patches a category of a platform release", description = "Invoke this endpoint to change the metadata of a category declared by a platform release")
     public Response patchPlatformReleaseCategory(
             @NotNull(message = "platformKey is missing") @PathParam("platformKey") String platformKey,
             @NotNull(message = "streamKey is missing") @PathParam("streamKey") String streamKey,
@@ -377,14 +376,14 @@ public class AdminApi {
                 .orElseThrow(() -> new NotFoundException("Platform Stream not found"));
         PlatformRelease platformRelease = PlatformRelease.findByNaturalKey(stream, version)
                 .orElseThrow(() -> new NotFoundException("Platform Release not found"));
-        Category category = Category.findByKey(categoryKey)
-                .orElseThrow(() -> new NotFoundException("Category not found"));
-        PlatformReleaseCategory prc = PlatformReleaseCategory.findByNaturalKey(platformRelease, category)
+        PlatformCategory category = platformRelease.categories.stream()
+                .filter(c -> categoryKey.equals(c.id))
+                .findFirst()
                 .orElseThrow(() -> new NotFoundException("Platform Release Category not found"));
-        // Perform changes and persist
-        prc.metadata = metadata;
+        // Perform changes and persist. The categories are a JSON column, so the owning release is what gets saved.
+        category.metadata = metadata;
         try {
-            prc.persistAndFlush();
+            platformRelease.persistAndFlush();
             cache.clear();
         } finally {
             DbState.updateUpdatedAt();
