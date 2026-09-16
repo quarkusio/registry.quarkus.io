@@ -7,11 +7,12 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,13 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
 
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Extension;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformCategory;
 import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
@@ -64,6 +67,10 @@ class DatabaseRegistryClientTest extends BaseTest {
             release201.version = "2.0.1.Final";
             release201.quarkusCoreVersion = release201.version;
             release201.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.1.Final";
+            // An older release naming "web" differently, plus a category only it knows about
+            release201.categories = new ArrayList<>(List.of(
+                    new PlatformCategory("web", "Web (as 2.0.1 called it)", "Stale description", null),
+                    new PlatformCategory("legacy", "Legacy", "Only ever declared by an old release", null)));
             release201.persistAndFlush();
 
             PlatformRelease release202 = new PlatformRelease();
@@ -71,6 +78,10 @@ class DatabaseRegistryClientTest extends BaseTest {
             release202.version = "2.0.2.Final";
             release202.quarkusCoreVersion = release202.version;
             release202.bom = "io.quarkus.platform:quarkus-bom::pom:2.0.2.Final";
+            release202.categories = new ArrayList<>(List.of(
+                    new PlatformCategory("web", "Web", "REST endpoints, HTTP and web formats", Map.of("pinned", true)),
+                    new PlatformCategory("data", "Data", "Accessing and managing your data", null),
+                    new PlatformCategory("ai", "Artificial Intelligence (AI)", "AI-infused applications", null)));
             release202.persistAndFlush();
 
             PlatformStream stream21 = new PlatformStream();
@@ -92,6 +103,9 @@ class DatabaseRegistryClientTest extends BaseTest {
             release210Final.quarkusCoreVersion = release210Final.version;
             release210Final.unlisted = true;
             release210Final.bom = "io.quarkus.platform:quarkus-bom::pom:2.1.0.Final";
+            // Declared only by an unlisted release, so it should never be offered to clients
+            release210Final.categories = new ArrayList<>(
+                    List.of(new PlatformCategory("hidden", "Hidden", "Unlisted releases should not leak", null)));
             release210Final.persistAndFlush();
 
             PlatformStream stream22 = new PlatformStream();
@@ -154,7 +168,9 @@ class DatabaseRegistryClientTest extends BaseTest {
                     extensionRelease.extension = newExtension;
                     extensionRelease.version = "0.4.2";
                     extensionRelease.quarkusCoreVersion = "3.0.0.Final";
-                    extensionRelease.metadata = Map.of("aKey", "avalue");
+                    // A non-platform extension claiming one declared category and one no platform declares
+                    extensionRelease.metadata = Map.of("aKey", "avalue",
+                            "categories", List.of("data", "surprise"));
                     extensionRelease.persist();
                 }
                 {
@@ -195,6 +211,8 @@ class DatabaseRegistryClientTest extends BaseTest {
                         Map<String, Object> metadata = new HashMap<>();
                         metadata.put("platKey", "platvalue");
                         metadata.put("commonKey", "platcommonvalue");
+                        // Membership is read off the extension itself, wherever it was published
+                        metadata.put("categories", List.of("ai"));
                         platformExtension.metadata = metadata;
                     }
 
@@ -336,14 +354,124 @@ class DatabaseRegistryClientTest extends BaseTest {
 
     }
 
+    /**
+     * The categories offered to clients are the union of what every listed platform release declared. Within a release
+     * the catalog's own ordering is kept, and releases are walked newest first, so 2.0.2's three categories come before
+     * the one only 2.0.1 ever knew about.
+     */
     @Test
-    void should_return_all_categories() {
+    void should_return_all_categories_declared_by_listed_platform_releases() {
         given()
                 .get("/client/categories/all")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
-                .body("categories", hasSize(greaterThan(8)))
-                .body("categories[0]", hasKey("id"));
+                .body("categories.id", contains("web", "data", "ai", "legacy"))
+                .body("categories.find { it.id == 'ai' }.name", is("Artificial Intelligence (AI)"))
+                .body("categories.find { it.id == 'ai' }.description", is("AI-infused applications"));
+    }
+
+    /**
+     * Two releases declaring the same category is the normal case, and the newest definition is the one that should be
+     * shown, so a renamed or reworded category does not get pinned to whatever an ancient release called it.
+     */
+    @Test
+    void should_prefer_the_newest_definition_of_a_category() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories.find { it.id == 'web' }.name", is("Web"))
+                .body("categories.find { it.id == 'web' }.description", is("REST endpoints, HTTP and web formats"));
+    }
+
+    /**
+     * Categories carry whatever metadata the platform put on them, alongside the registry's own {@code in-use} flag.
+     */
+    @Test
+    void should_return_category_metadata_from_the_platform() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories.find { it.id == 'web' }.metadata.pinned", is(true))
+                .body("categories.find { it.id == 'data' }.metadata", hasKey("in-use"));
+    }
+
+    @Test
+    void should_not_return_categories_declared_only_by_an_unlisted_release() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories.id", not(hasItem("hidden")));
+    }
+
+    /**
+     * A category is "in use" when some extension claims membership of it. Platforms declare categories nothing has
+     * adopted yet ({@code web}, {@code legacy}), so the flag lets a consumer tell the two apart.
+     */
+    @Test
+    void should_flag_whether_a_category_is_claimed_by_an_extension() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                // Claimed by a non-platform extension, and by a platform extension, respectively
+                .body("categories.find { it.id == 'data' }.metadata.'in-use'", is(true))
+                .body("categories.find { it.id == 'ai' }.metadata.'in-use'", is(true))
+                // Declared, but nothing has adopted them
+                .body("categories.find { it.id == 'web' }.metadata.'in-use'", is(false))
+                .body("categories.find { it.id == 'legacy' }.metadata.'in-use'", is(false));
+    }
+
+    /**
+     * The flip side: an extension can claim a category no platform declares. Those are deliberately not listed, because
+     * the registry has no name or description for them - only a platform catalog supplies those.
+     */
+    @Test
+    void should_not_return_a_category_that_only_an_extension_claims() {
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories.id", not(hasItem("surprise")));
+    }
+
+    @Test
+    void should_return_categories_alongside_all_extensions() {
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories.id", contains("web", "data", "ai", "legacy"));
+    }
+
+    @Test
+    void should_return_categories_alongside_non_platform_extensions() {
+        given()
+                .get("/client/non-platform-extensions?v=3.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories.id", contains("web", "data", "ai", "legacy"));
+    }
+
+    /**
+     * Nothing is ever seeded, so an empty registry must report no categories rather than a stale hardcoded list.
+     */
+    @Test
+    void should_return_no_categories_when_no_platform_declares_any() {
+        deleteAllPlatformCategories();
+        given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("categories", nullValue());
+    }
+
+    private void deleteAllPlatformCategories() {
+        QuarkusTransaction.requiringNew()
+                .run(() -> PlatformRelease.<PlatformRelease> listAll()
+                        .forEach(release -> release.categories = new ArrayList<>()));
     }
 
     @Test

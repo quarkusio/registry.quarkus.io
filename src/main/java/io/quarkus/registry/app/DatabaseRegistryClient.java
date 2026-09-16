@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -16,10 +17,10 @@ import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.maven.MavenConfig;
-import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformCategory;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.app.util.Version;
@@ -52,6 +53,11 @@ import jakarta.ws.rs.core.Response;
 @Path("/client")
 @Tag(name = "Client", description = "Client related services")
 public class DatabaseRegistryClient {
+
+    /**
+     * Category metadata key recording whether any extension claims membership of the category.
+     */
+    static final String MD_CATEGORY_IN_USE = "in-use";
 
     private static final String IO_QUARKUS_PLATFORM = "io.quarkus.platform";
     private static final String QUARKUS_BOM = "quarkus-bom";
@@ -122,9 +128,7 @@ public class DatabaseRegistryClient {
             extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
             catalog.addExtension(extension.build());
         }
-        // Add all categories
-        List<Category> categories = Category.listAll();
-        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        addAllCategories(catalog);
         return catalog.build();
     }
 
@@ -138,9 +142,7 @@ public class DatabaseRegistryClient {
 
         allExtensionReleases.stream().map(this::toClientExtension).forEach(catalog::addExtension);
 
-        // Add all categories
-        List<Category> categories = Category.listAll();
-        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        addAllCategories(catalog);
         return catalog.build();
     }
 
@@ -151,9 +153,22 @@ public class DatabaseRegistryClient {
     public ExtensionCatalog resolveAllCategories() {
         // The extension catalog is being used here just to give a categories: element in the response json
         final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
-        List<Category> categories = Category.listAll();
-        categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
+        addAllCategories(catalog);
         return catalog.build();
+    }
+
+    /**
+     * Adds every category declared by a listed platform release, newest definition first.
+     * <p>
+     * Each category is tagged with {@value MD_CATEGORY_IN_USE} recording whether any extension in the registry, of any
+     * platform or none, actually claims membership of it. Platforms declare categories that nothing has adopted yet,
+     * and extensions use categories no platform declares, so the two sets are worth telling apart.
+     */
+    private void addAllCategories(ExtensionCatalog.Mutable catalog) {
+        Set<String> inUse = PlatformRelease.findCategoryIdsInUse();
+        PlatformRelease.findAllCategories().stream()
+                .map(category -> toClientCategory(category, inUse.contains(category.id)))
+                .forEach(catalog::addCategory);
     }
 
     @GET
@@ -308,12 +323,17 @@ public class DatabaseRegistryClient {
                 .setMetadata(mergedMetadata);
     }
 
-    private io.quarkus.registry.catalog.Category toClientCategory(Category category) {
+    private io.quarkus.registry.catalog.Category toClientCategory(PlatformCategory category, boolean inUse) {
+        Map<String, Object> metadata = new HashMap<>();
+        if (category.metadata != null) {
+            metadata.putAll(category.metadata);
+        }
+        metadata.put(MD_CATEGORY_IN_USE, inUse);
         return io.quarkus.registry.catalog.Category.builder()
-                .setId(category.categoryKey)
+                .setId(category.id)
                 .setName(category.name)
                 .setDescription(category.description)
-                .setMetadata(category.metadata)
+                .setMetadata(metadata)
                 .build();
     }
 
