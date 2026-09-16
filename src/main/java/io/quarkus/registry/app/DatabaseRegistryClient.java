@@ -3,6 +3,7 @@ package io.quarkus.registry.app;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.ExtensionRelease;
 import io.quarkus.registry.app.model.ExtensionReleaseCompatibility;
 import io.quarkus.registry.app.model.Platform;
+import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformStream;
 import io.quarkus.registry.app.util.Version;
@@ -237,6 +239,17 @@ public class DatabaseRegistryClient {
         return catalog.build();
     }
 
+    /**
+     * The platform releases an extension release belongs to, oldest first. The newest release is the most recent word
+     * on the extension, so ordering makes it the one that wins when the metadata of all of them is merged.
+     */
+    private static List<PlatformExtension> byPlatformReleaseAge(ExtensionRelease extensionRelease) {
+        return extensionRelease.platforms.stream()
+                .sorted(Comparator.comparing(platformExtension -> Version.toSortable(
+                        platformExtension.platformRelease.version)))
+                .toList();
+    }
+
     private List<ExtensionOrigin> toExtensionOrigins(ExtensionRelease extensionRelease) {
         final List<ExtensionOrigin> extensionOrigins;
 
@@ -249,26 +262,28 @@ public class DatabaseRegistryClient {
                     .build());
         } else {
 
-            // Platform case
-            extensionOrigins = extensionRelease.platforms.stream()
-                    .map((platformExtension) -> (ExtensionOrigin) ExtensionCatalog.builder()
-                            // it should be <platform-key>:<member-bom-artifactId>-quarkus-platform-descriptor:<quarkus-version>:json:<quarkus-version>
-                            // We can get all member boms associated with this release, but not the particular one this extension came from
-                            // For the moment, we assume the member bom is quarkus-core since we don't have information to make a better choise
-                            .setId(ArtifactCoords
-                                    .of(platformExtension.platformRelease.platformStream.platform.platformKey,
-                                            QUARKUS_BOM + "-quarkus-platform-descriptor",
-                                            platformExtension.platformRelease.version,
-                                            Constants.JSON,
-                                            platformExtension.platformRelease.version)
-                                    .toGACTVString())
-                            .setBom(ArtifactCoords.pom(platformExtension.platformRelease.platformStream.platform.platformKey,
-                                    QUARKUS_BOM,
-                                    platformExtension.platformRelease.version))
-                            .setMetadata(platformExtension.platformRelease.metadata)
-                            .setQuarkusCoreVersion(platformExtension.platformRelease.quarkusCoreVersion)
-                            .setPlatform(true).build())
-                    .toList();
+            // Platform case. An extension version is sometimes carried over into several platform releases, but this
+            // endpoint only ever lists the most recent release of an extension, so only the most recent platform
+            // release carrying it is reported as its origin.
+            List<PlatformExtension> byAge = byPlatformReleaseAge(extensionRelease);
+            PlatformRelease mostRecent = byAge.get(byAge.size() - 1).platformRelease;
+            extensionOrigins = List.of(ExtensionCatalog.builder()
+                    // it should be <platform-key>:<member-bom-artifactId>-quarkus-platform-descriptor:<quarkus-version>:json:<quarkus-version>
+                    // We can get all member boms associated with this release, but not the particular one this extension came from
+                    // For the moment, we assume the member bom is quarkus-core since we don't have information to make a better choise
+                    .setId(ArtifactCoords
+                            .of(mostRecent.platformStream.platform.platformKey,
+                                    QUARKUS_BOM + "-quarkus-platform-descriptor",
+                                    mostRecent.version,
+                                    Constants.JSON,
+                                    mostRecent.version)
+                            .toGACTVString())
+                    .setBom(ArtifactCoords.pom(mostRecent.platformStream.platform.platformKey,
+                            QUARKUS_BOM,
+                            mostRecent.version))
+                    .setMetadata(mostRecent.metadata)
+                    .setQuarkusCoreVersion(mostRecent.quarkusCoreVersion)
+                    .setPlatform(true).build());
         }
 
         return extensionOrigins;
@@ -290,10 +305,11 @@ public class DatabaseRegistryClient {
     private Extension.Mutable toClientExtensionNoOrigin(ExtensionRelease extensionRelease) {
         Map<String, Object> mergedMetadata = extensionRelease.metadata != null ? new HashMap<>(extensionRelease.metadata)
                 : new HashMap<>();
-        extensionRelease.platforms
+        byPlatformReleaseAge(extensionRelease)
                 .forEach(platformExtension -> {
                     if (platformExtension.metadata != null) {
-                        // If we have a key collision in the platformExtension, just take the second value; it's unlikely and it's unclear what a "right" behaviour is
+                        // On a key collision, take the second value: the platform releases are visited oldest first,
+                        // so this is what the most recent platform release says about the extension
                         platformExtension.metadata.forEach(
                                 (key, value) -> mergedMetadata.merge(key, value, (v1, v2) -> v2));
                     }
