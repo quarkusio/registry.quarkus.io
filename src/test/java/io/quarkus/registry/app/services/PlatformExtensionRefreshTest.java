@@ -3,7 +3,8 @@ package io.quarkus.registry.app.services;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,8 @@ import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.ws.rs.core.MediaType;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -27,14 +30,12 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionCatalogImpl;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import jakarta.ws.rs.core.MediaType;
 
 /**
  * An extension release can be carried over unchanged into several platform releases. When that happens, the newer
  * platform descriptor is still the more recent statement about the extension, so the registry has to refresh what it
  * holds instead of keeping whatever the first platform release said.
  *
- * @see <a href="https://github.com/quarkusio/registry.quarkus.io/issues/346">#346</a>
  */
 @QuarkusTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -60,7 +61,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .body("extensions", hasSize(1))
-                .body("extensions[0].artifact", org.hamcrest.Matchers.is(EXTENSION_GAV))
+                .body("extensions[0].artifact", is(EXTENSION_GAV))
                 .body("extensions[0].metadata.categories", contains("cloud"));
     }
 
@@ -80,6 +81,56 @@ public class PlatformExtensionRefreshTest extends BaseTest {
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .body("extensions", hasSize(1))
                 .body("extensions[0].origins", contains(descriptorId("2.8.1.Final")));
+    }
+
+    /**
+     * Same as above, but the newer release is imported first (a full republish re-posts older versions after newer
+     * ones). The higher version must still win regardless of insertion order.
+     */
+    @Test
+    void should_report_the_most_recent_platform_release_as_the_origin_regardless_of_import_order() throws Exception {
+        importCatalog("2.8.1.Final", "core");
+        importCatalog("2.8.0.Final", "core");
+
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].origins", contains(descriptorId("2.8.1.Final")));
+    }
+
+    /**
+     * A CR of a higher number must not displace a stable release as the origin: the stable release is the one a client
+     * should be directed to, even if the CR version string sorts higher.
+     */
+    @Test
+    void should_prefer_stable_release_over_cr_as_the_origin() throws Exception {
+        importCatalog("2.8.0.Final", "core");
+        importCatalog("2.8.1.CR1", "core");
+
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].origins", contains(descriptorId("2.8.0.Final")));
+    }
+
+    /**
+     * Metadata must also come from the stable release when a later CR is present, not from the CR.
+     */
+    @Test
+    void should_prefer_stable_release_metadata_over_cr() throws Exception {
+        importCatalog("2.8.0.Final", "cloud");
+        importCatalog("2.8.1.CR1", "core");
+
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].metadata.categories", contains("cloud"));
     }
 
     /**
@@ -139,7 +190,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
     private void importCatalog(String platformVersion, String category) throws IOException {
         ExtensionCatalog.Mutable catalog;
         try (InputStream resource = getClass().getClassLoader().getResourceAsStream("extension-catalog-community.json")) {
-            assert resource != null;
+            assertThat(resource).as("extension-catalog-community.json not found on classpath").isNotNull();
             catalog = CatalogMapperHelper.deserialize(resource, ExtensionCatalogImpl.Builder.class);
         }
         catalog.setId(descriptorId(platformVersion));
@@ -149,7 +200,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
         // Keeping a single extension makes the assertions readable; nothing here depends on the rest of the catalog
         catalog.setExtensions(catalog.getExtensions().stream()
                 .filter(e -> EXTENSION_GA.equals(e.getArtifact().getGroupId() + ":" + e.getArtifact().getArtifactId()))
-                .map(e -> (io.quarkus.registry.catalog.Extension) e.mutable()
+                .map(e -> e.mutable()
                         .setMetadata(withCategory(e.getMetadata(), category))
                         .build())
                 .toList());

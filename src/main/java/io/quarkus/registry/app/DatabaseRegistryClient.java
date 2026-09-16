@@ -240,14 +240,15 @@ public class DatabaseRegistryClient {
     }
 
     /**
-     * The platform releases an extension release belongs to, oldest first. The newest release is the most recent word
-     * on the extension, so ordering makes it the one that wins when the metadata of all of them is merged.
+     * The highest-importance listed platform release carrying this extension: a stable release is preferred over a CR,
+     * and among releases of the same type the highest version wins. Returns {@code null} if all carriers are unlisted.
      */
-    private static List<PlatformExtension> byPlatformReleaseAge(ExtensionRelease extensionRelease) {
+    private static PlatformExtension bestPlatformExtension(ExtensionRelease extensionRelease) {
         return extensionRelease.platforms.stream()
-                .sorted(Comparator.comparing(platformExtension -> Version.toSortable(
-                        platformExtension.platformRelease.version)))
-                .toList();
+                .filter(pe -> !pe.platformRelease.unlisted)
+                .max(Comparator.comparing(pe -> pe.platformRelease.version,
+                        Version.RELEASE_IMPORTANCE_COMPARATOR.reversed()))
+                .orElse(null);
     }
 
     private List<ExtensionOrigin> toExtensionOrigins(ExtensionRelease extensionRelease) {
@@ -263,26 +264,29 @@ public class DatabaseRegistryClient {
         } else {
 
             // Platform case. An extension version is sometimes carried over into several platform releases, but this
-            // endpoint only ever lists the most recent release of an extension, so only the most recent platform
-            // release carrying it is reported as its origin.
-            List<PlatformExtension> byAge = byPlatformReleaseAge(extensionRelease);
-            PlatformRelease mostRecent = byAge.get(byAge.size() - 1).platformRelease;
+            // endpoint only ever lists the most recent release of an extension. The highest-importance listed release
+            // (stable preferred over CR, newer over older) is reported as its origin.
+            PlatformExtension best = bestPlatformExtension(extensionRelease);
+            if (best == null) {
+                return List.of();
+            }
+            PlatformRelease bestRelease = best.platformRelease;
             extensionOrigins = List.of(ExtensionCatalog.builder()
                     // it should be <platform-key>:<member-bom-artifactId>-quarkus-platform-descriptor:<quarkus-version>:json:<quarkus-version>
                     // We can get all member boms associated with this release, but not the particular one this extension came from
                     // For the moment, we assume the member bom is quarkus-core since we don't have information to make a better choise
                     .setId(ArtifactCoords
-                            .of(mostRecent.platformStream.platform.platformKey,
+                            .of(bestRelease.platformStream.platform.platformKey,
                                     QUARKUS_BOM + "-quarkus-platform-descriptor",
-                                    mostRecent.version,
+                                    bestRelease.version,
                                     Constants.JSON,
-                                    mostRecent.version)
+                                    bestRelease.version)
                             .toGACTVString())
-                    .setBom(ArtifactCoords.pom(mostRecent.platformStream.platform.platformKey,
+                    .setBom(ArtifactCoords.pom(bestRelease.platformStream.platform.platformKey,
                             QUARKUS_BOM,
-                            mostRecent.version))
-                    .setMetadata(mostRecent.metadata)
-                    .setQuarkusCoreVersion(mostRecent.quarkusCoreVersion)
+                            bestRelease.version))
+                    .setMetadata(bestRelease.metadata)
+                    .setQuarkusCoreVersion(bestRelease.quarkusCoreVersion)
                     .setPlatform(true).build());
         }
 
@@ -305,15 +309,12 @@ public class DatabaseRegistryClient {
     private Extension.Mutable toClientExtensionNoOrigin(ExtensionRelease extensionRelease) {
         Map<String, Object> mergedMetadata = extensionRelease.metadata != null ? new HashMap<>(extensionRelease.metadata)
                 : new HashMap<>();
-        byPlatformReleaseAge(extensionRelease)
-                .forEach(platformExtension -> {
-                    if (platformExtension.metadata != null) {
-                        // On a key collision, take the second value: the platform releases are visited oldest first,
-                        // so this is what the most recent platform release says about the extension
-                        platformExtension.metadata.forEach(
-                                (key, value) -> mergedMetadata.merge(key, value, (v1, v2) -> v2));
-                    }
-                });
+        // Use the same highest-importance release for metadata as for the origin: stable preferred over CR,
+        // newer over older. Its metadata overwrites the base extension metadata on any key collision.
+        PlatformExtension best = bestPlatformExtension(extensionRelease);
+        if (best != null && best.metadata != null) {
+            mergedMetadata.putAll(best.metadata);
+        }
 
         return Extension.builder()
                 .setGroupId(extensionRelease.extension.groupId)
