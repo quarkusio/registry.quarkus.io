@@ -240,14 +240,17 @@ public class DatabaseRegistryClient {
     }
 
     /**
-     * The highest-importance listed platform release carrying this extension: a stable release is preferred over a CR,
-     * and among releases of the same type the highest version wins. Returns {@code null} if all carriers are unlisted.
+     * The highest-importance platform release carrying this extension: a stable release is preferred over a CR, and
+     * among releases of the same type the highest version wins. Listed releases are preferred over unlisted ones, but
+     * if every carrier is unlisted the best among those is returned rather than nothing.
      */
     private static PlatformExtension bestPlatformExtension(ExtensionRelease extensionRelease) {
+        Comparator<PlatformExtension> byImportance = Comparator.comparing(
+                pe -> pe.platformRelease.version, Version.RELEASE_IMPORTANCE_COMPARATOR.reversed());
         return extensionRelease.platforms.stream()
                 .filter(pe -> !pe.platformRelease.unlisted)
-                .max(Comparator.comparing(pe -> pe.platformRelease.version,
-                        Version.RELEASE_IMPORTANCE_COMPARATOR.reversed()))
+                .max(byImportance)
+                .or(() -> extensionRelease.platforms.stream().max(byImportance))
                 .orElse(null);
     }
 
@@ -264,10 +267,11 @@ public class DatabaseRegistryClient {
         } else {
 
             // Platform case. An extension version is sometimes carried over into several platform releases, but this
-            // endpoint only ever lists the most recent release of an extension. The highest-importance listed release
-            // (stable preferred over CR, newer over older) is reported as its origin.
+            // endpoint only ever lists the most recent release of an extension. The highest-importance release
+            // (stable preferred over CR, newer over older; listed preferred over unlisted) is reported as its origin.
             PlatformExtension best = bestPlatformExtension(extensionRelease);
             if (best == null) {
+                // Can only happen if extensionRelease.platforms is empty, which is already handled above.
                 return List.of();
             }
             PlatformRelease bestRelease = best.platformRelease;
