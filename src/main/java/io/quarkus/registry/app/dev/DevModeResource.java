@@ -3,14 +3,6 @@ package io.quarkus.registry.app.dev;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import io.quarkus.arc.profile.IfBuildProfile;
@@ -18,6 +10,13 @@ import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * A landing page, offered only under {@code quarkus:dev}, with a button that loads a catalog into the registry.
