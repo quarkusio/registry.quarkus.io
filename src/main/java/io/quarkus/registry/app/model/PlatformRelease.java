@@ -25,6 +25,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.TypedQuery;
 
@@ -145,7 +146,14 @@ public class PlatformRelease extends BaseEntity {
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
     public List<PlatformExtension> extensions = new ArrayList<>();
 
+    /**
+     * Ordered by insertion, which is the order the categories appeared in the imported extension catalog.
+     * The working assumption is that platforms
+     * list their categories in a deliberate order and consumers render them in that order, so we preserve it.
+     * Alphabetical would also be a reasonable choice.
+     */
     @OneToMany(mappedBy = "platformRelease", orphanRemoval = true)
+    @OrderBy("id")
     public List<PlatformReleaseCategory> categories = new ArrayList<>();
 
     public PlatformRelease() {
@@ -247,7 +255,6 @@ public class PlatformRelease extends BaseEntity {
                 .getResultStream()
                 .findFirst().orElse(null);
     }
-
 
     public static boolean artifactCoordinatesExist(ArtifactCoords artifact) {
         return count("#PlatformRelease.countArtifactCoordinates",
