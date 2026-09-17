@@ -24,6 +24,7 @@ import io.quarkus.registry.app.model.PlatformExtension;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.app.model.PlatformReleaseCategory;
 import io.quarkus.registry.app.model.PlatformStream;
+import io.quarkus.registry.app.util.Version;
 import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.util.PlatformArtifacts;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -177,10 +178,12 @@ public class AdminService {
                     return newExtension;
                 });
 
-        // Name and description might have changed
-        extension.name = ext.getName();
-        extension.description = ext.getDescription();
-        extension.persist();
+        // Name and description might have changed, but only the best release gets honoured
+        if (isBestRelease(extension, version)) {
+            extension.name = ext.getName();
+            extension.description = ext.getDescription();
+            extension.persist();
+        }
 
         final ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseGet(() -> {
@@ -214,6 +217,28 @@ public class AdminService {
             platformExtension.persist();
         }
         return extensionRelease;
+    }
+
+    /**
+     * Whether no release better than {@code version} is already recorded for the extension.
+     * <p>
+     * Catalogs do not reach the registry in release order: an LTS respin, a late member BOM or a re-import of the
+     * archive all arrive after releases they are older than. Those catalogs still carry a name and a description for
+     * every extension they ship, and taking them at face value silently reverts the extension to how it was described
+     * back then.
+     * <p>
+     * A release already recorded under the same version does not count as better: that is how an extension carried
+     * over unchanged into a later platform release shows up, and it describes the same artifact.
+     * <p>
+     * Uses {@link Version#RELEASE_IMPORTANCE_COMPARATOR} to determine which release is "best": pre-final releases
+     * (CR, Beta, Alpha, Snapshot) are considered less important than Final releases, even if they have a higher
+     * version number.
+     *
+     */
+    static boolean isBestRelease(Extension extension, String version) {
+        return ExtensionRelease.<ExtensionRelease>stream("extension = ?1 and version != ?2", extension, version)
+                .map(er -> er.version)
+                .noneMatch(existingVersion -> Version.RELEASE_IMPORTANCE_COMPARATOR.compare(version, existingVersion) > 0);
     }
 
     /**

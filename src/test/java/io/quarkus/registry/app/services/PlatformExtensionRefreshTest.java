@@ -83,6 +83,26 @@ public class PlatformExtensionRefreshTest extends BaseTest {
     }
 
     /**
+     * An extension version carried over unchanged into a later platform release is re-imported under a version that
+     * is already known. That is a legitimate refresh rather than an older catalog arriving late, so the newer release
+     * still gets to correct the wording.
+     *
+     * @see <a href="https://github.com/quarkusio/registry.quarkus.io/issues/205">#205</a>
+     */
+    @Test
+    void should_report_the_description_from_the_most_recent_platform_release() throws Exception {
+        importCatalog("2.8.0.Final", "core", "Original description");
+        importCatalog("2.8.1.Final", "core", "Corrected description");
+
+        given()
+                .get("/client/extensions/all")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].description", org.hamcrest.Matchers.is("Corrected description"));
+    }
+
+    /**
      * Same as above, but the newer release is imported first (a full republish re-posts older versions after newer
      * ones). The higher version must still win regardless of insertion order.
      */
@@ -187,6 +207,13 @@ public class PlatformExtensionRefreshTest extends BaseTest {
      * used to ignore.
      */
     private void importCatalog(String platformVersion, String category) throws IOException {
+        importCatalog(platformVersion, category, null);
+    }
+
+    /**
+     * As above, additionally overriding the extension description when one is given.
+     */
+    private void importCatalog(String platformVersion, String category, String description) throws IOException {
         ExtensionCatalog.Mutable catalog;
         try (InputStream resource = getClass().getClassLoader().getResourceAsStream("extension-catalog-community.json")) {
             assertThat(resource).as("extension-catalog-community.json not found on classpath").isNotNull();
@@ -201,6 +228,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
                 .filter(e -> EXTENSION_GA.equals(e.getArtifact().getGroupId() + ":" + e.getArtifact().getArtifactId()))
                 .map(e -> e.mutable()
                         .setMetadata(withCategory(e.getMetadata(), category))
+                        .setDescription(description)
                         .build())
                 .toList());
 
