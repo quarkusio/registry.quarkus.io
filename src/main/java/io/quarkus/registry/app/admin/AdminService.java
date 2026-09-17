@@ -182,39 +182,58 @@ public class AdminService {
         extension.description = ext.getDescription();
         extension.persist();
 
-        return ExtensionRelease.findByGAV(groupId, artifactId, version)
+        final ExtensionRelease extensionRelease = ExtensionRelease.findByGAV(groupId, artifactId, version)
                 .orElseGet(() -> {
                     ExtensionRelease newExtensionRelease = new ExtensionRelease();
                     newExtensionRelease.version = version;
                     newExtensionRelease.extension = extension;
-                    String quarkusCore = (String) ext.getMetadata().get(MD_BUILT_WITH_QUARKUS_CORE);
-                    // Some extensions were published using the full GAV
-                    if (quarkusCore == null) {
-                        // Cannot determine Quarkus version
-                        quarkusCore = "0.0.0";
-                    } else if (quarkusCore.contains(":")) {
-                        try {
-                            quarkusCore = ArtifactCoords.fromString(quarkusCore).getVersion();
-                        } catch (IllegalArgumentException iae) {
-                            // ignore
-                        }
-                    }
-                    newExtensionRelease.quarkusCoreVersion = quarkusCore;
-                    // Many-to-many
-                    if (platformRelease != null) {
-                        PlatformExtension platformExtension = new PlatformExtension();
-                        platformExtension.extensionRelease = newExtensionRelease;
-                        platformExtension.platformRelease = platformRelease;
-                        platformExtension.metadata = ext.getMetadata();
-
-                        platformRelease.extensions.add(platformExtension);
-                        newExtensionRelease.platforms.add(platformExtension);
-                    } else {
-                        newExtensionRelease.metadata = ext.getMetadata();
-                    }
+                    newExtensionRelease.quarkusCoreVersion = quarkusCoreVersionOf(ext);
                     newExtensionRelease.persist();
                     return newExtensionRelease;
                 });
+
+        if (platformRelease == null) {
+            extensionRelease.metadata = ext.getMetadata();
+            extensionRelease.persist();
+        } else {
+            // Many-to-many. An extension version is sometimes carried over unchanged into several platform releases, so
+            // the link has to be recorded for each of them, and the metadata refreshed: the catalog being imported is
+            // the most recent word on the extension, and it may well correct what an earlier release said about it
+            // (a category, for example).
+            PlatformExtension platformExtension = PlatformExtension.findByNaturalKey(platformRelease, extensionRelease)
+                    .orElseGet(() -> {
+                        PlatformExtension newPlatformExtension = new PlatformExtension();
+                        newPlatformExtension.extensionRelease = extensionRelease;
+                        newPlatformExtension.platformRelease = platformRelease;
+
+                        platformRelease.extensions.add(newPlatformExtension);
+                        extensionRelease.platforms.add(newPlatformExtension);
+                        return newPlatformExtension;
+                    });
+            platformExtension.metadata = ext.getMetadata();
+            platformExtension.persist();
+        }
+        return extensionRelease;
+    }
+
+    /**
+     * Returns the Quarkus core version the extension was built with, or {@code 0.0.0} if the catalog does not say.
+     */
+    private static String quarkusCoreVersionOf(io.quarkus.registry.catalog.Extension ext) {
+        String quarkusCore = (String) ext.getMetadata().get(MD_BUILT_WITH_QUARKUS_CORE);
+        if (quarkusCore == null) {
+            // Cannot determine Quarkus version
+            return "0.0.0";
+        }
+        // Some extensions were published using the full GAV
+        if (quarkusCore.contains(":")) {
+            try {
+                return ArtifactCoords.fromString(quarkusCore).getVersion();
+            } catch (IllegalArgumentException iae) {
+                // ignore
+            }
+        }
+        return quarkusCore;
     }
 
     @Transactional
