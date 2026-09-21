@@ -141,5 +141,18 @@ public class PlatformCatalogContentProviderTest extends BaseTest {
         // The new category round-trips, and the catalog ordering is preserved
         assertThat(result.getCategories()).usingRecursiveFieldByFieldElementComparator()
                 .containsExactlyElementsOf(expected.getCategories());
+
+        // Verify the new category also appears in /client/categories/all
+        InputStream allCategoriesStream = given()
+                .get("/client/categories/all")
+                .then()
+                .statusCode(200)
+                .contentType(MediaType.APPLICATION_JSON)
+                .extract().asInputStream();
+
+        ExtensionCatalog allCategories = CatalogMapperHelper.deserialize(allCategoriesStream, ExtensionCatalogImpl.Builder.class).build();
+        assertThat(allCategories.getCategories())
+                .extracting(Category::getId)
+                .contains("ai");
     }
 }
