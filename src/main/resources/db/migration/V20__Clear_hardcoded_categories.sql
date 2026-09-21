@@ -4,7 +4,7 @@
 -- This makes the platform descriptors (ultimately backed by Quarkus' catalog-overrides.json)
 -- the single source of truth for categories, instead of the hardcoded seed in V2__Add_categories.sql.
 
--- First, delete the link table entries
+-- First, delete the link table entries that reference the hardcoded categories
 DELETE FROM platform_release_category WHERE category_id IN (
     SELECT id FROM category WHERE category_key IN (
         'core', 'web', 'data', 'messaging', 'reactive', 'cloud', 'observability',
@@ -13,7 +13,7 @@ DELETE FROM platform_release_category WHERE category_id IN (
     )
 );
 
--- Then delete the hardcoded categories
+-- Then delete the hardcoded categories from V2
 DELETE FROM category WHERE category_key IN (
     'core', 'web', 'data', 'messaging', 'reactive', 'cloud', 'observability',
     'security', 'integration', 'grpc', 'business-automation', 'serialization',
