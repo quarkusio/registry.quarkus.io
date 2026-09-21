@@ -17,7 +17,6 @@ import jakarta.persistence.Entity;
  * Categories an extension belongs to
  */
 @Entity
-@Cacheable
 public class Category extends BaseEntity {
 
     @NaturalId
