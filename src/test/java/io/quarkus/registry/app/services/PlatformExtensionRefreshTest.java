@@ -1,15 +1,19 @@
 package io.quarkus.registry.app.services;
 
+import static io.quarkus.registry.app.CatalogTestSupport.COMMUNITY_CATALOG;
+import static io.quarkus.registry.app.CatalogTestSupport.deserializeCatalog;
+import static io.quarkus.registry.app.CatalogTestSupport.getPlatformDescriptor;
+import static io.quarkus.registry.app.CatalogTestSupport.postCatalog;
+import static io.quarkus.registry.app.CatalogTestSupport.readCatalogBytes;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,16 +29,14 @@ import io.quarkus.registry.app.BaseTest;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
 import io.quarkus.registry.catalog.Extension;
 import io.quarkus.registry.catalog.ExtensionCatalog;
-import io.quarkus.registry.catalog.ExtensionCatalogImpl;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.http.ContentType;
-import jakarta.ws.rs.core.MediaType;
 
 /**
  * An extension release can be carried over unchanged into several platform releases. When that happens, the newer
  * platform descriptor is still the more recent statement about the extension, so the registry has to refresh what it
  * holds instead of keeping whatever the first platform release said.
  *
+ * @see <a href="https://github.com/quarkusio/registry.quarkus.io/issues/346">#346</a>
  */
 @QuarkusTest
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -60,7 +62,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
                 .then()
                 .statusCode(HttpURLConnection.HTTP_OK)
                 .body("extensions", hasSize(1))
-                .body("extensions[0].artifact", is(EXTENSION_GAV))
+                .body("extensions[0].artifact", org.hamcrest.Matchers.is(EXTENSION_GAV))
                 .body("extensions[0].metadata.categories", contains("cloud"));
     }
 
@@ -161,7 +163,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
         importCatalog("2.8.0.Final", "core");
         importCatalog("2.8.1.Final", "cloud");
 
-        ExtensionCatalog catalog = fetchPlatformDescriptor("2.8.1.Final");
+        ExtensionCatalog catalog = getPlatformDescriptor(descriptorCoords("2.8.1.Final"));
         assertThat(catalog.getExtensions())
                 .extracting(e -> e.getArtifact().toGACTVString())
                 .containsExactly(EXTENSION_GAV);
@@ -179,26 +181,10 @@ public class PlatformExtensionRefreshTest extends BaseTest {
         importCatalog("2.8.0.Final", "core");
         importCatalog("2.8.1.Final", "cloud");
 
-        ExtensionCatalog catalog = fetchPlatformDescriptor("2.8.0.Final");
+        ExtensionCatalog catalog = getPlatformDescriptor(descriptorCoords("2.8.0.Final"));
         assertThat(catalog.getExtensions()).singleElement()
                 .extracting(Extension::getMetadata, InstanceOfAssertFactories.MAP)
                 .containsEntry(Extension.MD_CATEGORIES, List.of("core"));
-    }
-
-    private ExtensionCatalog fetchPlatformDescriptor(String platformVersion) throws IOException {
-        String url = String.format(
-                "/maven/%1$s/%2$s/%3$s/%2$s-%3$s-%4$s.json",
-                PLATFORM_KEY.replace('.', '/'),
-                "quarkus-bom-quarkus-platform-descriptor",
-                Constants.DEFAULT_REGISTRY_ARTIFACT_VERSION,
-                platformVersion);
-        InputStream resultStream = given()
-                .get(url)
-                .then()
-                .statusCode(HttpURLConnection.HTTP_OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .extract().asInputStream();
-        return CatalogMapperHelper.deserialize(resultStream, ExtensionCatalogImpl.Builder.class).build();
     }
 
     /**
@@ -214,11 +200,7 @@ public class PlatformExtensionRefreshTest extends BaseTest {
      * As above, additionally overriding the extension description when one is given.
      */
     private void importCatalog(String platformVersion, String category, String description) throws IOException {
-        ExtensionCatalog.Mutable catalog;
-        try (InputStream resource = getClass().getClassLoader().getResourceAsStream("extension-catalog-community.json")) {
-            assertThat(resource).as("extension-catalog-community.json not found on classpath").isNotNull();
-            catalog = CatalogMapperHelper.deserialize(resource, ExtensionCatalogImpl.Builder.class);
-        }
+        ExtensionCatalog.Mutable catalog = deserializeCatalog(readCatalogBytes(COMMUNITY_CATALOG));
         catalog.setId(descriptorId(platformVersion));
         catalog.setBom(ArtifactCoords.pom(PLATFORM_KEY, "quarkus-bom", platformVersion));
         catalog.setQuarkusCoreVersion(platformVersion);
@@ -226,28 +208,27 @@ public class PlatformExtensionRefreshTest extends BaseTest {
         // Keeping a single extension makes the assertions readable; nothing here depends on the rest of the catalog
         catalog.setExtensions(catalog.getExtensions().stream()
                 .filter(e -> EXTENSION_GA.equals(e.getArtifact().getGroupId() + ":" + e.getArtifact().getArtifactId()))
-                .map(e -> e.mutable()
-                        .setMetadata(withCategory(e.getMetadata(), category))
-                        .setDescription(description)
-                        .build())
+                .map(e -> {
+                    Extension.Mutable mutable = e.mutable().setMetadata(withCategory(e.getMetadata(), category));
+                    if (description != null) {
+                        mutable.setDescription(description);
+                    }
+                    return (io.quarkus.registry.catalog.Extension) mutable.build();
+                })
                 .toList());
 
         StringWriter sw = new StringWriter();
         CatalogMapperHelper.serialize(catalog.build(), sw);
+        postCatalog(sw.toString().getBytes(StandardCharsets.UTF_8), PLATFORM_KEY);
+    }
 
-        given()
-                .header("Token", "test")
-                .header("X-Platform", PLATFORM_KEY)
-                .contentType(ContentType.JSON)
-                .body(sw.toString())
-                .post("/admin/v1/extension/catalog")
-                .then()
-                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+    private static ArtifactCoords descriptorCoords(String platformVersion) {
+        return ArtifactCoords.of(PLATFORM_KEY, "quarkus-bom-quarkus-platform-descriptor", platformVersion,
+                Constants.JSON, platformVersion);
     }
 
     private static String descriptorId(String platformVersion) {
-        return ArtifactCoords.of(PLATFORM_KEY, "quarkus-bom-quarkus-platform-descriptor", platformVersion,
-                Constants.JSON, platformVersion).toString();
+        return descriptorCoords(platformVersion).toString();
     }
 
     @SuppressWarnings("unchecked")
