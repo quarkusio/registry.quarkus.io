@@ -57,16 +57,24 @@ public class AdminService {
             }
             //Add Categories
             for (io.quarkus.registry.catalog.Category category : extensionCatalog.getCategories()) {
-                Category.findByKey(category.getId()).ifPresent(c -> {
-                    if (PlatformReleaseCategory.findByNaturalKey(platformRelease, c).isEmpty()) {
-                        PlatformReleaseCategory prc = new PlatformReleaseCategory();
-                        prc.platformRelease = platformRelease;
-                        prc.category = c;
-                        prc.metadata = category.getMetadata();
-                        platformRelease.categories.add(prc);
-                        prc.persist();
-                    }
-                });
+                Category c = findOrCreateCategory(category);
+                // Skip categories with missing or empty IDs
+                if (c == null) {
+                    continue;
+                }
+                // The link table is what allows categories to be queried per platform release,
+                // rather than only as the global Category.listAll() set
+                PlatformReleaseCategory prc = PlatformReleaseCategory.findByNaturalKey(platformRelease, c)
+                        .orElseGet(() -> {
+                            PlatformReleaseCategory newPrc = new PlatformReleaseCategory();
+                            newPrc.platformRelease = platformRelease;
+                            newPrc.category = c;
+                            platformRelease.categories.add(newPrc);
+                            return newPrc;
+                        });
+                // Update metadata on every import to avoid staleness
+                prc.metadata = category.getMetadata();
+                prc.persist();
             }
             DbState.updateUpdatedAt();
         } catch (Exception e) {
@@ -102,6 +110,47 @@ public class AdminService {
         platformRelease.pinned = pinned;
         platformRelease.persistAndFlush();
         return platformRelease;
+    }
+
+    /**
+     * Returns the {@link Category} for the given catalog category, creating it if the registry has never seen it before.
+     * <p>
+     * This makes the imported platform descriptors (ultimately backed by Quarkus' {@code catalog-overrides.json}) the
+     * source of truth for the category list, instead of the hardcoded seed in {@code V2__Add_categories.sql}. Only
+     * platform catalogs reach this method today.
+     *
+     * If we later want non-platform extensions to contribute categories as
+     * well, call this from {@link #insertExtensionRelease} with the categories declared in the extension metadata.
+     */
+    private Category findOrCreateCategory(io.quarkus.registry.catalog.Category category) {
+        String categoryId = category.getId();
+        // Skip categories with missing or empty IDs to avoid creating invalid entries
+        if (categoryId == null || categoryId.isBlank()) {
+            return null;
+        }
+
+        Category c = Category.findByKey(categoryId).orElseGet(() -> {
+            Category newCategory = new Category();
+            newCategory.categoryKey = categoryId;
+            // Fall back to the key: a catalog may reference a category by id alone, and name is not nullable
+            // TODO we may want to add some prettifying logic if we set the name to the id
+            newCategory.name = categoryId;
+            newCategory.persist();
+            return newCategory;
+        });
+        // Name, description, and metadata might have changed. A catalog referencing a category without redefining it
+        // (to pin extensions to it, for example) must not wipe what a previous catalog told us about it.
+        if (category.getName() != null) {
+            c.name = category.getName();
+        }
+        if (category.getDescription() != null) {
+            c.description = category.getDescription();
+        }
+        if (category.getMetadata() != null) {
+            c.metadata = category.getMetadata();
+        }
+        c.persist();
+        return c;
     }
 
     @Transactional

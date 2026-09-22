@@ -9,7 +9,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.type.SqlTypes;
 
-import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
@@ -17,7 +16,6 @@ import jakarta.persistence.Entity;
  * Categories an extension belongs to
  */
 @Entity
-@Cacheable
 public class Category extends BaseEntity {
 
     @NaturalId

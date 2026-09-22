@@ -15,6 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import com.fasterxml.jackson.jakarta.rs.yaml.YAMLMediaTypes;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
+import io.quarkus.panache.common.Sort;
 import io.quarkus.registry.Constants;
 import io.quarkus.registry.app.maven.MavenConfig;
 import io.quarkus.registry.app.model.Category;
@@ -124,8 +125,9 @@ public class DatabaseRegistryClient {
             extension.getMetadata().put("quarkus-core-compatibility", CoreCompatibility.parse(compatibility));
             catalog.addExtension(extension.build());
         }
-        // Add all categories
-        List<Category> categories = Category.listAll();
+        // Add all categories the registry has ever seen, across every platform. To narrow this to a single platform,
+        // go through PlatformRelease.categories instead (see PlatformCatalogContentProvider)
+        List<Category> categories = Category.listAll(Sort.by("categoryKey"));
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();
     }
@@ -140,8 +142,9 @@ public class DatabaseRegistryClient {
 
         allExtensionReleases.stream().map(this::toClientExtension).forEach(catalog::addExtension);
 
-        // Add all categories
-        List<Category> categories = Category.listAll();
+        // Add all categories the registry has ever seen, across every platform. To narrow this to a single platform,
+        // go through PlatformRelease.categories instead (see PlatformCatalogContentProvider)
+        List<Category> categories = Category.listAll(Sort.by("categoryKey"));
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();
     }
@@ -153,7 +156,7 @@ public class DatabaseRegistryClient {
     public ExtensionCatalog resolveAllCategories() {
         // The extension catalog is being used here just to give a categories: element in the response json
         final ExtensionCatalog.Mutable catalog = ExtensionCatalog.builder();
-        List<Category> categories = Category.listAll();
+        List<Category> categories = Category.listAll(Sort.by("categoryKey"));
         categories.stream().map(this::toClientCategory).forEach(catalog::addCategory);
         return catalog.build();
     }

@@ -7,7 +7,6 @@ import java.util.Objects;
 
 import io.quarkus.maven.dependency.ArtifactCoords;
 import io.quarkus.registry.Constants;
-import io.quarkus.registry.app.model.Category;
 import io.quarkus.registry.app.model.Platform;
 import io.quarkus.registry.app.model.PlatformRelease;
 import io.quarkus.registry.catalog.CatalogMapperHelper;
@@ -65,7 +64,6 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
         PlatformRelease platformRelease = PlatformRelease.findByArtifactCoordinates(artifact)
                 .orElseThrow(() -> new NotFoundException("Platform release requested not found"));
         Platform platform = platformRelease.platformStream.platform;
-        List<Category> categories = Category.listAll();
         //TODO: This information is not stored in the DB
         String id = ArtifactCoords.of(platform.groupId, platform.artifactId, platformRelease.version, "json",
                 platformRelease.version).toString();

@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
@@ -337,7 +338,27 @@ class DatabaseRegistryClientTest extends BaseTest {
     }
 
     @Test
-    void should_return_all_categories() {
+    void should_return_all_categories() throws Exception {
+        // Categories are no longer seeded by V2__Add_categories.sql (removed by V20)
+        // They are now populated dynamically when platform catalogs are imported
+        byte[] catalogBytes;
+        try (InputStream resource = getClass().getClassLoader()
+                .getResourceAsStream("extension-catalog-community.json")) {
+            assert resource != null;
+            catalogBytes = resource.readAllBytes();
+        }
+
+        // Import a platform catalog to populate categories
+        given()
+                .header("Token", "test")
+                .header("X-Platform", "io.quarkus.platform")
+                .contentType(ContentType.JSON)
+                .body(catalogBytes)
+                .post("/admin/v1/extension/catalog")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        // Now categories should exist from the imported catalog
         given()
                 .get("/client/categories/all")
                 .then()
