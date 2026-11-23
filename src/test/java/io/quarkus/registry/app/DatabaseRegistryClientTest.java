@@ -203,6 +203,23 @@ class DatabaseRegistryClientTest extends BaseTest {
                 }
 
             }
+
+            // A non-platform extension built against a GA core, while the platform stream for that same
+            // version is still on a pre-final core (eg. Quarkus 4.0.0 vs the 4.0 stream still on 4.0.0.CR1).
+            {
+                Extension newExtension = new Extension();
+                newExtension.name = "Qux";
+                newExtension.description = "A Qux Extension";
+                newExtension.groupId = "foo.bar";
+                newExtension.artifactId = "qux-extension";
+                newExtension.persist();
+
+                ExtensionRelease extensionRelease = new ExtensionRelease();
+                extensionRelease.extension = newExtension;
+                extensionRelease.version = "1.0.0";
+                extensionRelease.quarkusCoreVersion = "4.0.0";
+                extensionRelease.persist();
+            }
         }
     }
 
@@ -277,6 +294,36 @@ class DatabaseRegistryClientTest extends BaseTest {
     }
 
     /**
+     * An extension built against a GA core must still be served to users whose platform is on a pre-final core of
+     * the same version. While the 4.0 stream still resolved to {@code 4.0.0.CR1}, every Quarkiverse extension already
+     * built against {@code 4.0.0} was hidden from {@code quarkus create app --stream=4.0}, because
+     * {@code toSortable("4.0.0")} ends in {@code .Final} which sorts above {@code .CR1}.
+     */
+    @Test
+    void should_return_extensions_built_against_ga_core_when_requested_core_is_prefinal() {
+        given()
+                .get("/client/non-platform-extensions?v=4.0.0.CR1")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].artifact", is("foo.bar:qux-extension::jar:1.0.0"));
+    }
+
+    /**
+     * The GA core itself must keep resolving the same extension, so that raising the ceiling for pre-final cores
+     * does not regress the ordinary case.
+     */
+    @Test
+    void should_return_extensions_built_against_ga_core_when_requested_core_is_ga() {
+        given()
+                .get("/client/non-platform-extensions?v=4.0.0")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", hasSize(1))
+                .body("extensions[0].artifact", is("foo.bar:qux-extension::jar:1.0.0"));
+    }
+
+    /**
      * {@code VersionScheme.MAVEN.validate} accepts versions that don't start with a number, so resolving the major
      * version must not blow up on them.
      */
@@ -299,10 +346,11 @@ class DatabaseRegistryClientTest extends BaseTest {
                 .body("platform", nullValue())
                 .body("derivedFrom", nullValue()) // These values don't make sense when listing all extensions
                 .body("quarkusCoreValue", nullValue())
-                .body("extensions", hasSize(3))
+                .body("extensions", hasSize(4))
                 .body("extensions[0].artifact", is("foo.bar:foo-extension::jar:1.1.0"))
                 .body("extensions[1].artifact", is("foo.bar:bar-extension::jar:0.4.2"))
                 .body("extensions[2].artifact", is("foo.bar:baz-extension::jar:0.6.7"))
+                .body("extensions[3].artifact", is("foo.bar:qux-extension::jar:1.0.0"))
                 // Now lets look at the reported platform information and make sure its accurate
                 .body("extensions[2].origins",
                         is(List.of(

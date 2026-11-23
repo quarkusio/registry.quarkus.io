@@ -107,4 +107,41 @@ public class Version {
         formattedParts.add(qualifier);
         return String.join(".", formattedParts);
     }
+
+    /**
+     * Returns the sortable form of the given version, raising a pre-final qualifier to {@code Final}, for use as an
+     * inclusive upper bound when looking for releases built against that version.
+     * <p>
+     * {@link #toSortable(String)} synthesises the literal {@code Final} when a version carries no qualifier, and
+     * {@code Final} sorts above every pre-final qualifier ({@code A < Alpha1 < Beta1 < CR1 < Final}). A plain
+     * {@code <=} against the sortable form of a pre-final core therefore rejects every extension built against the
+     * GA core of the same version: while the Quarkus 4.0 stream still resolved to {@code 4.0.0.CR1}, all the
+     * extensions already built against {@code 4.0.0} were hidden from the non-platform catalog.
+     * <p>
+     * Raising the ceiling to {@code Final} keeps those extensions visible without widening the bound any further: a
+     * newer micro/minor ({@code 4.0.1}, {@code 4.1.0}) or a post-final qualifier ({@code 4.0.0.SP1}) still sorts
+     * above the ceiling and stays excluded. For a version that is already final this returns exactly
+     * {@link #toSortable(String)}.
+     *
+     * @param version the version to be formatted
+     * @return a lexicographically sortable version, with a pre-final qualifier raised to {@code Final}
+     */
+    public static String toSortableReleaseCeiling(String version) {
+        String sortable = toSortable(version);
+        if (!isPreFinal(version)) {
+            return sortable;
+        }
+        StringBuilder numericParts = new StringBuilder();
+        for (String part : sortable.split("\\.")) {
+            if (!StringUtils.isNumeric(part)) {
+                // the qualifier is the first non-numeric segment, and it is always the last one
+                break;
+            }
+            if (!numericParts.isEmpty()) {
+                numericParts.append('.');
+            }
+            numericParts.append(part);
+        }
+        return numericParts + ".Final";
+    }
 }

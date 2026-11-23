@@ -29,6 +29,39 @@ class VersionTest {
     }
 
     @Test
+    void toSortableReleaseCeilingRaisesPreFinalQualifiers() {
+        assertSoftly(softly -> {
+            softly.assertThat(Version.toSortableReleaseCeiling("4.0.0.CR1")).isEqualTo("00004.00000.00000.00000.Final");
+            softly.assertThat(Version.toSortableReleaseCeiling("4.0.0.Beta1")).isEqualTo("00004.00000.00000.00000.Final");
+            softly.assertThat(Version.toSortableReleaseCeiling("4.0.0.Alpha1"))
+                    .isEqualTo("00004.00000.00000.00000.Final");
+            softly.assertThat(Version.toSortableReleaseCeiling("2.2.0-SNAPSHOT"))
+                    .isEqualTo("00002.00002.00000.00000.Final");
+            // Versions that are already final are left untouched, including post-final qualifiers
+            softly.assertThat(Version.toSortableReleaseCeiling("4.0.0")).isEqualTo(Version.toSortable("4.0.0"));
+            softly.assertThat(Version.toSortableReleaseCeiling("3.40.1.2")).isEqualTo(Version.toSortable("3.40.1.2"));
+            softly.assertThat(Version.toSortableReleaseCeiling("2.2.5.SP1")).isEqualTo(Version.toSortable("2.2.5.SP1"));
+        });
+    }
+
+    /**
+     * The ceiling must admit extensions built against the GA core of the same version without also admitting
+     * extensions built against a genuinely newer core.
+     */
+    @Test
+    void toSortableReleaseCeilingStillExcludesNewerCores() {
+        String ceiling = Version.toSortableReleaseCeiling("4.0.0.CR1");
+        assertSoftly(softly -> {
+            softly.assertThat(Version.toSortable("4.0.0")).isLessThanOrEqualTo(ceiling);
+            softly.assertThat(Version.toSortable("4.0.0.CR1")).isLessThanOrEqualTo(ceiling);
+            softly.assertThat(Version.toSortable("4.0.0.Beta1")).isLessThanOrEqualTo(ceiling);
+            softly.assertThat(Version.toSortable("4.0.1")).isGreaterThan(ceiling);
+            softly.assertThat(Version.toSortable("4.1.0")).isGreaterThan(ceiling);
+            softly.assertThat(Version.toSortable("4.0.0.SP1")).isGreaterThan(ceiling);
+        });
+    }
+
+    @Test
     void isVersionValid() {
         assertThatCode(() -> Version.validateVersion("1.2.3.Final")).doesNotThrowAnyException();
         assertThatCode(() -> Version.validateVersion("3.20.2.2")).doesNotThrowAnyException();

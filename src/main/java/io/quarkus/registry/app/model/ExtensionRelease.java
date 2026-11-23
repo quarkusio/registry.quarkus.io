@@ -183,6 +183,14 @@ public class ExtensionRelease extends BaseEntity {
         return iterator.isNumberPart() ? iterator.getNumberPartAsInt() : 0;
     }
 
+    /**
+     * Returns the latest release of every non-platform extension built against a core that is within
+     * {@code quarkusCore}'s major version and no newer than {@code quarkusCore} itself.
+     * <p>
+     * The ceiling is {@link Version#toSortableReleaseCeiling(String)} rather than {@link Version#toSortable(String)}:
+     * a core that is still pre-final must also match the extensions built against the GA core of the same version,
+     * which are published well before the platform catches up.
+     */
     @SuppressWarnings("unchecked")
     public static List<ExtensionRelease> findNonPlatformExtensions(String quarkusCore) {
         int majorVersion = majorVersionOf(quarkusCore);
@@ -192,7 +200,7 @@ public class ExtensionRelease extends BaseEntity {
                 .setParameter("lowerBound", Version.toSortable(lowerBound))
                 .setParameter("upperBound", Version.toSortable(upperBound))
                 .setParameter("quarkusCore", quarkusCore)
-                .setParameter("quarkusCoreSortable", Version.toSortable(quarkusCore))
+                .setParameter("quarkusCoreSortable", Version.toSortableReleaseCeiling(quarkusCore))
                 .getResultList();
 
         return results.stream().map(r -> (ExtensionRelease) r[0]).toList();
