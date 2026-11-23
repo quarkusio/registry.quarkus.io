@@ -327,7 +327,7 @@ public class AdminService {
     @Transactional
     public void onExtensionCompatibilityDelete(ExtensionCompatibleDeleteEvent event) {
         ExtensionReleaseCompatibility.delete(
-                "from ExtensionReleaseCompatible rc where rc.extensionRelease = ?1 and rc.quarkusCore = ?2",
+                "extensionRelease = ?1 and quarkusCoreVersion = ?2",
                 event.extensionRelease(),
                 event.quarkusCore());
         DbState.updateUpdatedAt();

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasSize;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import io.quarkus.registry.catalog.ExtensionCatalog;
 import io.quarkus.registry.catalog.ExtensionCatalogImpl;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import jakarta.transaction.Transactional;
 
 @QuarkusTest
@@ -137,6 +139,57 @@ class AdminApiTest extends BaseTest {
                 .post("/admin/v1/extension")
                 .then()
                 .statusCode(HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
+    /**
+     * A compatibility override forces an extension into the catalog of a Quarkus core it was not built against, and
+     * removing that override must put it back the way it was.
+     */
+    @Test
+    void extension_compatibility_may_be_added_and_removed() {
+        // foo-extension is built against 2.0.0.Final, so it is not served for a 3.x core...
+        given()
+                .get("/client/non-platform-extensions?v=3.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .body("extensions", nullValue());
+
+        // ...until an explicit compatibility override says otherwise
+        givenCompatibilityFor("3.0.0.Final")
+                .post("/admin/v1/extension/compat")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/non-platform-extensions?v=3.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .log().ifValidationFails()
+                .body("extensions.artifact", hasItem("foo.bar:foo-extension::jar:1.0.0"));
+
+        givenCompatibilityFor("3.0.0.Final")
+                .delete("/admin/v1/extension/compat")
+                .then()
+                .log().ifValidationFails()
+                .statusCode(HttpURLConnection.HTTP_ACCEPTED);
+
+        given()
+                .get("/client/non-platform-extensions?v=3.0.0.Final")
+                .then()
+                .statusCode(HttpURLConnection.HTTP_OK)
+                .log().ifValidationFails()
+                .body("extensions", nullValue());
+    }
+
+    private static RequestSpecification givenCompatibilityFor(String quarkusCore) {
+        return given()
+                .header("Token", "test")
+                .contentType(ContentType.URLENC)
+                .formParam("groupId", "foo.bar")
+                .formParam("artifactId", "foo-extension")
+                .formParam("version", "1.0.0")
+                .formParam("quarkusCore", quarkusCore);
     }
 
     @Test
