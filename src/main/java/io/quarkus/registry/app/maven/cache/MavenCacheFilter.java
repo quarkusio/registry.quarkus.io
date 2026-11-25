@@ -45,6 +45,10 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException {
         if (isMavenGetRequest(containerRequestContext) && enabled.get()) {
+            // Remember the generation this response is about to be built from, so that the response filter can tell
+            // whether an invalidation overtook it
+            containerRequestContext.setProperty(CACHE_GENERATION, mavenCache.getLastInvalidateTime());
+
             String path = containerRequestContext.getUriInfo().getPath();
             MavenResponse mavenResponse = mavenCache.getCache().getIfPresent(path);
             if (mavenResponse != null) {
@@ -73,10 +77,25 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
 
             if (enabled.get()) {
                 String path = containerRequestContext.getUriInfo().getPath();
-                log.debug("Caching [" + path + "]");
-                mavenCache.getCache().put(path, mavenResponse);
+                if (isCurrentGeneration(containerRequestContext)) {
+                    log.debug("Caching [" + path + "]");
+                    mavenCache.getCache().put(path, mavenResponse);
+                } else {
+                    // The cache was invalidated while this response was being built, so it was generated from a
+                    // state that is already superseded. Caching it here would reinstate it after the invalidation
+                    // and keep serving it until the next one, which can be hours away.
+                    log.debugf("Not caching [%s]: invalidated while the response was being built", path);
+                }
             }
         }
+    }
+
+    /**
+     * @return true if no invalidation happened between the start of this request and now
+     */
+    private boolean isCurrentGeneration(ContainerRequestContext containerRequestContext) {
+        Object generation = containerRequestContext.getProperty(CACHE_GENERATION);
+        return generation != null && generation.equals(mavenCache.getLastInvalidateTime());
     }
 
     private boolean notModified(ContainerRequestContext containerRequestContext, MavenResponse cachedResponse) {
@@ -171,6 +190,8 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
         return containerResponseContext.getHeaderString(VIA) != null && containerResponseContext.getHeaderString(VIA)
                 .equals(VIA_CACHE);
     }
+
+    private static final String CACHE_GENERATION = MavenCacheFilter.class.getName() + ".generation";
 
     private static final String GET = "GET";
     private static final String VIA = "Via";

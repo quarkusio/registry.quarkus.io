@@ -23,7 +23,11 @@ public class MavenCache {
 
     private Cache<String, MavenResponse> cache;
 
-    private LocalDateTime lastInvalidateTime = LocalDateTime.MIN;
+    /**
+     * Doubles as the cache generation: readers compare it to decide whether a response they built is still current.
+     * Written by the scheduler thread in {@link #clear()} and read by request threads, hence volatile.
+     */
+    private volatile LocalDateTime lastInvalidateTime = LocalDateTime.MIN;
 
     @PostConstruct
     public void init() {
