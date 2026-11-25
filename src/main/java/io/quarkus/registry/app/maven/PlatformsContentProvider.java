@@ -41,7 +41,7 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
 
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
-        String catalog = generateCatalog(artifact.getClassifier());
+        ArtifactContent catalog = generateCatalog(artifact.getClassifier());
         if (catalog == null) {
             return Response.status(Response.Status.NOT_FOUND)
                     .header("X-Reason", "No platforms found")
@@ -58,7 +58,7 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
      * computation instead of one per request. The cache is invalidated by {@link MavenCache#clear()}.
      */
     @CacheResult(cacheName = CacheNames.PLATFORMS)
-    String generateCatalog(String quarkusVersion) throws IOException {
+    ArtifactContent generateCatalog(String quarkusVersion) throws IOException {
         final PlatformCatalog platformCatalog;
         if (quarkusVersion.equals("all")) {
             platformCatalog = registryClient.resolveAllPlatforms();
@@ -70,6 +70,6 @@ public class PlatformsContentProvider implements ArtifactContentProvider {
         }
         StringWriter sw = new StringWriter();
         CatalogMapperHelper.serialize(objectMapper, platformCatalog, sw);
-        return sw.toString();
+        return ArtifactContent.of(sw.toString());
     }
 }

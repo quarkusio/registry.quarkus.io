@@ -48,10 +48,10 @@ public class NonPlatformExtensionsContentProvider implements ArtifactContentProv
      * computation instead of one per request. The cache is invalidated by {@link MavenCache#clear()}.
      */
     @CacheResult(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
-    String generateCatalog(String quarkusVersion) throws IOException {
+    ArtifactContent generateCatalog(String quarkusVersion) throws IOException {
         ExtensionCatalog catalog = registryClient.resolveNonPlatformExtensionsCatalog(quarkusVersion);
         StringWriter sw = new StringWriter();
         CatalogMapperHelper.serialize(objectMapper, catalog, sw);
-        return sw.toString();
+        return ArtifactContent.of(sw.toString());
     }
 }
