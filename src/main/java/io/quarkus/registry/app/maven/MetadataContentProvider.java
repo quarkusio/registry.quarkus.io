@@ -46,12 +46,21 @@ public class MetadataContentProvider implements ArtifactContentProvider {
 
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {
-        Metadata metadata = generateMetadata(artifact);
-        return toResponse(artifact, uriInfo, writeMetadata(metadata), MediaType.APPLICATION_XML);
+        return toResponse(artifact, uriInfo, generateMetadata(artifact), MediaType.APPLICATION_XML);
     }
 
+    /**
+     * Renders {@code maven-metadata.xml} and its checksums.
+     * <p>
+     * The rendered document is cached rather than the {@link Metadata} object it is built from: the object was
+     * cached before, but it was serialized to XML again on every single request.
+     */
     @CacheResult(cacheName = CacheNames.METADATA)
-    Metadata generateMetadata(ArtifactCoords artifact) {
+    ArtifactContent generateMetadata(ArtifactCoords artifact) throws IOException {
+        return ArtifactContent.of(writeMetadata(buildMetadata(artifact)));
+    }
+
+    private Metadata buildMetadata(ArtifactCoords artifact) {
         Metadata newMetadata = new Metadata();
         newMetadata.setGroupId(artifact.getGroupId());
         newMetadata.setArtifactId(artifact.getArtifactId());
