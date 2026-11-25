@@ -16,7 +16,6 @@ import io.quarkus.registry.catalog.ExtensionOrigin;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -45,19 +44,7 @@ public class PlatformCatalogContentProvider implements ArtifactContentProvider {
 
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws Exception {
-        String result = findExtensionCatalog(artifact, uriInfo);
-        final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
-        String contentType = MediaType.APPLICATION_JSON;
-        if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
-            result = HashUtil.md5(result);
-            contentType = MediaType.TEXT_PLAIN;
-        } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
-            result = HashUtil.sha1(result);
-            contentType = MediaType.TEXT_PLAIN;
-        }
-        return Response.ok(result)
-                .header(HttpHeaders.CONTENT_TYPE, contentType)
-                .build();
+        return toResponse(artifact, uriInfo, findExtensionCatalog(artifact, uriInfo), MediaType.APPLICATION_JSON);
     }
 
     private String findExtensionCatalog(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {

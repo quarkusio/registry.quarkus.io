@@ -20,7 +20,6 @@ import io.quarkus.registry.app.maven.cache.MavenCacheState;
 import io.quarkus.registry.app.model.PlatformRelease;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -48,20 +47,7 @@ public class MetadataContentProvider implements ArtifactContentProvider {
     @Override
     public Response provide(ArtifactCoords artifact, UriInfo uriInfo) throws IOException {
         Metadata metadata = generateMetadata(artifact);
-        String result = writeMetadata(metadata);
-        final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
-        String contentType = MediaType.APPLICATION_XML;
-        if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
-            result = HashUtil.md5(result);
-            contentType = MediaType.TEXT_PLAIN;
-        } else if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
-            result = HashUtil.sha1(result);
-            contentType = MediaType.TEXT_PLAIN;
-        }
-
-        return Response.ok(result)
-                .header(HttpHeaders.CONTENT_TYPE, contentType)
-                .build();
+        return toResponse(artifact, uriInfo, writeMetadata(metadata), MediaType.APPLICATION_XML);
     }
 
     @CacheResult(cacheName = CacheNames.METADATA)
