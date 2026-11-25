@@ -9,9 +9,9 @@ import java.io.IOException;
  * itself is generated, and travel with it into the cache. Every response for that artifact and for its
  * {@code .sha1}/{@code .md5} siblings is then served without touching the body again.
  */
-public record ArtifactContent(String content, String sha1, String md5) {
+record ArtifactContent(String content, String sha1, String md5) {
 
-    public static ArtifactContent of(String content) throws IOException {
+    static ArtifactContent of(String content) throws IOException {
         return new ArtifactContent(content, HashUtil.sha1(content), HashUtil.md5(content));
     }
 }
