@@ -60,6 +60,43 @@ class MavenCacheFilterTest extends BaseTest {
     }
 
     @Test
+    void cached_responses_must_keep_their_cache_headers() {
+        ExtractableResponse<Response> fresh = get(URL);
+        assertThat(servedFromCache(fresh)).isFalse();
+        assertThat(fresh.header("ETag")).isNotNull();
+        assertThat(fresh.header("Last-Modified")).isNotNull();
+        assertThat(fresh.header("Cache-Control")).isNotNull();
+
+        // The same response, replayed from the cache, must still carry them: without an ETag the conditional
+        // request handling in notModified() has nothing to compare If-None-Match against, so it can never match.
+        ExtractableResponse<Response> cached = get(URL);
+        assertThat(servedFromCache(cached)).isTrue();
+        assertThat(cached.header("ETag"))
+                .describedAs("ETag of a cache-served response")
+                .isEqualTo(fresh.header("ETag"));
+        assertThat(cached.header("Last-Modified"))
+                .describedAs("Last-Modified of a cache-served response")
+                .isEqualTo(fresh.header("Last-Modified"));
+        assertThat(cached.header("Cache-Control"))
+                .describedAs("Cache-Control of a cache-served response")
+                .isEqualTo(fresh.header("Cache-Control"));
+    }
+
+    @Test
+    void a_matching_if_none_match_must_get_a_not_modified() {
+        String etag = get(URL).header("ETag");
+        assertThat(etag).isNotNull();
+        get(URL); // make sure the entry is cached
+
+        given()
+                .header("If-None-Match", etag)
+                .get(URL)
+                .then()
+                .log().ifValidationFails()
+                .statusCode(304);
+    }
+
+    @Test
     void responses_are_normally_cached() {
         assertThat(servedFromCache(get(URL))).isFalse();
         assertThat(servedFromCache(get(URL))).isTrue();
