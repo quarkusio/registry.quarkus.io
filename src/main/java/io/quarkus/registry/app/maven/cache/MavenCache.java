@@ -34,6 +34,8 @@ public class MavenCache {
     }
 
     @CacheInvalidateAll(cacheName = CacheNames.METADATA)
+    @CacheInvalidateAll(cacheName = CacheNames.PLATFORMS)
+    @CacheInvalidateAll(cacheName = CacheNames.NON_PLATFORM_EXTENSIONS)
     public void clear() {
         cache.invalidateAll();
         lastInvalidateTime = LocalDateTime.now();
