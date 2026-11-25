@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import io.quarkus.registry.app.maven.ArtifactContentProvider;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -109,8 +110,15 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
         // the etag will be the same.
         EntityTag etag = containerResponseContext.getEntityTag();
         if (etag == null) {
-            // etag - We create a hash from the Response if this is a String, so even if the cache clear, if the content is the same, the etag will also be
-            if (containerResponseContext.getEntityClass() == String.class) {
+            // etag - The artifact providers already carry the MD5 of the body in x-checksum-md5, and
+            // UUID.nameUUIDFromBytes is itself an MD5 of the same bytes, so reuse it rather than hashing the body a
+            // second time. Like the old value, it is derived from the content, so it survives a cache invalidation
+            // when the content has not actually changed.
+            String contentMd5 = containerResponseContext.getHeaderString(ArtifactContentProvider.HEADER_CHECKSUM_MD5);
+            if (contentMd5 != null) {
+                containerResponseContext.getHeaders().add(ETAG, contentMd5);
+            } else if (containerResponseContext.getEntityClass() == String.class) {
+                // etag - We create a hash from the Response if this is a String, so even if the cache clear, if the content is the same, the etag will also be
                 String content = (String) containerResponseContext.getEntity();
                 String uuid = UUID.nameUUIDFromBytes(content.getBytes()).toString();
                 containerResponseContext.getHeaders().add(ETAG, uuid);

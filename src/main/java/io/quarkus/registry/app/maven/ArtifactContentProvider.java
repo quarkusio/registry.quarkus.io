@@ -40,20 +40,28 @@ public interface ArtifactContentProvider {
      *
      * @see <a href="https://maven.apache.org/resolver/expected-checksums.html">Maven Resolver: Expected Checksums</a>
      */
-    default Response toResponse(ArtifactCoords artifact, UriInfo uriInfo, String content, String mediaType)
-            throws IOException {
+    default Response toResponse(ArtifactCoords artifact, UriInfo uriInfo, ArtifactContent content, String mediaType) {
         final String checksumSuffix = ArtifactParser.getChecksumSuffix(uriInfo.getPathSegments(), artifact);
         if (ArtifactParser.SUFFIX_SHA1.equals(checksumSuffix)) {
-            return toChecksumResponse(HashUtil.sha1(content));
+            return toChecksumResponse(content.sha1());
         }
         if (ArtifactParser.SUFFIX_MD5.equals(checksumSuffix)) {
-            return toChecksumResponse(HashUtil.md5(content));
+            return toChecksumResponse(content.md5());
         }
-        return Response.ok(content)
+        return Response.ok(content.content())
                 .header(HttpHeaders.CONTENT_TYPE, mediaType)
-                .header(HEADER_CHECKSUM_SHA1, HashUtil.sha1(content))
-                .header(HEADER_CHECKSUM_MD5, HashUtil.md5(content))
+                .header(HEADER_CHECKSUM_SHA1, content.sha1())
+                .header(HEADER_CHECKSUM_MD5, content.md5())
                 .build();
+    }
+
+    /**
+     * Convenience overload for content that is generated per request and therefore has nothing to gain from
+     * precomputed checksums. Prefer caching an {@link ArtifactContent} where the content itself is cached.
+     */
+    default Response toResponse(ArtifactCoords artifact, UriInfo uriInfo, String content, String mediaType)
+            throws IOException {
+        return toResponse(artifact, uriInfo, ArtifactContent.of(content), mediaType);
     }
 
     private static Response toChecksumResponse(String checksum) {
