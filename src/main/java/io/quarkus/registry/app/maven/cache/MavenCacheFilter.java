@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -18,7 +17,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
-import jakarta.ws.rs.core.EntityTag;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
@@ -118,48 +116,59 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
         MavenResponse mavenResponse = new MavenResponse(containerResponseContext.getStatus(),
                 containerResponseContext.getEntity());
 
-        // We add some cache related headers here for when using via a CDN etc.
-        // see https://www.keycdn.com/blog/http-cache-headers#no-cache-and-no-store
+        // Copy the headers the resource produced
+        for (String key : containerResponseContext.getStringHeaders().keySet()) {
+            mavenResponse.addHeader(key, containerResponseContext.getHeaderString(key));
+        }
 
-        // Cache control
-        containerResponseContext.getHeaders().add(CACHE_CONTROL, headerCacheControl.get());
+        // Then add the cache related headers, for when using via a CDN etc.
+        // see https://www.keycdn.com/blog/http-cache-headers#no-cache-and-no-store
+        //
+        // These are added to the cache entry explicitly rather than through the loop above, because a header added
+        // via getHeaders() is not reflected in the getStringHeaders() view: building the entry from that view alone
+        // dropped exactly these three, so a response served from the cache carried no ETag and notModified() had
+        // nothing to compare If-None-Match against.
+        addHeader(containerResponseContext, mavenResponse, CACHE_CONTROL, headerCacheControl.get());
 
         // Etag (to be compared with If-None-Match)
-        // We try and set this based on the actual content. This means that if the content did not change (even if we recreate the cache)
-        // the etag will be the same.
-        EntityTag etag = containerResponseContext.getEntityTag();
-        if (etag == null) {
-            // etag - The artifact providers already carry the MD5 of the body in x-checksum-md5, and
-            // UUID.nameUUIDFromBytes is itself an MD5 of the same bytes, so reuse it rather than hashing the body a
-            // second time. Like the old value, it is derived from the content, so it survives a cache invalidation
-            // when the content has not actually changed.
-            String contentMd5 = containerResponseContext.getHeaderString(ArtifactContentProvider.HEADER_CHECKSUM_MD5);
-            if (contentMd5 != null) {
-                containerResponseContext.getHeaders().add(ETAG, contentMd5);
-            } else if (containerResponseContext.getEntityClass() == String.class) {
-                // etag - We create a hash from the Response if this is a String, so even if the cache clear, if the content is the same, the etag will also be
-                String content = (String) containerResponseContext.getEntity();
-                String uuid = UUID.nameUUIDFromBytes(content.getBytes()).toString();
-                containerResponseContext.getHeaders().add(ETAG, uuid);
-                // etag - Else we just use a UUID, this will change everytime our cache invalidate
-            } else {
-                String randomEtag = UUID.randomUUID().toString();
-                containerResponseContext.getHeaders().add(ETAG, randomEtag);
-            }
+        // We try and set this based on the actual content. This means that if the content did not change (even if we
+        // recreate the cache) the etag will be the same.
+        if (containerResponseContext.getEntityTag() == null) {
+            addHeader(containerResponseContext, mavenResponse, ETAG, etagFor(containerResponseContext));
         }
 
         // Last-Modified (to be compared with If-Modified-Since)
         // For now we set the date when we cached this, but a better way would be to get a date from when this was persisted (changed)
         LocalDateTime cachedAt = LocalDateTime.now(ZoneOffset.UTC);
-        containerResponseContext.getHeaders().add(LAST_MODIFIED, cachedAt.format(lastModifiedDateFormatter));
-
-        // Now we should have all the headers we want to cache
-        Set<String> headerKeys = containerResponseContext.getStringHeaders().keySet();
-        for (String key : headerKeys) {
-            mavenResponse.addHeader(key, containerResponseContext.getHeaderString(key));
-        }
+        addHeader(containerResponseContext, mavenResponse, LAST_MODIFIED, cachedAt.format(lastModifiedDateFormatter));
 
         return mavenResponse;
+    }
+
+    /**
+     * Sets a header on the response being sent and on the entry that will be cached, so that a response replayed
+     * from the cache is indistinguishable from the one that produced it.
+     */
+    private static void addHeader(ContainerResponseContext containerResponseContext, MavenResponse mavenResponse,
+            String name, String value) {
+        containerResponseContext.getHeaders().add(name, value);
+        mavenResponse.addHeader(name, value);
+    }
+
+    private static String etagFor(ContainerResponseContext containerResponseContext) {
+        // The artifact providers already carry the MD5 of the body in x-checksum-md5, and UUID.nameUUIDFromBytes is
+        // itself an MD5 of the same bytes, so reuse it rather than hashing the body a second time. Like that value,
+        // it is derived from the content, so it survives a cache invalidation when the content has not changed.
+        String contentMd5 = containerResponseContext.getHeaderString(ArtifactContentProvider.HEADER_CHECKSUM_MD5);
+        if (contentMd5 != null) {
+            return contentMd5;
+        }
+        if (containerResponseContext.getEntityClass() == String.class) {
+            String content = (String) containerResponseContext.getEntity();
+            return UUID.nameUUIDFromBytes(content.getBytes()).toString();
+        }
+        // Else we just use a UUID, this will change everytime our cache invalidate
+        return UUID.randomUUID().toString();
     }
 
     private Response toNotModifiedResponse(MavenResponse mavenResponse) {
