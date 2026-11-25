@@ -16,7 +16,7 @@
     <version.surefire.plugin>3.6.1</version.surefire.plugin>
     <maven.buildNumber.getRevisionOnlyOnce>true</maven.buildNumber.getRevisionOnlyOnce>
     <maven.buildNumber.shortRevisionLength>7</maven.buildNumber.shortRevisionLength>
-    <quarkus-logging-sentry.version>2.3.6</quarkus-logging-sentry.version>
+    <quarkus-logging-sentry.version>4.0.0</quarkus-logging-sentry.version>
 
     <quarkus.groupId>com.redhat.quarkus.platform</quarkus.groupId>
     <quarkus.version>3.33.4.redhat-00003</quarkus.version>
