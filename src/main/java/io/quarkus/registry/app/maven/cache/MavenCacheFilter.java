@@ -102,7 +102,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
         // First Check Etag
         String givenEtag = containerRequestContext.getHeaderString(IF_NONE_MATCH);
         String cachedEtag = cachedResponse.getHeaders().get(ETAG);
-        if (givenEtag != null && givenEtag.equals(cachedEtag)) {
+        if (givenEtag != null && cachedEtag != null && weaklyMatches(givenEtag, cachedEtag)) {
             return true;
         }
 
@@ -134,7 +134,7 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
         // We try and set this based on the actual content. This means that if the content did not change (even if we
         // recreate the cache) the etag will be the same.
         if (containerResponseContext.getEntityTag() == null) {
-            addHeader(containerResponseContext, mavenResponse, ETAG, etagFor(containerResponseContext));
+            addHeader(containerResponseContext, mavenResponse, ETAG, quoted(etagFor(containerResponseContext)));
         }
 
         // Last-Modified (to be compared with If-Modified-Since)
@@ -153,6 +153,38 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
             String name, String value) {
         containerResponseContext.getHeaders().add(name, value);
         mavenResponse.addHeader(name, value);
+    }
+
+    /**
+     * Wraps an opaque validator in the quoted-string form RFC 7232 requires of an entity-tag. An unquoted value is
+     * not a valid entity-tag, and an intermediary is free to reject or rewrite it, in which case it never matches
+     * what {@link #notModified} compares against.
+     */
+    private static String quoted(String value) {
+        return QUOTE + value.replace(QUOTE, "") + QUOTE;
+    }
+
+    /**
+     * Compares an If-None-Match value against the entity-tag we stored, using the weak comparison RFC 7232
+     * prescribes for If-None-Match: the {@code W/} prefix is ignored, so a validator an intermediary downgraded to
+     * a weak one still matches. A list of candidate tags matches if any of them does.
+     */
+    private static boolean weaklyMatches(String ifNoneMatch, String cachedEtag) {
+        if (ANY_ENTITY_TAG.equals(ifNoneMatch.trim())) {
+            return true;
+        }
+        String cached = withoutWeakPrefix(cachedEtag);
+        for (String candidate : ifNoneMatch.split(",")) {
+            if (withoutWeakPrefix(candidate).equals(cached)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String withoutWeakPrefix(String entityTag) {
+        String trimmed = entityTag.trim();
+        return trimmed.startsWith(WEAK_PREFIX) ? trimmed.substring(WEAK_PREFIX.length()) : trimmed;
     }
 
     private static String etagFor(ContainerResponseContext containerResponseContext) {
@@ -206,6 +238,9 @@ public class MavenCacheFilter implements ContainerRequestFilter, ContainerRespon
     private static final String VIA = "Via";
     private static final String VIA_CACHE = "registry.quarkus.io maven-cache";
     private static final String ETAG = "etag";
+    private static final String QUOTE = "\"";
+    private static final String WEAK_PREFIX = "W/";
+    private static final String ANY_ENTITY_TAG = "*";
     private static final String CACHE_CONTROL = "cache-control";
     private static final String LAST_MODIFIED = "last-modified";
     private static final String IF_NONE_MATCH = "if-none-match";

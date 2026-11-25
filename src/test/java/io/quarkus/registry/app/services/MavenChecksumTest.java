@@ -87,10 +87,11 @@ class MavenChecksumTest extends BaseTest {
     void etag_must_reuse_the_body_checksum_instead_of_hashing_again() throws Exception {
         for (String url : ARTIFACT_URLS) {
             ExtractableResponse<Response> response = get(url);
+            // Quoted, as RFC 7232 requires of an entity-tag, but still the MD5 we already computed
             assertThat(response.header("ETag"))
                     .describedAs("ETag of %s should be the already computed MD5 of the body", url)
-                    .isEqualTo(response.header(HEADER_CHECKSUM_MD5))
-                    .isEqualTo(HashUtil.md5(response.body().asString()));
+                    .isEqualTo('"' + response.header(HEADER_CHECKSUM_MD5) + '"')
+                    .isEqualTo('"' + HashUtil.md5(response.body().asString()) + '"');
         }
     }
 
