@@ -83,6 +83,29 @@ class MavenCacheFilterTest extends BaseTest {
     }
 
     @Test
+    void etag_must_be_a_quoted_entity_tag() {
+        // RFC 7232 requires an entity-tag to be a quoted string. An intermediary is free to reject or rewrite an
+        // unquoted one, in which case it never matches what we compare against.
+        String etag = get(URL).header("ETag");
+        assertThat(etag).startsWith("\"").endsWith("\"");
+        assertThat(etag.substring(1, etag.length() - 1)).doesNotContain("\"");
+    }
+
+    @Test
+    void a_weak_if_none_match_must_also_get_a_not_modified() {
+        String etag = get(URL).header("ETag");
+        get(URL); // make sure the entry is cached
+
+        // An intermediary may downgrade the validator to a weak one; the comparison must still match
+        given()
+                .header("If-None-Match", "W/" + etag)
+                .get(URL)
+                .then()
+                .log().ifValidationFails()
+                .statusCode(304);
+    }
+
+    @Test
     void a_matching_if_none_match_must_get_a_not_modified() {
         String etag = get(URL).header("ETag");
         assertThat(etag).isNotNull();
