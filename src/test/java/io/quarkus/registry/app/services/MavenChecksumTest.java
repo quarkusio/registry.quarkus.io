@@ -84,6 +84,17 @@ class MavenChecksumTest extends BaseTest {
             CATALOG_URL);
 
     @Test
+    void etag_must_reuse_the_body_checksum_instead_of_hashing_again() throws Exception {
+        for (String url : ARTIFACT_URLS) {
+            ExtractableResponse<Response> response = get(url);
+            assertThat(response.header("ETag"))
+                    .describedAs("ETag of %s should be the already computed MD5 of the body", url)
+                    .isEqualTo(response.header(HEADER_CHECKSUM_MD5))
+                    .isEqualTo(HashUtil.md5(response.body().asString()));
+        }
+    }
+
+    @Test
     void artifact_responses_must_carry_their_own_checksums() throws Exception {
         for (String url : ARTIFACT_URLS) {
             ExtractableResponse<Response> response = get(url);
